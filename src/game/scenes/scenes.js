@@ -69,7 +69,14 @@ class StageScene extends Scene {
   }
 
   get isPaused() { return this.#isPaused; }
-  set isPaused(v) { this.#isPaused = v; }
+  set isPaused(v) {
+    if (v && !this.#isPaused) {
+      this.#audioEngine?.pauseBGM();
+    } else if (!v && this.#isPaused) {
+      this.#audioEngine?.resumeBGM();
+    }
+    this.#isPaused = v;
+  }
   get isInventoryOpen() { return this.#isInventoryOpen; }
   get isGameOver() { return this.#isGameOver; }
   set isGameOver(v) { this.#isGameOver = v; }
@@ -109,7 +116,7 @@ class StageScene extends Scene {
           this.#isInventoryOpen = false;
           this.#inventoryUI.inventory.isOpen = false;
         } else {
-          this.#isPaused = !this.#isPaused;
+          this.isPaused = !this.isPaused;
         }
       }
 
@@ -191,6 +198,14 @@ class MapScene extends Scene {
   }
 
   get isPaused() { return this.#isPaused; }
+  set isPaused(v) {
+    if (v && !this.#isPaused) {
+      this.#audioEngine?.pauseBGM();
+    } else if (!v && this.#isPaused) {
+      this.#audioEngine?.resumeBGM();
+    }
+    this.#isPaused = v;
+  }
 
   enter(previousScene) {
     if (this.#audioEngine) {
@@ -206,7 +221,7 @@ class MapScene extends Scene {
 
   update(dt, inputManager) {
     if (inputManager && inputManager.isPressed('pause')) {
-      this.#isPaused = !this.#isPaused;
+      this.isPaused = !this.isPaused;
     }
 
     if (this.#isPaused) {
