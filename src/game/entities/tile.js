@@ -46,6 +46,7 @@ class Tile extends Entity {
 
   render(renderer) {
     const config = this.#tileConfig;
+    if (config.rendered === false) { return; }
     const fillColor = config['fill-color'];
     const borderColor = config['border-color'];
     const borderWidth = config['border-width'];
