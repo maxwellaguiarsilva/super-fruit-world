@@ -164,9 +164,50 @@ class Stage extends StageBase {
       return;
     }
 
-    this.#physicsEngine.applyGravity(this.#player, dt);
+    const initialPlayerBox = {
+      x: this.#player.x + this.#player.hitbox.x,
+      y: this.#player.y + this.#player.hitbox.y,
+      width: this.#player.hitbox.width,
+      height: this.#player.hitbox.height
+    };
+
+    let isOnLadder = false;
+    for (const tile of this.#tiles) {
+      if (tile.isAlive && tile.isClimbable) {
+        const tileBox = { x: tile.x, y: tile.y, width: tile.width, height: tile.height };
+        if (this.#collisionSolver.checkAABB(initialPlayerBox, tileBox)) {
+          isOnLadder = true;
+          break;
+        }
+      }
+    }
+
+    if (isOnLadder) {
+      this.#player.isClimbing = true;
+    } else {
+      this.#player.isClimbing = false;
+    }
+
+    if (!this.#player.isClimbing) {
+      this.#physicsEngine.applyGravity(this.#player, dt);
+    }
+
     this.#physicsEngine.applyFriction(this.#player, dt);
     this.#player.update(dt, inputManager);
+
+    if (this.#player.isClimbing) {
+      this.#player.onGround = false;
+      if (inputManager) {
+        if (inputManager.isDown('up')) {
+          this.#player.velocity = { x: this.#player.velocity.x, y: -5.0 };
+        } else if (inputManager.isDown('down')) {
+          this.#player.velocity = { x: this.#player.velocity.x, y: 5.0 };
+        } else {
+          this.#player.velocity = { x: this.#player.velocity.x, y: 0 };
+        }
+      }
+    }
+
     this.#physicsEngine.integratePosition(this.#player, dt);
 
     this.#player.onGround = false;
@@ -198,6 +239,7 @@ class Stage extends StageBase {
         this.#player.velocity = result.velocity;
         if (result.onGround) {
           this.#player.onGround = true;
+          this.#player.isClimbing = false;
         }
       }
 
@@ -210,16 +252,6 @@ class Stage extends StageBase {
           x: this.#player.velocity.x * 0.5,
           y: Math.min(this.#player.velocity.y, 0.5)
         };
-      }
-
-      if (tile.isClimbable && inputManager) {
-        if (inputManager.isDown('up')) {
-          this.#player.velocity = { x: this.#player.velocity.x, y: -0.5 };
-          this.#player.onGround = false;
-        } else if (inputManager.isDown('down')) {
-          this.#player.velocity = { x: this.#player.velocity.x, y: 0.5 };
-          this.#player.onGround = false;
-        }
       }
     }
 

@@ -66,7 +66,6 @@
         { "type": "platform", "position": { "x": 0, "y": -8 }, "size": { "width": 3, "height": 1 } },
         { "type": "platform", "position": { "x": 0, "y": -16 }, "size": { "width": 10, "height": 1 } },
         { "type": "ladder", "position": { "x": 0.75, "y": -16 }, "size": { "width": 1.5, "height": 16 } },
-        { "type": "wall", "position": { "x": -1, "y": -16 }, "size": { "width": 1, "height": 16 }, "visual": { "fill-color": "dark-white" } },
         { "type": "coin", "position": { "x": 1.5, "y": -4 } },
         { "type": "coin", "position": { "x": 1.5, "y": -8 } },
         { "type": "coin", "position": { "x": 1.5, "y": -12 } },

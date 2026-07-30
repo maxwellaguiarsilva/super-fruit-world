@@ -14,6 +14,7 @@ class Player extends Entity {
   #stage;
   #damageTimer;
   #playerConfig;
+  #isClimbing;
 
   constructor(playerConfig, inputManager, physicsEngine, abilities, inventory, healthSystem) {
     super(0, 0, playerConfig.size, playerConfig.size);
@@ -27,6 +28,7 @@ class Player extends Entity {
     this.#inventory = inventory;
     this.#healthSystem = healthSystem;
     this.#damageTimer = 0;
+    this.#isClimbing = false;
   }
 
   get level() { return this.#level; }
@@ -62,6 +64,9 @@ class Player extends Entity {
   get stage() { return this.#stage; }
   set stage(v) { this.#stage = v; }
 
+  get isClimbing() { return this.#isClimbing; }
+  set isClimbing(v) { this.#isClimbing = v; }
+
   get isInvincible() {
     return this.#healthSystem.invincibilityTimer > 0;
   }
@@ -79,6 +84,7 @@ class Player extends Entity {
     const speed = this.#playerConfig['jump-velocity'];
     this.velocity = { x: this.velocity.x, y: -speed };
     this.onGround = false;
+    this.#isClimbing = false;
   }
 
   update(dt, inputManager) {
@@ -97,7 +103,7 @@ class Player extends Entity {
         this.#direction = 1;
       }
 
-      if (inputManager.isPressed('jump') && this.onGround) {
+      if (inputManager.isPressed('jump') && (this.onGround || this.#isClimbing)) {
         this.jump();
       }
     }
