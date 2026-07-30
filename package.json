@@ -1,0 +1,16 @@
+{
+  "name": "super-fruit-world",
+  "version": "0.1.0",
+  "module": "src/main.js",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "bun run --hot server.js",
+    "start": "bun run server.js",
+    "build": "bun build src/main.js --outdir=dist --target=browser",
+    "format-4-beat-music": "bun run src/format-4-beat-music.ts"
+  },
+  "devDependencies": {
+    "playwright": "^1.61.1"
+  }
+}

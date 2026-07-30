@@ -1,0 +1,13 @@
+{
+  "description": "Player level progression. Each level adds new abilities. The engine accumulates all abilities from previous levels at runtime.",
+  "levels": {
+    "black":   { "abilities": ["walk", "jump", "crouch", "stomp", "slide-attack"] },
+    "red":     { "abilities": ["dash"] },
+    "green":   { "abilities": ["shoot", "shield"] },
+    "yellow":  { "abilities": ["flight", "slow-fall"] },
+    "blue":    { "abilities": ["double-jump"] },
+    "cyan":    { "abilities": ["air-slide"] },
+    "magenta": { "abilities": ["screen-clear"] },
+    "white":   { "abilities": ["invincibility"] }
+  }
+}

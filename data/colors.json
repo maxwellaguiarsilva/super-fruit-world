@@ -1,0 +1,14 @@
+{
+  "description": "Terminal 8-color palette (3-bit RGB). Named color entries are the single source of truth for all hex values in the game. When a bare color name is used (e.g. 'red'), the engine resolves it to fill=light variant, border=dark variant. The 'dark-' prefix inverts this: 'dark-red' means fill=dark variant, border=light variant.",
+  "colors": {
+    "black":   { "dark": "#000000", "light": "#404040" },
+    "red":     { "dark": "#800000", "light": "#BF4040" },
+    "green":   { "dark": "#008000", "light": "#40BF40" },
+    "yellow":  { "dark": "#808000", "light": "#BFBF40" },
+    "blue":    { "dark": "#000080", "light": "#4040BF" },
+    "cyan":    { "dark": "#008080", "light": "#40BFBF" },
+    "magenta": { "dark": "#800080", "light": "#BF40BF" },
+    "white":   { "dark": "#808080", "light": "#FFFFFF" }
+  },
+  "color-order": ["black", "red", "green", "yellow", "blue", "cyan", "magenta", "white"]
+}

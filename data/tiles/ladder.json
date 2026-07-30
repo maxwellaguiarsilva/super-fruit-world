@@ -1,0 +1,21 @@
+{
+  "description": "Climbable surface. When the player overlaps a ladder tile and presses up, they climb upward. Pressing down descends. Gravity is suspended while on the ladder. Player can jump off the ladder at any time. Horizontal movement is allowed while climbing.",
+  "type": "ladder",
+  "visual": {
+    "fill-color": "yellow",
+    "border-color": "dark-yellow",
+    "border": "thin",
+    "pattern": "rungs"
+  },
+  "collision": {
+    "solid": false,
+    "walkable": false,
+    "climbable": true
+  },
+  "physics": {
+    "gravity-multiplier": 0.0,
+    "climb-speed": 0.5,
+    "friction": 1.0,
+    "bounciness": 0.0
+  }
+}

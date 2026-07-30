@@ -1,0 +1,60 @@
+{
+  "description": "Stage BGM. Two-section looping melody.",
+  "bpm": 140,
+  "time-signature": [
+    4,
+    4
+  ],
+  "channels": {
+    "lead": {
+      "wave": "sine",
+      "volume": 0.5,
+      "notes": [
+        "lead-l4-i1"
+      ]
+    }
+  },
+  "phrases": {
+    "lead-cdef-1tdh": [ [ "c4", 0.5 ], [ "d4", 0.5 ], [ "e4", 0.5 ], [ "f4", 0.5 ] ],
+    "lead-gabc-0mg7": [ [ "g4", 0.5 ], [ "a4", 0.5 ], [ "b4", 0.5 ], [ "c5", 0.5 ] ],
+    "lead-afca-0ooe": [ [ "a4", 0.5 ], [ "f4", 0.5 ], [ "c5", 0.5 ], [ "a4", 0.5 ] ],
+    "lead-gg-1ahx": [ [ "g4", 1 ], [ "g4", 1 ] ],
+    "lead-cbag-0yhl": [ [ "c5", 0.5 ], [ "b4", 0.5 ], [ "a4", 0.5 ], [ "g4", 0.5 ] ],
+    "lead-fedc-10a9": [ [ "f4", 0.5 ], [ "e4", 0.5 ], [ "d4", 0.5 ], [ "c4", 0.5 ] ],
+    "lead-ecge-0hsh": [ [ "e4", 0.5 ], [ "c4", 0.5 ], [ "g4", 0.5 ], [ "e4", 0.5 ] ],
+    "lead-dd-1h6v": [ [ "d4", 1 ], [ "d4", 1 ] ],
+    "lead-gcge-1ro9": [ [ "g4", 0.5 ], [ "c5", 0.5 ], [ "g4", 0.5 ], [ "e4", 0.5 ] ],
+    "lead-dgfd-1asj": [ [ "d4", 0.5 ], [ "g4", 0.5 ], [ "f4", 0.5 ], [ "d4", 0.5 ] ],
+    "lead-cege-0660": [ [ "c4", 0.5 ], [ "e4", 0.5 ], [ "g4", 0.5 ], [ "e4", 0.5 ] ],
+    "lead-c-18hq": [ [ "c4", 2 ] ],
+    "lead-dede-0t3h": [ [ "d4", 0.5 ], [ "e4", 0.5 ], [ "d4", 0.5 ], [ "e4", 0.5 ] ],
+    "lead-fdgf-0t61": [ [ "f4", 0.5 ], [ "d4", 0.5 ], [ "g4", 0.5 ], [ "f4", 0.5 ] ],
+    "lead-efef-117y": [ [ "e4", 0.5 ], [ "f4", 0.5 ], [ "e4", 0.5 ], [ "f4", 0.5 ] ],
+    "lead-ecba-02su": [ [ "e4", 0.5 ], [ "c5", 0.5 ], [ "b4", 0.5 ], [ "a4", 0.5 ] ],
+    "lead-gfed-0dtm": [ [ "g4", 0.5 ], [ "f4", 0.5 ], [ "e4", 0.5 ], [ "d4", 0.5 ] ],
+    "lead-cdefgabc-0hw7": [ "lead-cdef-1tdh", "lead-gabc-0mg7" ],
+    "lead-afcagg-1m7t": [ "lead-afca-0ooe", "lead-gg-1ahx" ],
+    "lead-cbagfedc-1xz4": [ "lead-cbag-0yhl", "lead-fedc-10a9" ],
+    "lead-ecgedd-1eip": [ "lead-ecge-0hsh", "lead-dd-1h6v" ],
+    "lead-gcgedgfd-0qcn": [ "lead-gcge-1ro9", "lead-dgfd-1asj" ],
+    "lead-cegec-0mek": [ "lead-cege-0660", "lead-c-18hq" ],
+    "lead-dedefdgf-12fp": [ "lead-dede-0t3h", "lead-fdgf-0t61" ],
+    "lead-efefgcge-0f3m": [ "lead-efef-117y", "lead-gcge-1ro9" ],
+    "lead-ecbagfed-0w8p": [ "lead-ecba-02su", "lead-gfed-0dtm" ],
+    "lead-l1-i1": [ "lead-cdefgabc-0hw7", "lead-afcagg-1m7t" ],
+    "lead-l1-i2": [ "lead-cbagfedc-1xz4", "lead-ecgedd-1eip" ],
+    "lead-l1-i3": [ "lead-cdefgabc-0hw7", "lead-afcagg-1m7t" ],
+    "lead-l1-i4": [ "lead-gcgedgfd-0qcn", "lead-cegec-0mek" ],
+    "lead-l1-i5": [ "lead-dedefdgf-12fp", "lead-efefgcge-0f3m" ],
+    "lead-l1-i6": [ "lead-dedefdgf-12fp", "lead-ecbagfed-0w8p" ],
+    "lead-l1-i7": [ "lead-cdefgabc-0hw7", "lead-afcagg-1m7t" ],
+    "lead-l1-i8": [ "lead-gcgedgfd-0qcn", "lead-cegec-0mek" ],
+    "lead-l2-i1": [ "lead-l1-i1", "lead-l1-i2" ],
+    "lead-l2-i2": [ "lead-l1-i3", "lead-l1-i4" ],
+    "lead-l2-i3": [ "lead-l1-i5", "lead-l1-i6" ],
+    "lead-l2-i4": [ "lead-l1-i7", "lead-l1-i8" ],
+    "lead-l3-i1": [ "lead-l2-i1", "lead-l2-i2" ],
+    "lead-l3-i2": [ "lead-l2-i3", "lead-l2-i4" ],
+    "lead-l4-i1": [ "lead-l3-i1", "lead-l3-i2" ]
+  }
+}

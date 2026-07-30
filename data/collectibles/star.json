@@ -1,0 +1,18 @@
+{
+  "description": "Invincibility item. Grants temporary invincibility on pickup. Activated automatically (not on demand). Stacks with White-level invincibility.",
+  "type": "star",
+  "visual": {
+    "shape": "star",
+    "points": 5,
+    "size": 0.7,
+    "fill-color": "yellow",
+    "border-color": "dark-yellow",
+    "border": "thin"
+  },
+  "effect": {
+    "action": "invincibility",
+    "duration": 30,
+    "auto-activate": true,
+    "stacks": true
+  }
+}

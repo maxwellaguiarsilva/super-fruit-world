@@ -1,0 +1,9 @@
+{
+  "description": "BGM track registry. Each track references a separate JSON file with its own phrases, channels, and notes.",
+  "tracks": {
+    "title-screen": "data/audio/bgm/title-screen.json",
+    "world-map": "data/audio/bgm/world-map.json",
+    "stage": "data/audio/bgm/stage.json",
+    "stage-clear": "data/audio/bgm/stage-clear.json"
+  }
+}

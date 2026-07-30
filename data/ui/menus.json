@@ -1,0 +1,142 @@
+{
+  "description": "Menu screen definitions. All positions in visual units. Colors reference data/colors.json by name. Borders reference data/borders.json by name. Label keys reference data/locales strings.",
+  "menu-defaults": {
+    "overlay": {
+      "background-color": "black",
+      "background-opacity": 0.9
+    },
+    "font-family": "'Comic Sans MS', 'Comic Sans', monospace",
+    "title": {
+      "font-family": "'Comic Sans MS', 'Comic Sans', monospace",
+      "font-size": 0.6,
+      "color": "white",
+      "anchor": "top-center",
+      "offset": { "x": 0, "y": 1.5 }
+    },
+    "subtitle": {
+      "font-size": 0.35,
+      "color": "dark-white",
+      "anchor": "top-center",
+      "offset": { "x": 0, "y": 2.3 }
+    },
+    "button": {
+      "size": { "width": 3.5, "height": 0.55 },
+      "gap": 0.15,
+      "border": "thin",
+      "border-color": "white",
+      "corner-radius": 0.15,
+      "fill-color": "dark-blue",
+      "hover-fill-color": "blue",
+      "selected-fill-color": "white",
+      "selected-text-color": "black",
+      "text-color": "white",
+      "font-size": 0.3,
+      "anchor": "top-center"
+    },
+    "hint": {
+      "font-size": 0.2,
+      "color": "dark-white",
+      "anchor": "bottom-center",
+      "offset": { "x": 0, "y": -0.5 }
+    }
+  },
+  "menus": {
+    "title-screen": {
+      "description": "Main title screen shown on game launch.",
+      "title-key": "menu.main.title",
+      "layout": "centered-vertical",
+      "start-offset": { "x": 0, "y": 3.5 },
+      "buttons": [
+        { "label-key": "menu.main.start", "action": "start-game" },
+        { "label-key": "menu.main.tutorial", "action": "tutorial" },
+        { "label-key": "menu.main.settings", "action": "open-settings" },
+        { "label-key": "menu.main.credits", "action": "show-credits" }
+      ],
+      "hint-key": null
+    },
+    "pause-menu": {
+      "description": "Pause overlay shown when player presses pause during gameplay.",
+      "title-key": "menu.pause.title",
+      "overlay-opacity": 0.7,
+      "layout": "centered-vertical",
+      "start-offset": { "x": 0, "y": 3.0 },
+      "buttons": [
+        { "label-key": "menu.pause.resume", "action": "resume" },
+        { "label-key": "menu.pause.restart-stage", "action": "restart-stage" },
+        { "label-key": "menu.pause.quit-to-map", "action": "quit-to-map" },
+        { "label-key": "menu.pause.quit-to-menu", "action": "quit-to-menu" }
+      ],
+      "hint-key": "input.pause-hint"
+    },
+    "settings": {
+      "description": "Settings screen for audio and controls configuration.",
+      "title-key": "menu.settings.title",
+      "layout": "centered-vertical",
+      "start-offset": { "x": 0, "y": 3.0 },
+      "sliders": [
+        {
+          "label-key": "menu.settings.music-volume",
+          "setting-key": "bgm-volume",
+          "min": 0.0,
+          "max": 1.0,
+          "step": 0.1,
+          "track-size": { "width": 4.0, "height": 0.3 },
+          "track-color": "dark-white",
+          "fill-color": "blue",
+          "thumb-radius": 0.2,
+          "thumb-color": "white",
+          "corner-radius": 0.1
+        },
+        {
+          "label-key": "menu.settings.sfx-volume",
+          "setting-key": "sfx-volume",
+          "min": 0.0,
+          "max": 1.0,
+          "step": 0.1,
+          "track-size": { "width": 4.0, "height": 0.3 },
+          "track-color": "dark-white",
+          "fill-color": "blue",
+          "thumb-radius": 0.2,
+          "thumb-color": "white",
+          "corner-radius": 0.1
+        }
+      ],
+      "buttons": [
+        { "label-key": "menu.settings.controls", "action": "open-controls" },
+        { "label-key": "menu.settings.back", "action": "back" }
+      ],
+      "hint-key": "input.navigate-hint"
+    },
+    "game-over": {
+      "description": "Shown when the player runs out of lives and has no continues.",
+      "title-key": "menu.game-over.title",
+      "layout": "centered-vertical",
+      "start-offset": { "x": 0, "y": 3.5 },
+      "buttons": [
+        { "label-key": "menu.game-over.continue", "action": "continue", "visible-condition": "has-continues" },
+        { "label-key": "menu.game-over.quit", "action": "quit-to-menu" }
+      ],
+      "hint-key": null
+    },
+    "stage-clear": {
+      "description": "Shown after completing a stage. Displays fruit collected, new ability unlocked, and score.",
+      "title-key": "menu.stage-clear.title",
+      "layout": "centered-vertical",
+      "start-offset": { "x": 0, "y": 3.0 },
+      "summary": {
+        "fruit-label-key": "menu.stage-clear.fruit-collected",
+        "ability-label-key": "menu.stage-clear.new-ability",
+        "score-label-key": "hud.score",
+        "fruit-icon-size": { "width": 1.0, "height": 1.0 },
+        "font-size": 0.3,
+        "color": "white",
+        "detail-color": "yellow",
+        "section-gap": 0.4
+      },
+      "buttons": [
+        { "label-key": "menu.stage-clear.continue", "action": "continue-to-map" }
+      ],
+      "hint-key": null
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "description": "Musical note collectible. Placed positionally per stage. Collection order determines pitch along a scale. Collecting all notes in a stage grants a continue.",
+  "type": "musical-note",
+  "visual": {
+    "shape": "musical-note",
+    "size": 0.5,
+    "fill-color": "cyan",
+    "border-color": "dark-cyan",
+    "border": "thin"
+  },
+  "effect": {
+    "action": "collect-note",
+    "note-sequence": ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"],
+    "complete-bonus": "continue"
+  },
+  "placement": {
+    "per-stage": 8
+  }
+}

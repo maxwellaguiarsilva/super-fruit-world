@@ -1,0 +1,22 @@
+{
+  "description": "Heart collectible. Goes to inventory on pickup instead of restoring health immediately. Accumulates in quantity. The player can choose when to use it to fully restore the life bar.",
+  "type": "heart",
+  "visual": {
+    "shape": "heart",
+    "size": 0.6,
+    "fill-color": "red",
+    "border-color": "dark-red",
+    "border": "thin"
+  },
+  "effect": {
+    "action": "add-to-inventory",
+    "auto-activate": false,
+    "usage": {
+      "action": "restore-health",
+      "value": "full"
+    }
+  },
+  "inventory": {
+    "accumulates": true
+  }
+}
