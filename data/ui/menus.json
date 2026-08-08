@@ -1,5 +1,5 @@
 {
-  "description": "Menu screen definitions. All positions in visual units. Colors reference data/colors.json by name. Borders reference data/borders.json by name. Label keys reference data/locales strings.",
+  "description": "Menu screen definitions. All positions in visual units. Colors reference data/colors.json by name. Borders reference data/borders.json by name. Label keys reference data/i18n strings.",
   "menu-defaults": {
     "overlay": {
       "background-color": "black",

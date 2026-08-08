@@ -30,7 +30,7 @@ class TitleScene extends Scene {
     renderer.clear();
 
     const titleKey = this.#titleMenu.titleKey || 'menu.main.title';
-    const title = this.#titleMenu.localeManager ? this.#titleMenu.localeManager.get(titleKey) : titleKey;
+    const title = this.#titleMenu.dataDriven['i18n.default.' + titleKey];
     const titleFont = `${this.#titleMenu.titleFontSize}px ${this.#titleMenu.fontFamily}`;
     renderer.drawText(title, renderer.viewportWidth / 2, 2.0, titleFont, this.#titleMenu.titleColor, 'center');
 

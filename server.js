@@ -1,4 +1,5 @@
 import { serve, file } from "bun";
+import { generateDataIndex } from "./scripts/data-index.js";
 
 const PORT = 3000;
 
@@ -10,6 +11,12 @@ serve({
 
     if (path === "/" || path === "") {
       path = "/index.html";
+    }
+
+    if (path === "/data/index.json") {
+      return new Response(JSON.stringify(generateDataIndex()), {
+        headers: { "content-type": "application/json" }
+      });
     }
 
     const filePath = `.${path}`;

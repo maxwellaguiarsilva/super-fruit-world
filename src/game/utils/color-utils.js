@@ -1,3 +1,7 @@
+function hasOwn(obj, key) {
+  return Object.prototype.hasOwnProperty.call(obj, key);
+}
+
 function resolveColor(name, colorsConfig) {
   if (!name) {
     return null;
@@ -5,7 +9,8 @@ function resolveColor(name, colorsConfig) {
 
   const darkPrefix = name.startsWith('dark-');
   const baseName = darkPrefix ? name.slice(5) : name;
-  const entry = colorsConfig?.colors?.[baseName];
+  const colors = colorsConfig && hasOwn(colorsConfig, 'colors') ? colorsConfig['colors'] : null;
+  const entry = colors && hasOwn(colors, baseName) ? colors[baseName] : null;
 
   if (!entry) {
     return name.startsWith('#') ? name : null;

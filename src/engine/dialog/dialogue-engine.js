@@ -1,6 +1,6 @@
 class DialogueEngine {
   #isActive;
-  #localeManager;
+  #dataDriven;
   #sequences;
   #currentSequence;
   #currentLineIndex;
@@ -8,8 +8,8 @@ class DialogueEngine {
   #textBuffer;
   #onComplete;
 
-  constructor(config, localeManager) {
-    this.#localeManager = localeManager;
+  constructor(config, dataDriven) {
+    this.#dataDriven = dataDriven;
     this.#sequences = new Map();
     this.#isActive = false;
     this.#currentSequence = null;
@@ -64,7 +64,7 @@ class DialogueEngine {
 
     const line = this.#currentSequence[this.#currentLineIndex];
     const text = typeof line === 'string' ? line : line.text;
-    const fullText = this.#localeManager ? this.#localeManager.get(text) : text;
+    const fullText = this.#dataDriven ? this.#dataDriven['i18n.default.' + text] : text;
 
     if (this.#textBuffer.length < fullText.length) {
       this.#charTimer += dt;
@@ -100,7 +100,7 @@ class DialogueEngine {
     const line = this.#currentSequence[this.#currentLineIndex];
     const speaker = typeof line === 'string' ? '' : line.speaker;
     const text = typeof line === 'string' ? line : line.text;
-    const fullText = this.#localeManager ? this.#localeManager.get(text) : text;
+    const fullText = this.#dataDriven ? this.#dataDriven['i18n.default.' + text] : text;
 
     const boxX = 2;
     const boxY = renderer.viewportHeight - 8;

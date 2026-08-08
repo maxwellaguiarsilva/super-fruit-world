@@ -1,5 +1,5 @@
 {
-  "description": "SFX definitions. Each sound is synthesized via Web Audio API using parameters from data/audio/config.json. Wave types reference names defined in config.json.",
+  "description": "SFX definitions. Each sound is synthesized via Web Audio API using parameters from data/audio/synthesis.json. Wave types reference names defined in synthesis.json.",
   "sounds": {
     "jump":          { "wave": "square",   "freq": 400, "duration": 0.10, "envelope": { "attack": 0.01, "decay": 0.08 } },
     "attack":        { "wave": "square",   "freq": 200, "duration": 0.15, "envelope": { "attack": 0.01, "decay": 0.13 } },

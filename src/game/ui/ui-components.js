@@ -3,15 +3,15 @@ import { UIElement } from '../../engine/ui/ui-element.js';
 class HUD extends UIElement {
   #player;
   #noteCollection;
-  #localeManager;
+  #dataDriven;
   #hudConfig;
 
-  constructor(hudConfig, player, noteCollection, localeManager) {
+  constructor(hudConfig, player, noteCollection, dataDriven) {
     super({ x: 0, y: 0, width: 40, height: 30 });
     this.#hudConfig = hudConfig;
     this.#player = player;
     this.#noteCollection = noteCollection;
-    this.#localeManager = localeManager;
+    this.#dataDriven = dataDriven;
   }
 
   get player() { return this.#player; }
@@ -49,7 +49,7 @@ class HUD extends UIElement {
       const levelCfg = elements['level-indicator'];
       if (levelCfg.enabled !== false) {
         const lvOffset = levelCfg.offset;
-        const lvPrefix = this.#localeManager ? this.#localeManager.get('hud.level-prefix') : 'Lv:';
+        const lvPrefix = this.#dataDriven['i18n.default.hud.level-prefix'];
         const lvText = `${lvPrefix}${this.#player.level}`;
         renderer.drawText(lvText, lvOffset.x, lvOffset.y + defaultValueSize,
           `${defaultValueSize}px ${fontFamily}`, levelCfg['label-color'], 'left');
@@ -59,7 +59,7 @@ class HUD extends UIElement {
     const ammoCfg = elements['ammo-counter'];
     if (ammoCfg.enabled !== false) {
       const amOffset = ammoCfg.offset;
-      const amPrefix = this.#localeManager ? this.#localeManager.get('hud.ammo-prefix') : 'Ammo:';
+      const amPrefix = this.#dataDriven['i18n.default.hud.ammo-prefix'];
       const ammoType = 'ammo';
       const amText = `${amPrefix}${this.#player.inventory.count(ammoType)}`;
       renderer.drawText(amText, amOffset.x, amOffset.y + defaultValueSize,
@@ -70,7 +70,7 @@ class HUD extends UIElement {
     if (coinCfg.enabled !== false) {
       const coOffset = coinCfg.offset;
       const coSize = coinCfg['icon-size'];
-      const coPrefix = this.#localeManager ? this.#localeManager.get('hud.coins-prefix') : 'Coins: ';
+      const coPrefix = this.#dataDriven['i18n.default.hud.coins-prefix'];
       const coins = this.#player.scoreSystem ? this.#player.scoreSystem.coins : 0;
       const coinR = coSize.width / 2;
       renderer.drawCircle(coOffset.x, coOffset.y + coinR, coinR,
@@ -82,7 +82,7 @@ class HUD extends UIElement {
     const scoreCfg = elements['score-counter'];
     if (scoreCfg.enabled !== false) {
       const scOffset = scoreCfg.offset;
-      const scPrefix = this.#localeManager ? this.#localeManager.get('hud.score-prefix') : 'Score: ';
+      const scPrefix = this.#dataDriven['i18n.default.hud.score-prefix'];
       const score = this.#player.scoreSystem ? this.#player.scoreSystem.score : 0;
       renderer.drawText(`${scPrefix}${score}`, renderer.viewportWidth - scOffset.x, scOffset.y + defaultValueSize,
         `${defaultValueSize}px ${fontFamily}`, scoreCfg['label-color'], 'right');
@@ -93,7 +93,7 @@ class HUD extends UIElement {
       if (ntCfg.enabled !== false) {
         const ntOffset = ntCfg.offset;
         const noteInfo = `${this.#noteCollection.collectedCount}/${this.#noteCollection.totalNotes}`;
-        const ntPrefix = this.#localeManager ? this.#localeManager.get('hud.notes-prefix') : 'Notes:';
+        const ntPrefix = this.#dataDriven['i18n.default.hud.notes-prefix'];
         const ntX = renderer.viewportWidth + ntOffset.x;
         renderer.drawText(`${ntPrefix}${noteInfo}`, ntX, ntOffset.y + defaultValueSize,
           `${defaultValueSize}px ${fontFamily}`, ntCfg['filled-color'], 'left');
@@ -116,7 +116,7 @@ class HUD extends UIElement {
 
 class Menu extends UIElement {
   #selectedIndex;
-  #localeManager;
+  #dataDriven;
   #items;
   #titleKey;
   #titleColor;
@@ -126,9 +126,9 @@ class Menu extends UIElement {
   #onClose;
   #buttonConfig;
 
-  constructor(menuConfig, localeManager) {
+  constructor(menuConfig, dataDriven) {
     super(menuConfig);
-    this.#localeManager = localeManager;
+    this.#dataDriven = dataDriven;
     this.#selectedIndex = 0;
     this.#items = menuConfig.items;
     this.#titleKey = menuConfig['title-key'];
@@ -163,7 +163,7 @@ class Menu extends UIElement {
   set onClose(fn) { this.#onClose = fn; }
 
   get items() { return [...this.#items]; }
-  get localeManager() { return this.#localeManager; }
+  get dataDriven() { return this.#dataDriven; }
   get titleKey() { return this.#titleKey; }
   get titleColor() { return this.#titleColor; }
   get titleFontSize() { return this.#titleFontSize; }
@@ -207,7 +207,7 @@ class Menu extends UIElement {
 
     for (let i = 0; i < this.#items.length; i++) {
       const item = this.#items[i];
-      const label = this.#localeManager ? this.#localeManager.get(item.label) : item.label;
+      const label = this.#dataDriven['i18n.default.' + item.label];
       const isSelected = i === this.#selectedIndex;
       const color = isSelected ? selectedColor : defaultColor;
 
@@ -224,8 +224,8 @@ class Menu extends UIElement {
 }
 
 class TitleMenu extends Menu {
-  constructor(menuConfig, localeManager) {
-    super(menuConfig, localeManager);
+  constructor(menuConfig, dataDriven) {
+    super(menuConfig, dataDriven);
   }
 
   confirm() {
@@ -239,8 +239,8 @@ class TitleMenu extends Menu {
 class PauseMenu extends Menu {
   #stage;
 
-  constructor(menuConfig, localeManager, stage) {
-    super(menuConfig, localeManager);
+  constructor(menuConfig, dataDriven, stage) {
+    super(menuConfig, dataDriven);
     this.#stage = stage;
   }
 
@@ -255,7 +255,7 @@ class PauseMenu extends Menu {
     renderer.drawRect(0, 0, renderer.viewportWidth, renderer.viewportHeight, 0, 'rgba(0,0,0,0.7)', null, 0);
 
     const titleKey = this.titleKey;
-    const pauseLabel = this.localeManager ? this.localeManager.get(titleKey) : 'PAUSED';
+    const pauseLabel = this.dataDriven['i18n.default.' + titleKey];
     renderer.drawText(pauseLabel, renderer.viewportWidth / 2, 2.2, `${this.titleFontSize + 0.2}px ${this.fontFamily}`, this.titleColor, 'center');
 
     const gap = 0.15;
@@ -264,7 +264,7 @@ class PauseMenu extends Menu {
 
     for (let i = 0; i < this.items.length; i++) {
       const item = this.items[i];
-      const label = this.localeManager ? this.localeManager.get(item.label) : item.label;
+      const label = this.dataDriven['i18n.default.' + item.label];
       const isSelected = i === this.selectedIndex;
       const color = isSelected ? '#FFFF00' : '#888888';
 
@@ -283,8 +283,8 @@ class PauseMenu extends Menu {
 class SettingsMenu extends Menu {
   #audioEngine;
 
-  constructor(menuConfig, localeManager, audioEngine) {
-    super(menuConfig, localeManager);
+  constructor(menuConfig, dataDriven, audioEngine) {
+    super(menuConfig, dataDriven);
     this.#audioEngine = audioEngine;
   }
 
@@ -324,7 +324,7 @@ class SettingsMenu extends Menu {
   render(renderer) {
     renderer.drawRect(0, 0, renderer.viewportWidth, renderer.viewportHeight, 0, '#000000', null, 0);
 
-    const settingsLabel = this.localeManager ? this.localeManager.get('settings.title') : 'SETTINGS';
+    const settingsLabel = this.dataDriven['i18n.default.menu.settings.title'];
     renderer.drawText(settingsLabel, renderer.viewportWidth / 2, 2, `${this.titleFontSize + 0.1}px ${this.fontFamily}`, this.titleColor, 'center');
   }
 }
@@ -333,8 +333,8 @@ class GameOverScreen extends Menu {
   #continuesAvailable;
   #livesRemaining;
 
-  constructor(menuConfig, localeManager, continuesAvailable, livesRemaining) {
-    super(menuConfig, localeManager);
+  constructor(menuConfig, dataDriven, continuesAvailable, livesRemaining) {
+    super(menuConfig, dataDriven);
     this.#continuesAvailable = continuesAvailable;
     this.#livesRemaining = livesRemaining;
   }
@@ -349,15 +349,15 @@ class GameOverScreen extends Menu {
     renderer.drawRect(0, 0, renderer.viewportWidth, renderer.viewportHeight, 0, '#000000', null, 0);
 
     const titleKey = this.titleKey;
-    const gameOverLabel = this.localeManager ? this.localeManager.get(titleKey) : 'GAME OVER';
+    const gameOverLabel = this.dataDriven['i18n.default.' + titleKey];
     renderer.drawText(gameOverLabel, renderer.viewportWidth / 2, 2.5, `${this.titleFontSize + 0.2}px ${this.fontFamily}`, this.titleColor, 'center');
 
-    const continuesPrefix = this.localeManager ? this.localeManager.get('menu.game-over.continues-prefix') : 'Continues: ';
+    const continuesPrefix = this.dataDriven['i18n.default.menu.game-over.continues-prefix'];
     const continuesText = `${continuesPrefix}${this.#continuesAvailable}`;
     renderer.drawText(continuesText, renderer.viewportWidth / 2, 4.5, `0.45px ${this.fontFamily}`, this.titleColor, 'center');
 
     if (this.#continuesAvailable > 0) {
-      const hint = this.localeManager ? this.localeManager.get('menu.game-over.continue-hint') : 'Press START to continue';
+      const hint = this.dataDriven['i18n.default.menu.game-over.continue-hint'];
       renderer.drawText(hint, renderer.viewportWidth / 2, 6.0, `0.45px ${this.fontFamily}`, this.titleColor, 'center');
     }
   }
@@ -369,8 +369,8 @@ class StageClearScreen extends Menu {
   #abilityGained;
   #score;
 
-  constructor(menuConfig, localeManager, stageName, collectibleCollected, abilityGained, score) {
-    super(menuConfig, localeManager);
+  constructor(menuConfig, dataDriven, stageName, collectibleCollected, abilityGained, score) {
+    super(menuConfig, dataDriven);
     this.#stageName = stageName;
     this.#collectibleCollected = collectibleCollected;
     this.#abilityGained = abilityGained;
@@ -387,45 +387,45 @@ class StageClearScreen extends Menu {
     renderer.drawRect(0, 0, renderer.viewportWidth, renderer.viewportHeight, 0, '#000000', null, 0);
 
     const titleKey = this.titleKey;
-    const clearLabel = this.localeManager ? this.localeManager.get(titleKey) : 'STAGE CLEAR';
+    const clearLabel = this.dataDriven['i18n.default.' + titleKey];
     renderer.drawText(clearLabel, renderer.viewportWidth / 2, 2.0, `${this.titleFontSize + 0.2}px ${this.fontFamily}`, this.titleColor, 'center');
 
     renderer.drawText(this.#stageName, renderer.viewportWidth / 2, 3.5, `0.5px ${this.fontFamily}`, this.titleColor, 'center');
 
     if (this.#collectibleCollected) {
-      const collectedPrefix = this.localeManager ? this.localeManager.get('menu.stage-clear.collected-prefix') : 'Collected: ';
+      const collectedPrefix = this.dataDriven['i18n.default.menu.stage-clear.collected-prefix'];
       renderer.drawText(`${collectedPrefix}${this.#collectibleCollected}`, renderer.viewportWidth / 2, 4.5, `0.4px ${this.fontFamily}`, this.titleColor, 'center');
     }
 
     if (this.#abilityGained) {
-      const abilityPrefix = this.localeManager ? this.localeManager.get('menu.stage-clear.ability-prefix') : 'Ability: ';
+      const abilityPrefix = this.dataDriven['i18n.default.menu.stage-clear.ability-prefix'];
       renderer.drawText(`${abilityPrefix}${this.#abilityGained}`, renderer.viewportWidth / 2, 5.5, `0.4px ${this.fontFamily}`, this.titleColor, 'center');
     }
 
     if (this.#score > 0) {
-      const scorePrefix = this.localeManager ? this.localeManager.get('menu.stage-clear.score-prefix') : 'Score: ';
+      const scorePrefix = this.dataDriven['i18n.default.menu.stage-clear.score-prefix'];
       renderer.drawText(`${scorePrefix}${this.#score}`, renderer.viewportWidth / 2, 6.5, `0.4px ${this.fontFamily}`, this.titleColor, 'center');
     }
 
-    const hint = this.localeManager ? this.localeManager.get('menu.stage-clear.continue-hint') : 'Press START to continue';
+    const hint = this.dataDriven['i18n.default.menu.stage-clear.continue-hint'];
     renderer.drawText(hint, renderer.viewportWidth / 2, 8.0, `0.4px ${this.fontFamily}`, this.titleColor, 'center');
   }
 }
 
 class InventoryUI extends UIElement {
   #inventory;
-  #localeManager;
+  #dataDriven;
   #selectedSlot;
   #cols;
   #rows;
   #fontFamily;
   #invUIConfig;
 
-  constructor(inventoryConfig, inventory, localeManager) {
+  constructor(inventoryConfig, inventory, dataDriven) {
     super(inventoryConfig);
     this.#invUIConfig = inventoryConfig;
     this.#inventory = inventory;
-    this.#localeManager = localeManager;
+    this.#dataDriven = dataDriven;
     this.#fontFamily = inventoryConfig.inventory['font-family'];
     this.#selectedSlot = 0;
     this.#cols = inventoryConfig.inventory.columns;
@@ -517,16 +517,14 @@ class InventoryUI extends UIElement {
     const startX = (renderer.viewportWidth - (slotSize * this.#cols + gap.x * (this.#cols - 1))) / 2 + gridOffset.x;
     const startY = (renderer.viewportHeight - (slotSize * this.#rows + gap.y * (this.#rows - 1))) / 2 + gridOffset.y;
 
-    const title = this.#localeManager ? this.#localeManager.get(titleCfg['label-key']) : 'INVENTORY';
+    const title = this.#dataDriven['i18n.default.' + titleCfg['label-key']];
     renderer.drawText(title, renderer.viewportWidth / 2, startY - 1,
       `${titleCfg['font-size']}px ${this.#fontFamily}`, titleCfg.color, 'center');
 
     const selectedBorderColor = slotCfg['selected-border-color'];
     const defaultBorderColor = slotCfg['border-color'];
     const slotFillColor = slotCfg['filled-fill-color'];
-    const emptySlotLabel = this.#localeManager
-      ? this.#localeManager.get(invCfg['empty-slot']['label-key'])
-      : '---';
+    const emptySlotLabel = this.#dataDriven['i18n.default.' + invCfg['empty-slot']['label-key']];
     const emptyTextColor = invCfg['empty-slot']['text-color'];
 
     for (let row = 0; row < this.#rows; row++) {
@@ -569,7 +567,6 @@ class InventoryUI extends UIElement {
     const footerOffset = footerCfg.offset;
     const footerGap = footerCfg.gap;
     const footerY = renderer.viewportHeight + footerOffset.y - (hints.length > 0 ? hints.length * 0.3 : 0);
-    const totalHintWidth = hints.length * (renderer.viewportWidth / Math.max(hints.length, 1));
     const hintColWidth = renderer.viewportWidth / Math.max(hints.length, 1);
 
     for (let i = 0; i < hints.length; i++) {
@@ -577,7 +574,7 @@ class InventoryUI extends UIElement {
       if (!hint) {
         continue;
       }
-      const hintLabel = this.#localeManager ? this.#localeManager.get(hint['label-key']) : '';
+      const hintLabel = this.#dataDriven['i18n.default.' + hint['label-key']];
       const hintColor = hint.color;
       const hintFontSize = hint['font-size'];
       renderer.drawText(hintLabel, hintColWidth * (i + 0.5), footerY,

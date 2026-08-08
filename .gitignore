@@ -15,6 +15,9 @@ logs
 *.log
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
+# generated data index (built by scripts/generate-data-index.js)
+data/index.json
+
 # environment
 .env
 .env.*

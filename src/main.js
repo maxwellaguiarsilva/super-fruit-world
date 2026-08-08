@@ -8,8 +8,7 @@ import {
   CollisionSolver,
   AudioEngine,
   NoteFrequencyCalculator,
-  DataLoader,
-  LocaleManager,
+  DataDriven,
   SaveSystem
 } from './engine/index.js';
 
@@ -43,6 +42,10 @@ import { TitleMenu, PauseMenu, SettingsMenu, GameOverScreen, StageClearScreen, I
 import { TitleScene, StageScene, MapScene } from './game/scenes/scenes.js';
 
 import { resolveColor, resolveConfig } from './game/utils/color-utils.js';
+
+function accessorForDataPath(path) {
+  return path.replace(/^data\//, '').replace(/\.json$/, '').replaceAll('/', '.');
+}
 
 function resolveTileType(obj, tileDataMap, colorsConfig, bordersConfig) {
   const type = obj.type ?? '';
@@ -113,10 +116,10 @@ function parseEnemyConfig(obj, enemyConfigData, colorsConfigData) {
   const shapeName = parts[0];
   const behavior = parts[1] ?? 'patrol';
 
-  const shapeMap = enemyConfigData?.['shape-map'] ?? {};
+  const shapeMap = enemyConfigData['shape-map'] ?? {};
   const shape = shapeMap[shapeName] ?? 3;
 
-  const colorOrder = colorsConfigData?.['color-order'] ?? [];
+  const colorOrder = colorsConfigData['color-order'] ?? [];
   const colorIndex = colorOrder.indexOf(obj.color);
   const finalColorIndex = colorIndex !== -1 ? colorIndex : 1;
 
@@ -203,35 +206,32 @@ function resolveInventoryUIConfig(invUIConfig, colorsConfig) {
 }
 
 async function bootstrap() {
-  const dataLoader = new DataLoader('/');
-  await dataLoader.loadAll(['data/manifest.json']);
-  const manifest = dataLoader.get('data/manifest.json');
-  const dataFiles = manifest?.files ?? [];
-  await dataLoader.loadAll(dataFiles);
+  const dataDriven = DataDriven.create('/', '/data/index.json');
+  await dataDriven.load();
 
-  const gameConfig = dataLoader.get('data/game-config.json');
-  const colorsConfig = dataLoader.get('data/colors.json');
-  const bordersConfig = dataLoader.get('data/borders.json');
-  const enemyConfigData = dataLoader.get('data/enemies/config.json');
-  const levelsConfig = dataLoader.get('data/player/levels.json');
-  const fruitsConfig = dataLoader.get('data/player/fruits.json');
-  const abilitiesConfig = dataLoader.get('data/player/abilities.json');
-  const audioConfig = dataLoader.get('data/audio.json');
-  const audioSfxConfig = dataLoader.get('data/audio/sfx.json');
-  const audioBgmIndex = dataLoader.get('data/audio/bgm.json');
+  const gameConfig = dataDriven['game-config'];
+  const colorsConfig = dataDriven['colors'];
+  const bordersConfig = dataDriven['borders'];
+  const enemyConfigData = dataDriven['enemies.config'];
+  const levelsConfig = DataDriven.toPlain(dataDriven['player.levels']);
+  const fruitsConfig = DataDriven.toPlain(dataDriven['player.fruits']);
+  const abilitiesConfig = dataDriven['player.abilities'];
+  const audioConfig = DataDriven.toPlain(dataDriven['audio.config']);
+  const audioSfxConfig = DataDriven.toPlain(dataDriven['audio.sfx']);
+  const audioBgmIndex = dataDriven['audio.bgm'];
   const audioBgmConfig = {};
-  for (const [trackName, filePath] of Object.entries(audioBgmIndex.tracks ?? {})) {
-    audioBgmConfig[trackName] = dataLoader.get(filePath);
+  for (const [trackName, filePath] of Object.entries(audioBgmIndex.tracks)) {
+    audioBgmConfig[trackName] = DataDriven.toPlain(dataDriven[accessorForDataPath(filePath)]);
   }
-  const audioTuningConfig = dataLoader.get('data/audio/config.json');
-  const inputBindings = dataLoader.get('data/input/bindings.json');
+  const audioTuningConfig = DataDriven.toPlain(dataDriven['audio.synthesis']);
+  const inputBindings = DataDriven.toPlain(dataDriven['input.bindings']);
 
   const tileTypes = gameConfig['tile-types'] ?? [];
   const tileDataMap = {};
   for (const tileType of tileTypes) {
-    const tileData = dataLoader.get(`data/tiles/${tileType}.json`);
+    const tileData = dataDriven['tiles.' + tileType];
     if (tileData) {
-      tileDataMap[tileType] = tileData;
+      tileDataMap[tileType] = DataDriven.toPlain(tileData);
     }
   }
 
@@ -241,9 +241,6 @@ async function bootstrap() {
   ['click', 'keydown'].forEach((evt) => {
     document.addEventListener(evt, () => { audioEngine.init(); }, { once: true });
   });
-
-  const localeManager = new LocaleManager('data/locales/', dataLoader, 'en-us');
-  await localeManager.loadLocale('en-us');
 
   const renderer = new Renderer('#game-canvas', { unitHeight: 10 });
   const camera = new Camera();
@@ -293,7 +290,7 @@ async function bootstrap() {
   };
 
   const abilities = [];
-  const abilitiesData = abilitiesConfig?.abilities ?? {};
+  const abilitiesData = abilitiesConfig.abilities ?? {};
   for (const [name, config] of Object.entries(abilitiesData)) {
     const type = config.type ?? name;
     const fullConfig = { name, ...config };
@@ -313,17 +310,17 @@ async function bootstrap() {
   player.progressionSystem = progressionSystem;
   player.noteCollection = noteCollection;
 
-  const menuConfig = dataLoader.get('data/ui/menus.json');
-  const hudConfig = resolveHudConfig(dataLoader.get('data/ui/hud.json'), colorsConfig);
-  const inventoryUIConfig = resolveInventoryUIConfig(dataLoader.get('data/ui/inventory.json'), colorsConfig);
+  const menuConfig = DataDriven.toPlain(dataDriven['ui.menus']);
+  const hudConfig = resolveHudConfig(dataDriven['ui.hud'], colorsConfig);
+  const inventoryUIConfig = resolveInventoryUIConfig(dataDriven['ui.inventory'], colorsConfig);
 
-  const titleMenu = new TitleMenu(buildMenuSubConfig(menuConfig, 'title-screen', colorsConfig), localeManager);
-  const pauseMenu = new PauseMenu(buildMenuSubConfig(menuConfig, 'pause-menu', colorsConfig), localeManager, null);
-  const settingsMenu = new SettingsMenu(buildMenuSubConfig(menuConfig, 'settings', colorsConfig), localeManager, audioEngine);
-  const gameOverScreen = new GameOverScreen(buildMenuSubConfig(menuConfig, 'game-over', colorsConfig), localeManager, healthSystem.continues, healthSystem.lives);
-  const stageClearScreen = new StageClearScreen(buildMenuSubConfig(menuConfig, 'stage-clear', colorsConfig), localeManager, '', '', '', 0);
-  const inventoryUI = new InventoryUI(inventoryUIConfig, inventory, localeManager);
-  const hud = new HUD(hudConfig, player, noteCollection, localeManager);
+  const titleMenu = new TitleMenu(buildMenuSubConfig(menuConfig, 'title-screen', colorsConfig), dataDriven);
+  const pauseMenu = new PauseMenu(buildMenuSubConfig(menuConfig, 'pause-menu', colorsConfig), dataDriven, null);
+  const settingsMenu = new SettingsMenu(buildMenuSubConfig(menuConfig, 'settings', colorsConfig), dataDriven, audioEngine);
+  const gameOverScreen = new GameOverScreen(buildMenuSubConfig(menuConfig, 'game-over', colorsConfig), dataDriven, healthSystem.continues, healthSystem.lives);
+  const stageClearScreen = new StageClearScreen(buildMenuSubConfig(menuConfig, 'stage-clear', colorsConfig), dataDriven, '', '', '', 0);
+  const inventoryUI = new InventoryUI(inventoryUIConfig, inventory, dataDriven);
+  const hud = new HUD(hudConfig, player, noteCollection, dataDriven);
 
   const sceneManager = new SceneManager();
   const gameLoop = new GameLoop(60, sceneManager, inputManager, renderer);
@@ -343,7 +340,7 @@ async function bootstrap() {
   projectileConfig['player-color'] = projectileConfig['player-color'] ?? resolveColor('green', colorsConfig) ?? '#40BF40';
 
   function createStageFromData(stageDataId) {
-    const stageConfig = dataLoader.get(stageDataId);
+    const stageConfig = DataDriven.toPlain(dataDriven[accessorForDataPath(stageDataId)]);
     const nc = new NoteCollectionTracker(noteRangeConfig);
     player.noteCollection = nc;
 
@@ -356,7 +353,7 @@ async function bootstrap() {
         let x = worldPos.x + (obj.position?.x ?? 0);
         let y = worldPos.y + (obj.position?.y ?? 0);
 
-        const shapeMap = dataLoader.get('data/enemies/config.json')?.['shape-map'] ?? {};
+        const shapeMap = enemyConfigData['shape-map'] ?? {};
         const isEnemy = obj.type && Object.keys(shapeMap).some(shape => obj.type.startsWith(shape + '-'));
         const tileTypesSet = new Set(gameConfig['tile-types'] ?? []);
         const isTile = tileTypesSet.has(obj.type);
@@ -396,7 +393,7 @@ async function bootstrap() {
             stage.addTeleporter(marker);
           }
         } else {
-          const baseConfig = dataLoader.get(`data/collectibles/${obj.type ?? ''}.json`) ?? {};
+          const baseConfig = DataDriven.toPlain(dataDriven['collectibles.' + (obj.type ?? '')]);
           const colConfig = {
             ...baseConfig,
             ...obj,
@@ -432,10 +429,10 @@ async function bootstrap() {
     }
     stage.reconfigureBounds(minX, minY, maxX - minX, maxY - minY);
 
-    const clearScreen = new StageClearScreen(buildMenuSubConfig(menuConfig, 'stage-clear', colorsConfig), localeManager, stageConfig.name ?? '', '', '', 0);
-    const gos = new GameOverScreen(buildMenuSubConfig(menuConfig, 'game-over', colorsConfig), localeManager, healthSystem.continues, healthSystem.lives);
-    const pm = new PauseMenu(buildMenuSubConfig(menuConfig, 'pause-menu', colorsConfig), localeManager, stage);
-    const invUI = new InventoryUI(inventoryUIConfig, inventory, localeManager);
+    const clearScreen = new StageClearScreen(buildMenuSubConfig(menuConfig, 'stage-clear', colorsConfig), dataDriven, stageConfig.name ?? '', '', '', 0);
+    const gos = new GameOverScreen(buildMenuSubConfig(menuConfig, 'game-over', colorsConfig), dataDriven, healthSystem.continues, healthSystem.lives);
+    const pm = new PauseMenu(buildMenuSubConfig(menuConfig, 'pause-menu', colorsConfig), dataDriven, stage);
+    const invUI = new InventoryUI(inventoryUIConfig, inventory, dataDriven);
 
     const scene = new StageScene(stage, hud, pm, gos, clearScreen, invUI, audioEngine);
     scene.camera = camera;

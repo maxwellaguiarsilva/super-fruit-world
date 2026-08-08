@@ -9,7 +9,7 @@ export { CollisionSolver } from './physics/collision-solver.js';
 export { AudioEngine } from './audio/audio-engine.js';
 export { NoteFrequencyCalculator, NoteFrequencyError } from './audio/note-frequency-calculator.js';
 export { DataLoader } from './data/data-loader.js';
-export { LocaleManager } from './data/locale-manager.js';
+export { DataDriven } from './data/data-driven.js';
 export { SaveSystem } from './data/save-system.js';
 export { Entity } from './entities/entity.js';
 export { StageBase } from './entities/stage-base.js';
