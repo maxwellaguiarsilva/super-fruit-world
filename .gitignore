@@ -28,6 +28,9 @@ data/index.json
 *.swp
 *.swo
 
+# `opencode`
+prompt.md
+
 # OS
 .DS_Store
 Thumbs.db
