@@ -433,7 +433,7 @@ Teleporter-marker and teleporter data is stored in JSON:
 
 - Audio consumption is **name-based** — game objects request audio by name, making consumption agnostic to source type (synthesized or file-based).
 - The engine resolves named audio resources from the `data/audio/` directory at runtime.
-- Synthesized audio: SFX and BGM definitions in `data/audio/sfx.json` and `data/audio/bgm.json`, built on technical config from `data/audio/config.json` (wave types, tuning parameters, temperament).
+- Synthesized audio: SFX and BGM definitions in `data/audio/sfx.json` and `data/audio/bgm.json`, built on technical config from `data/audio/synthesis.json` (wave types, tuning parameters, temperament).
 - File-based audio: pre-recorded `.ogg` files placed in `data/audio/`, referenced by name.
 - Top-level settings (volumes, enabled flags, crossfade) in `data/audio.json`.
 - BGM (background music): per screen (title, world map, stage, stage clear). Loop-capable, with crossfade support.

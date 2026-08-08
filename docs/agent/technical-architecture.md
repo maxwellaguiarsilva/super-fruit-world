@@ -19,7 +19,8 @@ super-fruit-world/
 ├── data/                        # All game data as JSON
 │   ├── colors.json              # Single source of truth for all color hex values (3-bit RGB palette)
 │   ├── borders.json             # Single source of truth for all border styles (thin, medium, thick)
-│   ├── game-config.json         # Global game settings (visual unit scale, audio defaults, locale)
+│   ├── game-config.json         # Global game settings (visual unit scale, audio defaults, damage)
+│   ├── index.json               # Generated file list (bun run generate:data-index) — never hand-maintained
 │   ├── stages/                  # Stage definitions
 │   │   ├── stage-01.json
 │   │   └── ...
@@ -28,17 +29,18 @@ super-fruit-world/
 │   ├── player/                  # Player progression & abilities
 │   │   ├── levels.json          # Color level → abilities mapping (references colors by name)
 │   │   └── fruits.json          # Fruit → level mapping (references colors by name)
-│   ├── audio.json               # Top-level audio settings (volumes, enabled flags, crossfade)
 │   ├── audio/                   # Audio resource directory
-│   │   ├── config.json          # Technical synthesis config (wave types, tuning, temperament)
+│   │   ├── config.json          # Top-level audio settings (volumes, enabled flags, crossfade)
+│   │   ├── synthesis.json       # Technical synthesis config (wave types, tuning, temperament)
 │   │   ├── sfx.json             # SFX definitions (synthesized via Web Audio API)
-│   │   ├── bgm.json             # BGM track definitions
+│   │   ├── bgm.json             # BGM track registry (maps names to track files)
 │   │   └── *.ogg                # Pre-recorded OGG audio files (optional, named)
 │   ├── images/                   # Image assets (if any)
 │   ├── tiles/                   # Tile definitions (platform, wall, slope, water, spike, etc.)
 │   ├── map/                     # World map data (stages with named exits)
-│   ├── locales/                 # User-facing text strings
-│   │   └── en-us.json           # English (US) locale — keys are identifiers, values are displayed text
+│   ├── i18n/                    # User-facing text strings
+│   │   ├── en-us.json           # English (US) locale — keys are identifiers, values are displayed text
+│   │   └── default.json         # Symlink → active locale file (e.g. en-us.json). Locale is set here, never at runtime.
 │   ├── ui/                      # UI definitions (menus, HUD)
 │   └── input/                   # Key and button bindings
 ├── src/
@@ -48,7 +50,7 @@ super-fruit-world/
 │   │   ├── input/               # Keyboard + joystick input handling
 │   │   ├── physics/             # Movement, collision detection (AABB), slope trigonometry
 │   │   ├── audio/               # Audio engine (file playback + Web Audio API synthesis)
-│   │   ├── data/                # JSON data loaders (fetch-based, eager at boot)
+│   │   ├── data/                # JSON data loading (DataDriven — dynamic, generated index, strict accessors)
 │   │   └── dialog/              # Cutscene/dialogue system (text boxes, sequences)
 │   ├── game/                    # Generic platformer engine (no fruit/color/name awareness)
 │   │   ├── entities/            # Player, enemies, collectibles
@@ -121,8 +123,8 @@ No game value is hardcoded. Every attribute comes from JSON:
 - Stage layouts → `data/stages/*.json`
 - Tile definitions → `data/tiles/*.json`
 - UI layout → `data/ui/*.json`
-- Audio config → `data/audio.json` + `data/audio/config.json` + `data/audio/sfx.json` + `data/audio/bgm.json` (audio resources referenced by name)
-- Text strings → `data/locales/*.json`
+- Audio config → `data/audio/config.json` + `data/audio/synthesis.json` + `data/audio/sfx.json` + `data/audio/bgm.json` + `data/audio/bgm/*.json` (audio resources referenced by name)
+- Text strings → `data/i18n/*.json` (active locale selected via `data/i18n/default.json` symlink)
 
 ### 2.1 Visual Unit System
 The game operates on **visual units** (floats), not pixels. Game objects never know about pixels.
@@ -139,7 +141,7 @@ Every reusable concept in the game has exactly one JSON file as its source of tr
 
 - **Colors:** Only `colors.json` contains hex values. Every other JSON file references colors by name (`"red"`, `"dark-red"`). A bare name (e.g. `"red"`) means fill = light variant, border = dark variant. The `"dark-"` prefix inverts this.
 - **Borders:** Only `borders.json` defines border widths in visual units. Game objects reference borders by name (`"thin"`, `"medium"`, `"thick"`).
-- **Text strings:** Only `locales/en-us.json` contains user-facing strings. Game code retrieves all text by key. `en-us.json` is the fallback for missing keys in other locales.
+- **Text strings:** Only `data/i18n/` contains user-facing strings. Game code retrieves all text by key through the `DataDriven` accessor (`dataDriven["i18n.default.<key>"]`). The active locale is selected by the `data/i18n/default.json` symlink — no runtime switching.
 - This pattern applies to **every** shared concept (sizes, durations, speeds, fonts, sounds, etc.).
 - JSON keys use **kebab-case** exclusively.
 
@@ -239,10 +241,11 @@ Audio consumption is **name-based** — game objects request audio resources by 
 
 | File | Purpose |
 |------|---------|
-| `data/audio.json` | Top-level engine audio settings: master/BGM/SFX volume, enabled flags, crossfade duration. |
-| `data/audio/config.json` | Technical synthesis configuration: wave types (sine, square, sawtooth, triangle), tuning parameters (reference-note A4=440Hz, note-range C1-C6) for equal-temperament frequency calculation via formula `440 × 2^(semitoneOffset / 12)`, polyphony limit, default envelope parameters. Used as the foundation by SFX and BGM definition files. |
-| `data/audio/sfx.json` | SFX definitions — each named sound references a wave type and frequency. Synthesized via Web Audio API using parameters from `config.json`. |
-| `data/audio/bgm.json` | BGM track definitions — named tracks with note sequences (`[note_name, duration_in_beats]`), tempo (BPM), and wave type. Synthesized via Web Audio API using parameters from `config.json`. |
+| `data/audio/config.json` | Top-level engine audio settings: master/BGM/SFX volume, enabled flags, crossfade duration. |
+| `data/audio/synthesis.json` | Technical synthesis configuration: wave types (sine, square, sawtooth, triangle), tuning parameters (reference-note A4=440Hz, note-range C1-C6) for equal-temperament frequency calculation via formula `440 × 2^(semitoneOffset / 12)`, polyphony limit, default envelope parameters. Used as the foundation by SFX and BGM definition files. |
+| `data/audio/sfx.json` | SFX definitions — each named sound references a wave type and frequency. Synthesized via Web Audio API using parameters from `synthesis.json`. |
+| `data/audio/bgm.json` | BGM track registry — maps track names to individual track files under `data/audio/bgm/`. |
+| `data/audio/bgm/*.json` | Individual BGM track definitions — named tracks with note sequences (`[note_name, duration_in_beats]`), tempo (BPM), and wave type. Synthesized via Web Audio API using parameters from `synthesis.json`. |
 | `data/audio/*.ogg` | Pre-recorded OGG audio files, referenced by name. Engine falls back to file playback when a named resource matches an `.ogg` file. |
 
 ### Features
@@ -261,11 +264,15 @@ Audio consumption is **name-based** — game objects request audio resources by 
 
 ## Data Loading
 
-- JSON files loaded via `fetch()`.
+- JSON data is discovered and loaded by the `DataDriven` class (`src/engine/data/data-driven.js`), which replaces the hand-maintained `data/manifest.json` + `DataLoader` + `LocaleManager`.
+- **Dynamic discovery:** a Bun script (`scripts/generate-data-index.js`) walks `data/`, validates kebab-case paths (R5.3), and emits `data/index.json`. In dev, `server.js` also serves `/data/index.json` computed on the fly. `DataDriven` fetches this index and loads every listed file — there is no hand-maintained manifest.
+- **Access:** `DataDriven.create(basePath, indexSource)` returns a Proxy-wrapped instance; consumers read data via dotted accessor paths, e.g. `dataDriven["audio.bgm.title-screen.bpm"]` (longest file-prefix wins).
+- **Zero silent fallback (R2.5):** any missing file throws `Data not found: <path>`; any missing key throws `Key not found: <key> in <file>`. Returned values are wrapped in recursive strict proxies, so missing keys anywhere in the subtree throw.
 - **Eager loading:** all data loaded at boot time.
-- Configurable base path for assets (default: `data/`).
+- Configurable base path for assets (default: `/`).
 - Malformed JSON causes engine error and abort.
-- **JSON Key Validation:** every JSON key under `data/` is validated at load time against the pattern `^[a-z0-9-]+$` (lower-kebab-case only). Any key that does not match causes a validation error and the application will not start/continue. This prevents non-conforming data from ever reaching the engine.
+- **JSON Key Validation (R5.2):** every JSON key under `data/` is validated at load time against `^[a-z0-9-]+$`. Any violation aborts boot.
+- **File/Folder Name Validation (R5.3):** every `.json` basename and directory under `data/` must match `^[a-z0-9-]+$`. Enforced by the index generator and re-checked by `DataDriven` at load time.
 - No runtime cache invalidation.
 
 ## Save System
@@ -277,14 +284,16 @@ Audio consumption is **name-based** — game objects request audio resources by 
 
 ## Internationalization (i18n)
 
-- Locale files stored in `data/locales/`.
-- Default/fallback locale: `en-us`. Missing keys in other locales fall back to `en-us`.
-- Selected via `game-config.json` default; game can override at runtime.
-- Placeholder support for variable interpolation using `{n}` syntax (e.g., `"You have {n} coins"`). No pluralization required.
+- Locale files stored in `data/i18n/`.
+- The active locale is selected via the **filesystem symlink** `data/i18n/default.json` → the real locale file (e.g. `en-us.json`). Changing locale = changing the symlink target (build/deploy-time), never runtime switching.
+- Access via `dataDriven["i18n.default.<key-path>"]` (e.g. `dataDriven["i18n.default.menu.main.title"]`). The real file also resolves under its own name (`i18n.en-us.*`).
+- **No fallback:** a missing key throws `Key not found` (R2.5 / R2.6). The old `LocaleManager` (with its fallback-to-key behavior) is removed.
+- Placeholder interpolation is not currently used; the old `{n}` interpolation from `LocaleManager` was dropped with it.
 
 ## Build & Development
 
-- `bun run dev` — Development server using `Bun.serve()` (static file server, no HMR).
+- `bun run generate:data-index` — Regenerates `data/index.json` from the filesystem (run automatically by `dev`/`start`/`build`).
+- `bun run dev` — Development server using `Bun.serve()` (static file server, no HMR). `/data/index.json` is served dynamically from the filesystem.
 - `bun run build` — Production build using `Bun.build()`, output to `dist/`.
 - `bun test` — Run test suite.
 - JavaScript (ES modules), no TypeScript compilation needed.

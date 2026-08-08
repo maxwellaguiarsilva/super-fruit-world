@@ -1,5 +1,38 @@
 # Status
 
+**Date:** 2026-08-08
+**Phase:** DataDriven Dynamic Resource Manager — Implemented
+
+## Session 2026-08-08 — DataDriven Resource Manager
+
+Replaced the hand-maintained `data/manifest.json` + `DataLoader` + `LocaleManager` with a dynamic, strict resource manager per [`data-driven-resource-manager.md`](data-driven-resource-manager.md).
+
+### Completed Work
+
+1. **`DataDriven` class (`src/engine/data/data-driven.js`):** Discovers and loads every JSON file under `data/` via a generated index. Proxy-based dotted access (`dataDriven["folder.file.key"]`), longest-file-prefix resolution, zero silent fallback (R2.5): missing file → `Data not found: <path>`, missing key → `Key not found: <key> in data/<file>.json`. Returned values are wrapped in recursive strict proxies (deep strictness, §3.2.6).
+2. **Generated index:** `scripts/generate-data-index.js` walks `data/`, validates kebab-case paths (new R5.3), and emits `data/index.json` (gitignored). `server.js` serves `/data/index.json` dynamically in dev. `dev`/`start`/`build` run the generator first.
+3. **i18n via symlink (R2.6):** `data/locales/` → `data/i18n/` (`git mv`), with `data/i18n/default.json` → `en-us.json` symlink. Consumers migrated from `localeManager.get('menu.main.title')` to `dataDriven["i18n.default.menu.main.title"]`.
+4. **Removed:** `data/manifest.json`, `src/engine/data/locale-manager.js`, `LocaleManager` export, and the `locale` section of `data/game-config.json`.
+5. **Audio restructure (§7):** `data/audio.json` → `data/audio/config.json` (top-level settings); `data/audio/config.json` → `data/audio/synthesis.json` (tuning/note-scale). Consumers use `dataDriven["audio.config"]` / `dataDriven["audio.synthesis"]`.
+6. **`src/main.js` rewrite:** bootstrap uses `DataDriven.create('/', '/data/index.json')`; all `dataLoader.get('data/...')` → dotted accessors; `game-config.json` gains a `damage` section (was previously read with a JS fallback).
+7. **Consumers migrated:** `src/game/ui/ui-components.js`, `src/game/scenes/scenes.js`, `src/engine/dialog/dialogue-engine.js` now read i18n via injected `dataDriven`. Fixed latent `settings.title` → `menu.settings.title` key typo.
+8. **`color-utils.js`:** `resolveColor` made strict-safe (explicit existence checks) so non-color names (e.g. a fruit name used as a fill) resolve to `null` instead of throwing.
+9. **Docs:** `compliance-rules.md` (R2.3, R2.4, R2.5, new R2.6, new R5.3, audit procedure), `technical-architecture.md`, `requirements.md`, `class-architecture.md`, `status.md`, `technical-debt.md` (new register), and the proposal itself (status → implemented, decisions recorded).
+
+### Verification
+
+- `bun run generate:data-index` produces a 53-file index including both `i18n/en-us.json` and symlinked `i18n/default.json`.
+- Dev server boots; title screen renders; Enter starts the stage (tiles, enemies, collectibles, teleporters, checkpoints all created); HUD and menu strings resolve via strict i18n accessors; gameplay runs with no console/page errors.
+- Accessor behavior verified in-browser: correct values for `i18n.default.*`, `audio.config`, `audio.synthesis`, `audio.bgm.title-screen`; descriptive throws for missing file (`Data not found`) and missing key (`Key not found`, including deep-proxy nested access).
+
+### Notes / Debt
+
+Technical debt and compliance violations observed during this work (pre-existing R2.5 fallbacks, hardcoded colors, `window.__sceneManager`, SFX shape mismatch, non-self-contained build, unwired world-map feature, etc.) are registered in [`technical-debt.md`](technical-debt.md) for future cleanup.
+
+---
+
+## Previous Sessions
+
 **Date:** 2026-07-27
 **Phase:** Data-Driven Hardcoding Violations — All Resolved
 

@@ -15,7 +15,7 @@ This is a **generic utility** — it has no awareness of Super Fruit World, musi
 ## Architecture
 
 ```
-tuning config object (from data/audio/config.json)
+tuning config object (from data/audio/synthesis.json)
         │
         ▼
 ┌───────────────────────────┐
@@ -36,13 +36,13 @@ tuning config object (from data/audio/config.json)
    Audio Engine (Web Audio API oscillators)
 ```
 
-The class is instantiated once at engine boot time by the audio system composer, which reads `data/audio/config.json` and passes the `tuning` sub-object into the constructor.
+The class is instantiated once at engine boot time by the audio system composer, which reads `data/audio/synthesis.json` and passes the `tuning` sub-object into the constructor.
 
 ---
 
 ## Input Configuration
 
-The `config` parameter passed to the constructor is the `tuning` object from `data/audio/config.json`:
+The `config` parameter passed to the constructor is the `tuning` object from `data/audio/synthesis.json`:
 
 ```json
 {

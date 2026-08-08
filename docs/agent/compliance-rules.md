@@ -151,15 +151,16 @@ Mandatory data files:
 - `data/enemies/*.json` — Enemy type definitions
 - `data/collectibles/*.json` — Collectible definitions
 - `data/tiles/*.json` — Tile definitions
-- `data/locales/en-us.json` — All user-facing text strings (keys are identifiers, values are displayed text). Fallback locale for missing keys in other languages.
+- `data/i18n/default.json` — All user-facing text strings (keys are identifiers, values are displayed text). A symlink to the active locale file (e.g. `en-us.json`, the real single-source-of-truth file). Locale is selected via this symlink, never by config or runtime switching.
 - `data/ui/*.json` — UI configuration
-- `data/audio.json` — Top-level audio settings (volumes, enabled flags, crossfade)
-- `data/audio/config.json` — Technical synthesis configuration (wave types, tuning, temperament)
+- `data/audio/config.json` — Top-level audio settings (volumes, enabled flags, crossfade)
+- `data/audio/synthesis.json` — Technical synthesis configuration (wave types, tuning, temperament)
 - `data/audio/sfx.json` — SFX definitions (synthesized via Web Audio API)
 - `data/audio/bgm.json` — BGM track registry (maps track names to individual track files)
 - `data/audio/bgm/*.json` — Individual BGM track definitions (one file per track, each with its own phrases, channels, and notes)
 - `data/map/*.json` — World map data
 - `data/input/*.json` — Key and button bindings
+- `data/index.json` — **Generated** (never hand-maintained) list of all JSON files under `data/`. Emitted by `scripts/generate-data-index.js`; consumed by `DataDriven` for dynamic discovery. Do not edit by hand.
 
 **Audit check:** For every game attribute (speed, HP, color, position, text, sound), trace it back to a JSON file. If it originates in JavaScript code, it is a violation.
 
@@ -174,7 +175,7 @@ This applies to every shared concept (visual and non-visual):
 
 - **Colors:** Only `data/colors.json` contains hex values. Every other JSON file (stages, enemies, player, UI, etc.) references colors by name such as `"red"` or `"dark-red"`. A bare name (e.g. `"red"`) means fill = light variant, border = dark variant (default). The `"dark-"` prefix inverts this: `"dark-red"` means fill = dark variant, border = light variant.
 - **Borders:** Only `data/borders.json` defines border widths in visual units. Objects reference borders by name (`"thin"`, `"medium"`, `"thick"`). The raw numeric width values must never appear outside `borders.json`.
-- **Text strings:** Only `data/locales/en-us.json` contains user-facing text. Every string shown to the player must be retrieved from this file by key. No hardcoded strings in JavaScript rendering code. This is the only directory where non-English text is permitted (in values only, never in keys).
+- **Text strings:** Only `data/i18n/` contains user-facing text. Every string shown to the player must be retrieved from a locale file by key. No hardcoded strings in JavaScript rendering code. This is the only directory where non-English text is permitted (in values only, never in keys).
 - **Any other shared concept** (sizes, speeds, durations, fonts, audio identifiers, tile types, enemy types, etc.) follows this same pattern.
 
 **Redundancy is forbidden.** Two JSON files must not independently define the same value. If "red" means `#FF0000`, that mapping exists only in `colors.json`. If `levels.json` needs to reference the color red, it uses the name `"red"`, not the hex value.
@@ -198,14 +199,28 @@ This applies to every shared concept (visual and non-visual):
 - If the key is not found, the manager must throw a descriptive error containing the missing key name and the source JSON file path.
 - No implicit fallback chain (e.g., "try player/fruits.json, then player/default-fruits.json") is permitted.
 - No silent coercion of missing values to `null`, `undefined`, `0`, `""`, or any other falsy sentinel.
-- The only exception is locale data: `data/locales/en-us.json` is explicitly defined as the fallback locale for missing keys in other languages (per R2.3) — this is a **designed fallback**, not a silent default.
+- There is **no** fallback anywhere — not for locales, not for any data file. The `DataDriven` accessor throws a descriptive error for any missing path or key.
 
 **Purpose:** This rule ensures that missing data is always detected during development/testing rather than causing subtle, hard-to-debug misbehavior at runtime.
 
 **Audit check:**
-1. Search the codebase for patterns like `??`, `||`, `||=`, `??=`, `.find(...) ?? defaultValue`, or ternary fallbacks used when reading from data files. Any such pattern in data-access code is a violation unless it is the locale fallback mechanism.
+1. Search the codebase for patterns like `??`, `||`, `||=`, `??=`, `.find(...) ?? defaultValue`, or ternary fallbacks used when reading from data files. Any such pattern in data-access code is a violation.
 2. Verify that the data manager class has an explicit `throw` for missing keys.
 3. Verify that all callers do not implement their own fallback after receiving data from the manager.
+
+---
+
+### R2.6 — Locale Selected via Symlink
+> `#locale-symlink`
+
+**The active locale is selected via the filesystem symlink `data/i18n/default.json`, never by application configuration or runtime switching.**
+
+- `data/i18n/default.json` is a symlink pointing to the real locale file (e.g. `en-us.json`).
+- The real locale file remains the single source of truth (R2.4); `meta.locale` inside it reports the real locale name for display.
+- Changing the active locale means changing the symlink target — a build/deploy-time decision, not a runtime one.
+- Consumers access strings via `dataDriven["i18n.default.<key-path>"]`. The `i18n.en-us.*` accessor also resolves (the symlinked file is real data).
+
+**Audit check:** There is no `locale` setting in `data/game-config.json` and no runtime locale-switching code in `src/`. The only way to change locale is the symlink.
 
 ---
 
@@ -299,6 +314,21 @@ Each slope object has a boolean `"inverted"` field. When `true`, the slope tilts
 
 ---
 
+### R5.3 — JSON File and Folder Names Lower-Kebab-Case
+> `#kebab-case-files`
+
+**All `.json` file basenames and all directory names under `data/` must match `^[a-z0-9-]+$` (lower-kebab-case).**
+
+- The `.json` extension is not part of the name; only the basename is validated.
+- Non-JSON files (e.g. `.ogg`, `.png`) are **not** data and are skipped silently.
+- A `.json` file (or a directory) whose name violates the pattern is a **boot-time error** — the application will not start. This catches typos early.
+
+**Runtime enforcement:** The index generator (`scripts/data-index.js`) validates every path it discovers, and `DataDriven` re-validates the index at load time. Either one failing is a blocking error.
+
+**Audit check:** Run `find data -type f -name '*.json'` and `find data -type d`; every basename/directory must match `^[a-z0-9-]+$`.
+
+---
+
 ## R6 — Repository Hygiene
 
 ### R6.1 — No Secrets or Sensitive Data in Repository
@@ -336,4 +366,6 @@ Each slope object has a boolean `"inverted"` field. When `true`, the slope tilts
 8. Verify **R5.1**: Inspect stage JSON for named slope convention (no numeric indices or raw angles).
 9. Verify **R2.4**: Search all JSON files for hex colors outside `colors.json`, border widths outside `borders.json`, and numeric color indices used as references.
 10. Verify **R5.2**: Scan all JSON keys under `data/` for uppercase letters or underscores — all keys must be lower-kebab-case.
-11. Verify **identity rules** in [`identity-rules.md`](identity-rules.md): background color (I1), color palette (I2).
+11. Verify **R5.3**: All `.json` file basenames and directory names under `data/` must be lower-kebab-case (`^[a-z0-9-]+$`).
+12. Verify **R2.6**: `data/i18n/default.json` is a symlink to the active locale file; there is no runtime locale switching.
+13. Verify **identity rules** in [`identity-rules.md`](identity-rules.md): background color (I1), color palette (I2).

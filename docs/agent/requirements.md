@@ -37,7 +37,7 @@
   - [ ] `fetch()`-based, eager at boot
   - [ ] Configurable base path
   - [ ] Validate and abort on malformed JSON
-- [ ] i18n system: locale loading, key lookup, `en-us` fallback, placeholder interpolation
+- [ ] i18n system: locale loading via `data/i18n/default.json` symlink, key lookup, placeholder interpolation (no fallback locale)
 - [ ] Entity base class (position, size, velocity, render interface)
 - [ ] Stage base class (tile grid, entity management, scroll bounds)
 - [ ] UI base components (classes for HUD elements, menus)
@@ -145,7 +145,7 @@
 
 ## Data (`data/`)
 
-- [x] `game-config.json` — Global settings (visual unit scale, audio defaults, locale, paths)
+- [x] `game-config.json` — Global settings (visual unit scale, audio defaults, damage, paths)
 - [x] `colors.json` — Color palette hex values (8 colors, dark + light variants)
 - [x] `borders.json` — Border styles (thin, medium, thick) in visual units
 - [x] `player/levels.json` — Color to abilities mapping (nominal, kebab-case, incremental per level)
@@ -155,13 +155,14 @@
 - [x] `stages/*.json` — Stage layout (tiles, entities, spawns, checkpoints, slope data). Prototype: strawberry-fields.json with 13 sections using the section system.
 - [x] `tiles/*.json` — Tile definitions (collision, damage, physics modifiers) — 8 files: platform, wall, slope, decorative, spike (spike/danger/lava variants), water, ladder, pit
 - [x] `ui/*.json` — UI layout and styling (HUD, menus, inventory backpack)
-- [x] `audio.json` — Top-level audio settings (volumes, enabled flags, crossfade)
-- [x] `audio/config.json` — Technical synthesis configuration (wave types, tuning, temperament, polyphony)
+- [x] `audio/config.json` — Top-level audio settings (volumes, enabled flags, crossfade)
+- [x] `audio/synthesis.json` — Technical synthesis configuration (wave types, tuning, temperament, polyphony)
 - [x] `audio/sfx.json` — SFX definitions (named sounds, wave types, frequencies, envelopes)
-- [x] `audio/bgm.json` — BGM track definitions (named tracks, note sequences, tempo, wave type)
+- [x] `audio/bgm.json` — BGM track registry (named tracks → track files)
 - [x] `map/*.json` — World map structure (worlds, areas, stages, exits, map-teleporters — see `game-design.md#teleporter-system`). Prototype: fruit-world.json with 4 continents, 8 stage nodes, branching.
 - [x] `input/*.json` — Key and gamepad bindings
-- [x] `locales/en-us.json` — English (US) text strings (fallback locale)
+- [x] `i18n/default.json` — Symlink to the active locale file (e.g. `en-us.json`). English (US) text strings.
+- [x] `index.json` — Generated (never hand-maintained) list of all `data/` JSON files, consumed by `DataDriven` for dynamic discovery
 - [ ] All JSON keys in kebab-case
 
 ## Visual Requirements

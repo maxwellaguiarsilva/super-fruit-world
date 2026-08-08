@@ -220,34 +220,25 @@ generateDictionary(): Map<string, number>
 
 ### Data
 
-#### `DataLoader`
+#### `DataDriven`
 
-Loads all JSON data files eagerly at boot. Validates keys against `^[a-z0-9-]+$` (R5.2 enforcement). Provides typed access to loaded data. Configurable base path for the `data/` directory.
-
-```
-constructor(basePath: string)
-loadAll(fileList: string[]): Promise<void>         // eager load, aborts on any error
-loadFile(path: string): Promise<object>             // load a single JSON file
-get(path: string): object                           // retrieve loaded data by path (e.g., "colors.json")
-getAll(): Map<string, object>                       // all loaded data
-validateKeys(obj: object, path: string): void       // R5.2 enforcement — throws on violation
-```
-
----
-
-#### `LocaleManager`
-
-Internationalization — retrieves user-facing strings by key. Falls back to `en-us` for missing keys in other locales. Supports `{n}` placeholder interpolation.
+Dynamic resource manager. Replaces `DataLoader` + `LocaleManager` + the hand-maintained `data/manifest.json`. Discovers and loads every JSON file under `data/` via a generated index (`data/index.json`), validates keys (R5.2) and paths (R5.3), and serves all data through Proxy-based dotted-path access with zero silent fallback (R2.5).
 
 ```
-constructor(localeDir: string, dataLoader: DataLoader, defaultLocale: string)
-get(key: string, placeholders?: object): string     // e.g., get("hud.score", {n: 1250})
-get currentLocale(): string
-set currentLocale(locale: string): Promise<void>     // lazy-loads locale file if needed
-get availableLocales(): string[]
+constructor(basePath: string, indexSource: string)
+static create(basePath: string, indexSource: string): Proxy        // Proxy-wrapped instance; get trap resolves dotted paths
+static toPlain(value: object): object                              // deep-copies a proxied value into a plain object
+load(): Promise<void>                                               // fetch index, load each file, validate, build lookup
+resolveAccessor(path: string): object                               // dotted-path resolution (longest file prefix wins)
+validateKeys(obj: object, path: string): void                       // R5.2 enforcement — throws on violation
+get all(): Map<string, object>                                      // all loaded data keyed by data/ path
 ```
 
-**Composition:** uses `DataLoader` to fetch locale JSON files.
+Access pattern: `dataDriven["folder.file.key1.key2"]`. Missing file → `Data not found: <path>`; missing key → `Key not found: <key> in data/<file>.json`. Every returned value is wrapped in a recursive strict proxy, so missing keys anywhere in the subtree throw.
+
+**i18n:** locale is selected via the `data/i18n/default.json` symlink (R2.6). Strings are read with `dataDriven["i18n.default.<key>"]`. The old `LocaleManager` (fallback-to-key) is removed.
+
+**Composition:** instantiated once at the composition root (`main.js`) and injected into every consumer (R1.3).
 
 ---
 
@@ -382,7 +373,7 @@ handleInput(inputManager: InputManager): void                     // abstract
 Manages cutscene text boxes and dialogue sequences. Supports character portraits, typewriter text animation, and branching choices. Intended for intro story, tutorial, and future dialogue content. Available from day 1 but not required for initial gameplay.
 
 ```
-constructor(config: object, localeManager: LocaleManager)
+constructor(config: object, dataDriven: DataDriven)
 get isActive(): boolean
 playSequence(sequenceId: string): Promise<void>
 stop(): void
@@ -390,7 +381,7 @@ update(dt: number, inputManager: InputManager): void
 render(renderer: Renderer): void
 ```
 
-**Composition:** uses `LocaleManager` for string localization.
+**Composition:** reads localized strings via `dataDriven["i18n.default.<key>"]`.
 
 ---
 
@@ -851,7 +842,7 @@ get isPaused(): boolean
 In-game heads-up display showing life bar, level indicator, coin counter, ammo counter, score, star counter, musical note progress (via `NoteCollectionTracker`), and inventory indicator. Reads layout from `data/ui/hud.json`.
 
 ```
-constructor(hudConfig: object, player: Player, noteCollection: NoteCollectionTracker, localeManager: Engine.LocaleManager)
+constructor(hudConfig: object, player: Player, noteCollection: NoteCollectionTracker, dataDriven: Engine.DataDriven)
 get player(): Player
 get noteCollection(): NoteCollectionTracker
 update(dt: number): void
@@ -867,7 +858,7 @@ render(renderer: Engine.Renderer): void
 Base class for all menu screens. Provides navigation (up/down/confirm/back) and shared styling from `data/ui/menus.json`.
 
 ```
-constructor(menuConfig: object, localeManager: Engine.LocaleManager)
+constructor(menuConfig: object, dataDriven: Engine.DataDriven)
 get selectedIndex(): number
 navigateUp(): void
 navigateDown(): void
@@ -887,7 +878,7 @@ render(renderer: Engine.Renderer): void
 Title screen with Start, Tutorial, Settings, Credits options.
 
 ```
-constructor(menuConfig: object, localeManager: Engine.LocaleManager)
+constructor(menuConfig: object, dataDriven: Engine.DataDriven)
 confirm(): void                                              // triggers scene switch or sub-menu
 ```
 
@@ -898,7 +889,7 @@ confirm(): void                                              // triggers scene s
 Pause screen with Resume, Restart Stage, Quit to Map, Quit to Menu options.
 
 ```
-constructor(menuConfig: object, localeManager: Engine.LocaleManager, stage: Stage | null)
+constructor(menuConfig: object, dataDriven: Engine.DataDriven, stage: Stage | null)
 confirm(): void
 render(renderer: Engine.Renderer): void                     // includes semi-transparent overlay
 ```
@@ -910,7 +901,7 @@ render(renderer: Engine.Renderer): void                     // includes semi-tra
 Settings screen with audio volume sliders and controls.
 
 ```
-constructor(menuConfig: object, localeManager: Engine.LocaleManager, audioEngine: Engine.AudioEngine)
+constructor(menuConfig: object, dataDriven: Engine.DataDriven, audioEngine: Engine.AudioEngine)
 get masterVolume(): number
 set masterVolume(v: number): void
 get bgmVolume(): number
@@ -930,7 +921,7 @@ render(renderer: Engine.Renderer): void                     // renders sliders
 Game over screen with Continue (if available) and Quit options.
 
 ```
-constructor(menuConfig: object, localeManager: Engine.LocaleManager, continuesAvailable: number, livesRemaining: number)
+constructor(menuConfig: object, dataDriven: Engine.DataDriven, continuesAvailable: number, livesRemaining: number)
 confirm(): void
 ```
 
@@ -941,7 +932,7 @@ confirm(): void
 Stage complete screen showing fruit collected, ability gained, and score summary.
 
 ```
-constructor(menuConfig: object, localeManager: Engine.LocaleManager, stageName: string, collectibleCollected: string, abilityGained: string, score: number)
+constructor(menuConfig: object, dataDriven: Engine.DataDriven, stageName: string, collectibleCollected: string, abilityGained: string, score: number)
 confirm(): void
 render(renderer: Engine.Renderer): void
 ```
@@ -953,7 +944,7 @@ render(renderer: Engine.Renderer): void
 Backpack overlay — 4x2 grid (8 slots max). Shows item icons, names, and quantities. Supports slot selection, default-item marking, and footer hints. Reads layout from `data/ui/inventory.json`.
 
 ```
-constructor(inventoryConfig: object, inventory: Inventory, localeManager: Engine.LocaleManager)
+constructor(inventoryConfig: object, inventory: Inventory, dataDriven: Engine.DataDriven)
 get selectedSlot(): number
 navigateLeft(): void
 navigateRight(): void
@@ -1247,8 +1238,8 @@ InventoryUI
 AudioEngine
   └── owns NoteFrequencyCalculator (injected)
 
-DataLoader
-  └── loads all data/ JSON files → engine services consume by reference
+DataDriven
+  └── loads all data/ JSON files (generated index) → engine services consume by reference via dotted accessors
 
 GameLoop
   └── owns SceneManager → holds Scene registry → each Scene holds game-layer objects
@@ -1289,7 +1280,7 @@ Every class that consumes JSON data receives it via its constructor or via a ded
 |---|---|---|
 | `data/colors.json` | `Renderer`, `UIElement` (all subclasses) | All color fills/borders reference by name. `Renderer` resolves hex values at draw time. |
 | `data/borders.json` | `Renderer`, `UIElement` (all subclasses) | Border widths resolved from named references. |
-| `data/game-config.json` | `GameLoop` (scale config → Renderer), `DataLoader` (base path), `InputManager` (input bindings path), `AudioEngine` (audio config path), `LocaleManager` (locale default) | Global settings cascade to all subsystems. |
+| `data/game-config.json` | `GameLoop` (scale config → Renderer), `DataDriven` (base path), `InputManager` (input bindings path), `AudioEngine` (audio config path) | Global settings cascade to all subsystems. |
 | `data/player/levels.json` | `ProgressionSystem` | Color → ability chain. |
 | `data/player/fruits.json` | `ProgressionSystem` | Fruit → level mapping. |
 | `data/stages/*.json` | `Stage` | Section hierarchy, tile placement, entity spawns, teleporter definitions. |
@@ -1298,13 +1289,14 @@ Every class that consumes JSON data receives it via its constructor or via a ded
 | `data/collectibles/*.json` | `Collectible` | Effect definitions, auto-use flags, inventory vs immediate. |
 | `data/tiles/*.json` | `Tile` | Tile collision, damage, physics modifiers, rendering properties. |
 | `data/collectibles/checkpoint.json` | `Checkpoint` | Checkpoint activation and rendering config. |
-| `data/audio.json` | `AudioEngine` | Master/BGM/SFX volumes, enabled flags, crossfade. |
-| `data/audio/config.json` | `AudioEngine → NoteFrequencyCalculator` | Wave types, tuning params, temperament, polyphony. |
-| `data/audio/config.json` | `NoteCollectionTracker` | Tuning params (note-range) used to pre-compute the 8-note C→C' scale. |
+| `data/audio/config.json` | `AudioEngine` | Master/BGM/SFX volumes, enabled flags, crossfade. |
+| `data/audio/synthesis.json` | `AudioEngine → NoteFrequencyCalculator` | Wave types, tuning params, temperament, polyphony. |
+| `data/audio/synthesis.json` | `NoteCollectionTracker` | Tuning params (note-range) used to pre-compute the 8-note C→C' scale. |
 | `data/audio/sfx.json` | `AudioEngine` | Named SFX definitions (wave, freq, envelope). |
-| `data/audio/bgm.json` | `AudioEngine` | Named BGM tracks (note sequences, tempo, wave type). |
+| `data/audio/bgm.json` | `AudioEngine` | Named BGM track registry → per-track files. |
+| `data/audio/bgm/*.json` | `AudioEngine` | Individual BGM track definitions (phrases, channels, notes). |
 | `data/input/bindings.json` | `InputManager` | Keyboard event.code + gamepad button/axis mappings. |
-| `data/locales/en-us.json` | `LocaleManager` | All user-facing strings. Fallback for missing keys in other locales. |
+| `data/i18n/default.json` | `DataDriven` → UI components | All user-facing strings (symlink to active locale). |
 | `data/ui/hud.json` | `HUD` | Element positions, sizes, colors, borders, visibility. |
 | `data/ui/menus.json` | `Menu` (all subclasses) | Shared menu styling + per-menu item lists. |
 | `data/ui/inventory.json` | `InventoryUI` | Grid layout, slot styling, footer hints. |
@@ -1447,12 +1439,13 @@ classDiagram
         +isInRange(noteName) boolean
     }
 
-    class DataLoader {
+    class DataDriven {
         -string basePath
+        -string indexSource
         -Map~string,object~ data
-        +constructor(basePath)
-        +loadAll(fileList) Promise
-        +get(path) object
+        +constructor(basePath, indexSource)
+        +load() Promise
+        +resolveAccessor(path) object
         +validateKeys(obj, path) void
     }
 
@@ -1463,17 +1456,6 @@ classDiagram
         +load(key) object
         +delete(key) void
         +has(key) boolean
-    }
-
-    class LocaleManager {
-        -DataLoader dataLoader
-        -Map~string,object~ locales
-        -string currentLocale
-        -string defaultLocale
-        +constructor(localeDir, dataLoader, defaultLocale)
-        +get(key, placeholders) string
-        +get currentLocale() string
-        +set currentLocale(l) void
     }
 
     class Entity {
@@ -1545,8 +1527,8 @@ classDiagram
 
     class DialogueEngine {
         -boolean active
-        -LocaleManager localeManager
-        +constructor(config, localeManager)
+        -DataDriven dataDriven
+        +constructor(config, dataDriven)
         +get isActive() boolean
         +playSequence(sequenceId) Promise
         +update(dt, inputManager) void
@@ -1557,8 +1539,8 @@ classDiagram
     SceneManager *-- Scene : registry
     StageBase *-- Section : owns tree
     AudioEngine *-- NoteFrequencyCalculator : owns
-    LocaleManager --> DataLoader : uses
-    DialogueEngine --> LocaleManager : uses
+    DataDriven --> DataDriven : proxies accessors
+    DialogueEngine --> DataDriven : uses
 ```
 
 ### Game Layer — Entities
@@ -1998,7 +1980,7 @@ classDiagram
     class HUD {
         -Player player
         -NoteCollectionTracker noteCollection
-        -LocaleManager locale
+        -DataDriven dataDriven
         -UIElement lifeBar
         -UIElement levelIndicator
         -UIElement coinCounter
@@ -2016,7 +1998,7 @@ classDiagram
     class Menu {
         <<abstract>>
         #number selectedIndex
-        #LocaleManager locale
+        #DataDriven dataDriven
         #object[] items
         #Function onClose
         +navigateUp() void
@@ -2029,7 +2011,7 @@ classDiagram
 
     class InventoryUI {
         -Inventory inventory
-        -LocaleManager locale
+        -DataDriven dataDriven
         -number selectedSlot
         -number cols
         -number rows
@@ -2140,7 +2122,7 @@ classDiagram
     Stage ..> Projectile : contains
     HUD --> Player : reads
     HUD --> NoteCollectionTracker : reads
-    HUD --> LocaleManager : uses
+    HUD --> DataDriven : uses
     InventoryUI --> Inventory : reads
     SettingsMenu --> AudioEngine : reads/writes
 ```
