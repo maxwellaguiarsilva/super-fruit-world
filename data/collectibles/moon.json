@@ -1,0 +1,22 @@
+{
+  "description": "Moon collectible. Goes to inventory on pickup and accumulates in quantity. When used, activates moon gravity for 30 seconds, reducing the player's weight.",
+  "type": "moon",
+  "visual": {
+    "shape": "moon",
+    "size": 0.6,
+    "fill-color": "cyan",
+    "border-color": "dark-cyan",
+    "border": "thin"
+  },
+  "effect": {
+    "action": "add-to-inventory",
+    "auto-activate": false,
+    "usage": {
+      "action": "moon-gravity",
+      "duration": 30
+    }
+  },
+  "inventory": {
+    "accumulates": true
+  }
+}

@@ -1,0 +1,205 @@
+{
+  "description": "Single source of truth for all user-facing strings. Keys are identifiers (never change). Values are the displayed text. This is the only directory where non-English text is permitted (in values only, not keys).",
+
+  "meta": {
+    "locale": "en-us",
+    "game-title": "Super Fruit World"
+  },
+
+  "menu": {
+    "main": {
+      "title": "Super Fruit World",
+      "start": "Start Game",
+      "tutorial": "Tutorial",
+      "settings": "Settings",
+      "credits": "Credits"
+    },
+    "pause": {
+      "title": "Paused",
+      "resume": "Resume",
+      "restart-stage": "Restart Stage",
+      "quit-to-map": "Quit to Map",
+      "quit-to-menu": "Quit to Menu"
+    },
+    "settings": {
+      "title": "Settings",
+      "audio": "Audio",
+      "music-volume": "Music Volume",
+      "sfx-volume": "SFX Volume",
+      "controls": "Controls",
+      "back": "Back"
+    },
+    "game-over": {
+      "title": "Game Over",
+      "continue": "Continue",
+      "quit": "Quit",
+      "continues-prefix": "Continues: ",
+      "continue-hint": "Press START to continue"
+    },
+    "stage-clear": {
+      "title": "Stage Clear!",
+      "fruit-collected": "Fruit Collected!",
+      "new-ability": "New Ability Unlocked!",
+      "continue": "Continue",
+      "collected-prefix": "Collected: ",
+      "ability-prefix": "Ability: ",
+      "score-prefix": "Score: ",
+      "continue-hint": "Press START to continue"
+    }
+  },
+
+  "hud": {
+    "life": "Life",
+    "level": "Level",
+    "coins": "Coins",
+    "ammo": "Ammo",
+    "score": "Score",
+    "stars": "Stars",
+    "notes": "Notes",
+    "inventory": "Inventory",
+    "level-prefix": "Lv: ",
+    "ammo-prefix": "Ammo: ",
+    "lives-prefix": "Lives: ",
+    "notes-prefix": "Notes: ",
+    "coins-prefix": "Coins: ",
+    "score-prefix": "Score: "
+  },
+  "inventory": {
+    "title": "Inventory",
+    "empty": "Empty",
+    "use": "Use",
+    "default-selected": "Default",
+    "navigate-hint": "Arrows: Navigate",
+    "use-hint": "Shoot: Use Item",
+    "default-hint": "Select+Shoot: Set Default",
+    "close-hint": "Select: Close"
+  },
+
+  "player": {
+    "levels": {
+      "0": "Black",
+      "1": "Red",
+      "2": "Green",
+      "3": "Yellow",
+      "4": "Blue",
+      "5": "Cyan",
+      "6": "Magenta",
+      "7": "White"
+    },
+    "abilities": {
+      "walk": "Walk",
+      "jump": "Jump",
+      "crouch": "Crouch",
+      "slide": "Slide",
+      "dash": "Dash",
+      "shoot": "Shoot",
+      "shield": "Shield",
+      "flight": "Flight",
+      "slow-fall": "Slow Fall",
+      "double-jump": "Double Jump",
+      "air-slide": "Air Slide",
+      "screen-clear": "Screen Clear",
+      "invincibility": "Invincibility"
+    }
+  },
+
+  "fruits": {
+    "strawberry": "Strawberry",
+    "avocado": "Avocado",
+    "banana": "Banana",
+    "blueberry": "Blueberry",
+    "starfruit": "Starfruit",
+    "pitaya": "Pitaya",
+    "fruit-basket": "Fruit Basket"
+  },
+
+  "collectibles": {
+    "coin": "Coin",
+    "extra-life": "Extra Life",
+    "apple": "Apple",
+    "heart": "Heart",
+    "star": "Star",
+    "musical-note": "Musical Note",
+    "checkpoint": "Checkpoint",
+    "moon": "Moon",
+    "sun": "Sun",
+    "earth": "Earth"
+  },
+
+  "musical-notes": {
+    "do": "C",
+    "re": "D",
+    "mi": "E",
+    "fa": "F",
+    "sol": "G",
+    "la": "A",
+    "si": "B",
+    "do-high": "C'"
+  },
+
+  "messages": {
+    "checkpoint-activated": "Checkpoint Activated!",
+    "extra-life-gained": "Extra Life!",
+    "life-restored": "Life Restored!",
+    "star-pickup": "Star Invincibility!",
+    "invincibility-active": "Invincibility Active!",
+    "invincibility-expired": "Invincibility Expired.",
+    "continue-earned": "Continue Earned!",
+    "screen-clear-ready": "Screen Clear Ready!",
+    "moon-gravity-active": "Moon Gravity Active!",
+    "moon-gravity-expired": "Moon Gravity Expired.",
+    "fire-shield-active": "Fire Shield Active!",
+    "fire-shield-expired": "Fire Shield Expired.",
+    "earthquake-triggered": "Earthquake!"
+  },
+
+  "input": {
+    "move-left": "Move Left",
+    "move-right": "Move Right",
+    "move-up": "Move Up",
+    "move-down": "Move Down",
+    "jump": "Jump",
+    "crouch": "Crouch",
+    "dash": "Dash",
+    "shoot": "Shoot",
+    "special": "Special",
+    "pause": "Pause",
+    "select": "Select",
+    "inventory": "Inventory",
+    "confirm": "Confirm",
+    "back": "Back",
+    "pause-hint": "Pause: Resume Game",
+    "navigate-hint": "Arrows: Navigate | Confirm: Select | Back: Return"
+  },
+
+  "stage": {
+    "strawberry-fields": "Strawberry Fields",
+    "avocado-grove": "Avocado Grove",
+    "banana-beach": "Banana Beach",
+    "blueberry-peaks": "Blueberry Peaks",
+    "starfruit-caverns": "Starfruit Caverns",
+    "pitaya-canyon": "Pitaya Canyon",
+    "fruit-basket-citadel": "Fruit Basket Citadel",
+    "secret-waterfall": "Secret Waterfall"
+  },
+
+  "area": {
+    "green-meadows": "Green Meadows",
+    "azure-highlands": "Azure Highlands",
+    "volcanic-frontier": "Volcanic Frontier",
+    "final-horizon": "Final Horizon",
+    "secret-grove": "Secret Grove"
+  },
+
+  "teleporter": {
+    "to-azure-highlands": "To Azure Highlands",
+    "to-volcanic-frontier": "To Volcanic Frontier",
+    "to-final-horizon": "To Final Horizon",
+    "to-secret-grove": "To Secret Grove"
+  },
+
+  "map": {
+    "fruit-world": "Fruit World",
+    "world-map": "World Map"
+  }
+}

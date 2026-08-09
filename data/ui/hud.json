@@ -1,0 +1,115 @@
+{
+  "description": "In-game HUD overlay layout and styling. All positions in visual units relative to screen edges. Colors reference data/colors.json by name. Borders reference data/borders.json by name. Label keys reference data/i18n strings.",
+  "hud": {
+    "enabled": true,
+    "position": "top",
+    "height": 1.2,
+    "padding": 0.2,
+    "background": {
+      "color": "black",
+      "opacity": 0.7
+    },
+    "text": {
+      "font-family": "'Comic Sans MS', 'Comic Sans', monospace",
+      "color": "white",
+      "label-size": 0.22,
+      "value-size": 0.3
+    },
+    "border": {
+      "style": "thin",
+      "corner-radius": 0.15
+    }
+  },
+  "elements": {
+    "life-bar": {
+      "enabled": true,
+      "anchor": "top-left",
+      "offset": { "x": 0.3, "y": 0.2 },
+      "size": { "width": 3.0, "height": 0.4 },
+      "fill-color": "red",
+      "empty-color": "dark-red",
+      "border": "thin",
+      "corner-radius": 0.2,
+      "show-label": true,
+      "label-key": "hud.life",
+      "label-offset": { "x": -0.05, "y": 0.25 },
+      "label-color": "white"
+    },
+    "level-indicator": {
+      "enabled": true,
+      "anchor": "top-left",
+      "offset": { "x": 3.8, "y": 0.25 },
+      "radius": 0.3,
+      "border": "medium",
+      "show-label": true,
+      "label-key": "hud.level",
+      "label-offset": { "x": -0.05, "y": -0.3 },
+      "label-color": "white"
+    },
+    "coin-counter": {
+      "enabled": true,
+      "anchor": "top-right",
+      "offset": { "x": 8.0, "y": 0.25 },
+      "icon-size": { "width": 0.4, "height": 0.4 },
+      "icon-color": "yellow",
+      "label-key": "hud.coins",
+      "show-icon": true
+    },
+    "ammo-counter": {
+      "enabled": true,
+      "anchor": "top-right",
+      "offset": { "x": 6.0, "y": 0.25 },
+      "icon-size": { "width": 0.3, "height": 0.4 },
+      "icon-color": "green",
+      "label-key": "hud.ammo",
+      "show-icon": true
+    },
+    "score-counter": {
+      "enabled": true,
+      "anchor": "top-right",
+      "offset": { "x": 3.8, "y": 0.25 },
+      "label-key": "hud.score",
+      "show-icon": false,
+      "format": "number"
+    },
+    "star-counter": {
+      "enabled": true,
+      "anchor": "top-center",
+      "offset": { "x": 3.5, "y": 0.25 },
+      "icon-size": { "width": 0.4, "height": 0.4 },
+      "icon-color": "yellow",
+      "label-key": "hud.stars",
+      "show-icon": true
+    },
+    "note-tracker": {
+      "enabled": true,
+      "anchor": "top-center",
+      "offset": { "x": -2.0, "y": 0.25 },
+      "slots": 8,
+      "slot-size": { "width": 0.32, "height": 0.4 },
+      "slot-gap": 0.08,
+      "filled-color": "cyan",
+      "empty-color": "dark-white",
+      "border": "thin",
+      "corner-radius": 0.08,
+      "show-label": true,
+      "label-key": "hud.notes",
+      "label-offset": { "x": 0, "y": -0.22 },
+      "label-color": "white"
+    },
+    "inventory-indicator": {
+      "enabled": true,
+      "anchor": "top-right",
+      "offset": { "x": 1.2, "y": 0.2 },
+      "size": { "width": 0.8, "height": 0.5 },
+      "border": "thin",
+      "corner-radius": 0.1,
+      "fill-color": "dark-blue",
+      "item-color": "white",
+      "count-color": "yellow",
+      "label-key": "hud.inventory",
+      "label-offset": { "x": 0, "y": -0.2 },
+      "label-color": "white"
+    }
+  }
+}

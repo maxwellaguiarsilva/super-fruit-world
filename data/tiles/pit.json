@@ -1,0 +1,15 @@
+{
+  "description": "Out-of-bounds death zone. Any entity falling below this boundary is considered dead. No visual rendering — defined as an invisible death plane at the bottom of the stage. Typically used for bottomless pits and stage boundaries.",
+  "type": "pit",
+  "visual": {
+    "rendered": false
+  },
+  "collision": {
+    "solid": false,
+    "walkable": false
+  },
+  "effect": {
+    "action": "death",
+    "trigger": "below-boundary"
+  }
+}

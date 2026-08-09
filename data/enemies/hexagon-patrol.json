@@ -1,0 +1,14 @@
+{
+  "description": "Hexagon patrol enemy. Reserved for later stages.",
+  "shape": "hexagon",
+  "sides": 6,
+  "contact-damage": 2.5,
+  "behavior": "patrol",
+  "shoot-interval": null,
+  "drops": {
+    "coin": 0.65,
+    "apple": 0.20,
+    "heart": 0.10,
+    "extra-life": 0.05
+  }
+}

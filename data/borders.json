@@ -1,0 +1,9 @@
+{
+  "description": "Named border widths in visual units. Game objects reference borders by name only. Numeric values live exclusively here as the single source of truth.",
+  "default": "medium",
+  "borders": {
+    "thin":   { "width": 0.1 },
+    "medium": { "width": 0.2 },
+    "thick":  { "width": 0.3 }
+  }
+}

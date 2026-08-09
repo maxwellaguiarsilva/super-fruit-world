@@ -1,0 +1,14 @@
+{
+  "description": "Stage exit. Collecting this completes the current stage immediately.",
+  "type": "exit-door",
+  "visual": {
+    "shape": "door",
+    "size": 1.5,
+    "fill-color": "white",
+    "border-color": "dark-white",
+    "border": "thick"
+  },
+  "effect": {
+    "action": "complete-stage"
+  }
+}

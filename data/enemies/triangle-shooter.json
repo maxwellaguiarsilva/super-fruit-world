@@ -1,0 +1,14 @@
+{
+  "description": "Triangle shooter enemy. Patrols and fires projectiles when player is on screen.",
+  "shape": "triangle",
+  "sides": 3,
+  "contact-damage": 1.0,
+  "behavior": "shooter",
+  "shoot-interval": 1.0,
+  "drops": {
+    "coin": 0.65,
+    "apple": 0.20,
+    "heart": 0.10,
+    "extra-life": 0.05
+  }
+}

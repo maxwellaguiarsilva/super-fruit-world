@@ -1,0 +1,17 @@
+{
+  "description": "Solid walkable surface. Entities can stand on top and collide with all sides. Used for floors, ceilings, and ledges.",
+  "type": "platform",
+  "visual": {
+    "fill-color": "white",
+    "border-color": "dark-white",
+    "border": "medium"
+  },
+  "collision": {
+    "solid": true,
+    "walkable": true
+  },
+  "physics": {
+    "friction": 0.75,
+    "bounciness": 0.0
+  }
+}

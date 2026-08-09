@@ -1,0 +1,224 @@
+{
+  "description": "First stage — Strawberry Fields. A horizontal-scrolling introductory stage featuring gentle slopes, simple enemies, coins, apples, and a strawberry big-fruit at the end. The player starts at level 0 (black) and evolves to level 1 (red) upon collecting the big fruit.",
+  "name": "strawberry-fields",
+  "display-name-key": "stage.strawberry-fields",
+  "big-fruit": "strawberry",
+  "type": "horizontal-scrolling",
+  "theme": "grassland",
+  "bgm": "strawberry-fields",
+  "sections": [
+    {
+      "name": "start-plateau",
+      "parent-section": "root",
+      "position": { "x": 0, "y": 0 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 20, "height": 1 } },
+        { "type": "decorative", "position": { "x": 0, "y": -2 }, "size": { "width": 20, "height": 2 }, "visual": { "fill-color": "dark-green" } },
+        { "type": "player-spawn", "position": { "x": 3, "y": 0 } },
+        { "type": "coin", "position": { "x": 5, "y": -1 } },
+        { "type": "coin", "position": { "x": 7, "y": -1 } },
+        { "type": "coin", "position": { "x": 9, "y": -1 } },
+        { "type": "apple", "position": { "x": 12, "y": -1 } },
+        { "type": "musical-note", "position": { "x": 16, "y": -1.5 }, "note-order": 1 }
+      ]
+    },
+    {
+      "name": "first-jumps",
+      "parent-section": "root",
+      "position": { "x": 20, "y": 0 },
+      "objects": [
+        { "type": "platform", "position": { "x": 1, "y": -1 }, "size": { "width": 3, "height": 1 } },
+        { "type": "platform", "position": { "x": 6, "y": -2 }, "size": { "width": 3, "height": 1 } },
+        { "type": "platform", "position": { "x": 11, "y": -3 }, "size": { "width": 3, "height": 1 } },
+        { "type": "platform", "position": { "x": 16, "y": -1 }, "size": { "width": 6, "height": 1 } },
+        { "type": "coin", "position": { "x": 2.5, "y": -2 } },
+        { "type": "coin", "position": { "x": 7.5, "y": -3 } },
+        { "type": "coin", "position": { "x": 12.5, "y": -4 } },
+        { "type": "apple", "position": { "x": 15, "y": -2 } },
+        { "type": "apple", "position": { "x": 18, "y": -2 } },
+        { "type": "pit", "position": { "x": 1, "y": 0 }, "size": { "width": 21, "height": 4 } }
+      ]
+    },
+    {
+      "name": "enemy-valley",
+      "parent-section": "root",
+      "position": { "x": 42, "y": 0 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 25, "height": 1 } },
+        { "type": "decorative", "position": { "x": 0, "y": -2 }, "size": { "width": 25, "height": 2 }, "visual": { "fill-color": "dark-green" } },
+        { "type": "triangle-patrol", "color": "red", "position": { "x": 5, "y": -1 }, "patrol-range": 4 },
+        { "type": "triangle-patrol", "color": "red", "position": { "x": 14, "y": -1 }, "patrol-range": 3 },
+        { "type": "square-patrol", "color": "red", "position": { "x": 22, "y": -1 }, "patrol-range": 3 },
+        { "type": "coin", "position": { "x": 2, "y": -1 } },
+        { "type": "coin", "position": { "x": 8, "y": -1 } },
+        { "type": "coin", "position": { "x": 18, "y": -1 } },
+        { "type": "musical-note", "position": { "x": 0.5, "y": -1.5 }, "note-order": 2 },
+        { "type": "apple", "position": { "x": 10, "y": -1 } },
+        { "type": "heart", "position": { "x": 24, "y": -1 } }
+      ]
+    },
+    {
+      "name": "ladder-ascent",
+      "parent-section": "root",
+      "position": { "x": 67, "y": 0 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 3, "height": 1 } },
+        { "type": "platform", "position": { "x": 2.5, "y": -16 }, "size": { "width": 7.5, "height": 1 } },
+        { "type": "platform", "position": { "x": 2.5, "y": -8 }, "size": { "width": 2, "height": 1 } },
+        { "type": "ladder", "position": { "x": 0.75, "y": -16 }, "size": { "width": 1.5, "height": 16 } },
+        { "type": "coin", "position": { "x": 1.5, "y": -4 } },
+        { "type": "coin", "position": { "x": 1.5, "y": -8 } },
+        { "type": "coin", "position": { "x": 1.5, "y": -12 } },
+        { "type": "musical-note", "position": { "x": 2, "y": -2 }, "note-order": 3 },
+        { "type": "apple", "position": { "x": 5, "y": -17 } },
+        { "type": "coin", "position": { "x": 7, "y": -17 } }
+      ]
+    },
+    {
+      "name": "checkpoint-clearing",
+      "parent-section": "root",
+      "position": { "x": 77, "y": -16 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 20, "height": 1 } },
+        { "type": "decorative", "position": { "x": 0, "y": -2 }, "size": { "width": 20, "height": 2 }, "visual": { "fill-color": "dark-green" } },
+        { "type": "checkpoint", "position": { "x": 5, "y": 0 } },
+        { "type": "coin", "position": { "x": 8, "y": -1 } },
+        { "type": "coin", "position": { "x": 10, "y": -1 } },
+        { "type": "coin", "position": { "x": 12, "y": -1 } },
+        { "type": "apple", "position": { "x": 15, "y": -1 } },
+        { "type": "musical-note", "position": { "x": 18, "y": -1.5 }, "note-order": 4 }
+      ]
+    },
+    {
+      "name": "underground-entry",
+      "parent-section": "root",
+      "position": { "x": 97, "y": -16 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 3, "height": 1 } },
+        { "type": "platform", "position": { "x": 0, "y": 1 }, "size": { "width": 3, "height": 10 }, "visual": { "fill-color": "dark-white" } },
+        { "type": "coin", "position": { "x": 1.5, "y": 4 } },
+        { "type": "apple", "position": { "x": 1.5, "y": 8 } }
+      ]
+    },
+    {
+      "name": "underground-main",
+      "parent-section": "root",
+      "position": { "x": 100, "y": -6 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 22, "height": 1 } },
+        { "type": "decorative", "position": { "x": 0, "y": -10 }, "size": { "width": 22, "height": 10 }, "visual": { "fill-color": "dark-white" } },
+        { "type": "spike", "variant": "spike", "position": { "x": 5, "y": -0.5 }, "size": { "width": 1, "height": 0.5 } },
+        { "type": "spike", "variant": "spike", "position": { "x": 10, "y": -0.5 }, "size": { "width": 1, "height": 0.5 } },
+        { "type": "spike", "variant": "spike", "position": { "x": 15, "y": -0.5 }, "size": { "width": 1, "height": 0.5 } },
+        { "type": "triangle-patrol", "color": "red", "position": { "x": 7, "y": -1 }, "patrol-range": 3 },
+        { "type": "triangle-patrol", "color": "red", "position": { "x": 14, "y": -1 }, "patrol-range": 3 },
+        { "type": "coin", "position": { "x": 2, "y": -1 } },
+        { "type": "coin", "position": { "x": 4, "y": -1 } },
+        { "type": "coin", "position": { "x": 12, "y": -1 } },
+        { "type": "coin", "position": { "x": 18, "y": -1 } },
+        { "type": "musical-note", "position": { "x": 11, "y": -1.5 }, "note-order": 5 },
+        { "type": "apple", "position": { "x": 20, "y": -1 } },
+        { "type": "moon", "position": { "x": 3, "y": -1.5 } },
+        { "type": "inner-teleporter", "position": { "x": 21, "y": -1 }, "target-marker": "surface-return", "visual": { "fill-color": "green", "border-color": "dark-green" } },
+        { "type": "teleporter-marker", "name": "underground-arrival", "position": { "x": 21, "y": -1 } },
+        { "type": "teleporter-marker", "name": "underground-departure", "position": { "x": 0, "y": -1 } }
+      ]
+    },
+    {
+      "name": "surface-return-area",
+      "parent-section": "root",
+      "position": { "x": 122, "y": -16 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 15, "height": 1 } },
+        { "type": "decorative", "position": { "x": 0, "y": -2 }, "size": { "width": 15, "height": 2 }, "visual": { "fill-color": "dark-green" } },
+        { "type": "teleporter-marker", "name": "surface-return", "position": { "x": 2, "y": -1 } },
+        { "type": "inner-teleporter", "position": { "x": 10, "y": -1 }, "target-marker": "underground-departure", "visual": { "fill-color": "green", "border-color": "dark-green" } },
+        { "type": "coin", "position": { "x": 5, "y": -1 } },
+        { "type": "coin", "position": { "x": 7, "y": -1 } },
+        { "type": "musical-note", "position": { "x": 13, "y": -1.5 }, "note-order": 6 }
+      ]
+    },
+    {
+      "name": "slope-practice",
+      "parent-section": "root",
+      "position": { "x": 137, "y": -16 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 8, "height": 1 } },
+        { "type": "slope", "variant": "slope-30", "inverted": false, "position": { "x": 8, "y": -3 }, "size": { "width": 5, "height": 3 } },
+        { "type": "platform", "position": { "x": 13, "y": -3 }, "size": { "width": 5, "height": 1 } },
+        { "type": "slope", "variant": "slope-45", "inverted": true, "position": { "x": 18, "y": -6 }, "size": { "width": 5, "height": 3 } },
+        { "type": "platform", "position": { "x": 23, "y": -6 }, "size": { "width": 8, "height": 1 } },
+        { "type": "coin", "position": { "x": 2, "y": -1 } },
+        { "type": "coin", "position": { "x": 10, "y": -2 } },
+        { "type": "coin", "position": { "x": 15, "y": -4 } },
+        { "type": "coin", "position": { "x": 25, "y": -7 } },
+        { "type": "apple", "position": { "x": 28, "y": -7 } },
+        { "type": "musical-note", "position": { "x": 22, "y": -5 }, "note-order": 7 }
+      ]
+    },
+    {
+      "name": "enemy-gauntlet",
+      "parent-section": "root",
+      "position": { "x": 168, "y": -22 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 30, "height": 1 } },
+        { "type": "decorative", "position": { "x": 0, "y": -2 }, "size": { "width": 30, "height": 2 }, "visual": { "fill-color": "dark-green" } },
+        { "type": "triangle-shooter", "color": "red", "position": { "x": 5, "y": -1 }, "patrol-range": 3 },
+        { "type": "square-patrol", "color": "red", "position": { "x": 12, "y": -1 }, "patrol-range": 4 },
+        { "type": "triangle-shooter", "color": "green", "position": { "x": 20, "y": -1 }, "patrol-range": 3 },
+        { "type": "square-patrol", "color": "green", "position": { "x": 26, "y": -1 }, "patrol-range": 3 },
+        { "type": "coin", "position": { "x": 3, "y": -1 } },
+        { "type": "coin", "position": { "x": 8, "y": -1 } },
+        { "type": "coin", "position": { "x": 15, "y": -1 } },
+        { "type": "coin", "position": { "x": 22, "y": -1 } },
+        { "type": "musical-note", "position": { "x": 28, "y": -1.5 }, "note-order": 8 },
+        { "type": "apple", "position": { "x": 10, "y": -1 } },
+        { "type": "apple", "position": { "x": 17, "y": -1 } },
+        { "type": "heart", "position": { "x": 24, "y": -1 } }
+      ]
+    },
+    {
+      "name": "checkpoint-last",
+      "parent-section": "root",
+      "position": { "x": 198, "y": -22 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 12, "height": 1 } },
+        { "type": "decorative", "position": { "x": 0, "y": -2 }, "size": { "width": 12, "height": 2 }, "visual": { "fill-color": "dark-green" } },
+        { "type": "checkpoint", "position": { "x": 3, "y": 0 } },
+        { "type": "coin", "position": { "x": 6, "y": -1 } },
+        { "type": "coin", "position": { "x": 7.5, "y": -1 } },
+        { "type": "coin", "position": { "x": 9, "y": -1 } },
+        { "type": "apple", "position": { "x": 4, "y": -1 } }
+      ]
+    },
+    {
+      "name": "boss-arena",
+      "parent-section": "root",
+      "position": { "x": 210, "y": -22 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 20, "height": 1 } },
+        { "type": "wall", "position": { "x": -1, "y": -10 }, "size": { "width": 1, "height": 10 } },
+        { "type": "wall", "position": { "x": 20, "y": -10 }, "size": { "width": 1, "height": 10 } },
+        { "type": "pentagon-patrol", "color": "green", "position": { "x": 10, "y": -3 }, "patrol-range": 6, "is-boss": true },
+        { "type": "apple", "position": { "x": 3, "y": -1 } },
+        { "type": "apple", "position": { "x": 7, "y": -1 } },
+        { "type": "apple", "position": { "x": 13, "y": -1 } },
+        { "type": "apple", "position": { "x": 17, "y": -1 } },
+        { "type": "earth", "position": { "x": 5, "y": -1.5 } },
+        { "type": "sun", "position": { "x": 15, "y": -1.5 } }
+      ]
+    },
+    {
+      "name": "exit-plateau",
+      "parent-section": "root",
+      "position": { "x": 230, "y": -22 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 15, "height": 1 } },
+        { "type": "decorative", "position": { "x": 0, "y": -2 }, "size": { "width": 15, "height": 2 }, "visual": { "fill-color": "dark-green" } },
+        { "type": "big-fruit", "fruit": "strawberry", "position": { "x": 5, "y": -1.5 } },
+        { "type": "exit-door", "position": { "x": 10, "y": -1 } },
+        { "type": "special-teleporter", "name": "to-world-map", "position": { "x": 13, "y": -1 }, "target-stage": null, "target-marker": "fields-exit-marker", "visual": { "fill-color": "blue", "border-color": "dark-blue" } }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "description": "Regular fruit collectible. Accumulates without limit, increments score, and is stored for future trade currency use. Visual color is determined by the fruit name referenced in stage JSON (via data/player/fruits.json). Distinct from big-fruit — does not evolve the player.",
+  "type": "small-fruit",
+  "visual": {
+    "shape": "fruit",
+    "size": 0.6,
+    "border": "thin",
+    "uses-fruit-color": true
+  },
+  "effect": {
+    "action": "add-score",
+    "value": 100,
+    "accumulates": true
+  }
+}
