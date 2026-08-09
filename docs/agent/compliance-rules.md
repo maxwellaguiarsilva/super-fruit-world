@@ -160,11 +160,10 @@ This includes but is not limited to: domain-specific strings, colors/styles, num
 
 **Every change that alters architecture, data shapes, config, or process must update the relevant docs in the same session.** Documentation is not a separate task — it ships with the code.
 
-- `docs/agent/status.md` records what was done in each session.
-- `docs/agent/technical-debt.md` registers every violation and deferred cleanup.
-- `docs/agent/multi-session-flow/backlog.md` tracks pending work.
+- The stack-tree (`stack-tree/index.md` and its nodes) records what was done in each session.
+- Debt entries and pending work are registered as tasks in the stack-tree.
 
-**Audit check:** A session that changed behavior but left docs unchanged is a violation of this rule.
+**Audit check:** A session that changed behavior but left the stack-tree unchanged is a violation of this rule.
 
 ---
 
@@ -180,4 +179,4 @@ This includes but is not limited to: domain-specific strings, colors/styles, num
 8. **R3.1 (Naming):** verify config keys and file names match the documented convention.
 9. **R4.1 (Secrets):** scan `.gitignore` and all tracked files for sensitive content.
 10. **R4.2 (Dead code):** grep for unused exports, orphaned files, commented-out blocks.
-11. **R5.1 (Docs):** verify the session's changes updated `status.md` / `technical-debt.md` as needed.
+11. **R5.1 (Docs):** verify the session's changes updated the stack-tree as needed.
