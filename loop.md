@@ -14,15 +14,15 @@ Single file governing the infinity loop: a fresh opencode session per iteration,
 
 The stack-tree is the contract's single data structure and its only persistent state. Divide and conquer is **mandatory** and is executed through it.
 
-- **Structure** — the tree is a single flat folder of markdown files: `stack-tree/index.md` is the root; every other node is one more markdown in the same folder. The hierarchy is purely logical, carried by links between the markdowns — never by subfolders. `depth` is a field in the node, not a path. There are no control registers beyond the tree. **Node file names are semantic and `lower-kebab-case`** (e.g. `slope-collision.md`, never codes or numbers like `0001.md`).
+- **Structure** — the tree is a single flat folder of markdown files: `docs/agent/stack-tree/index.md` is the root; every other node is one more markdown in the same folder. The hierarchy is purely logical, carried by links between the markdowns — never by subfolders. `depth` is a field in the node, not a path. There are no control registers beyond the tree. **Node file names are semantic and `lower-kebab-case`** (e.g. `slope-collision.md`, never codes or numbers like `0001.md`).
 - **Levels & substacks** — each node holds a stack of tasks at its level. A task that needs decomposition gains a substack: a child node (a sibling markdown, linked from the parent) one level deeper. Descending into a child is a **push**; finishing a substack and returning to the parent is a **pop**. `depth` is the node's level in the tree — the divide-and-conquer metric. **A node must stay under ~200 lines; if it outgrows that, split its stack into a substack instead of growing the file.**
-- **Active path** — exactly one node is active at a time. `stack-tree/index.md` keeps the current path (breadcrumb); the active node's markdown holds the session frame: Active Role, Stack Depth, Mandate, Target Artifact. A session reads only the nodes on the current path, never the whole tree.
+- **Active path** — exactly one node is active at a time. `docs/agent/stack-tree/index.md` keeps the current path (breadcrumb); the active node's markdown holds the session frame: Active Role, Stack Depth, Mandate, Target Artifact. A session reads only the nodes on the current path, never the whole tree.
 - **One tree, all state** — the session frame, pending work, and debt are all just tasks in the tree: the active node holds the frame, pending nodes are the backlog, debt entries are tasks to fix later.
 
 ## Session start (every iteration)
 
 1. If `prompt.md` exists at the project root, this session is dedicated to intake — run "User prompt intake" below and nothing else.
-2. Read `stack-tree/index.md` — the root; follow the current path to the active node and read its frame (Role, Depth, Mandate, Target Artifact).
+2. Read `docs/agent/stack-tree/index.md` — the root; follow the current path to the active node and read its frame (Role, Depth, Mandate, Target Artifact).
 3. Read this `loop.md` (attached by the loop runner).
 4. As orchestrator with no active mandate: pick ONE pending task from the root or the active node.
 5. Read project docs scoped, on demand only.
@@ -33,7 +33,7 @@ The stack-tree is the contract's single data structure and its only persistent s
 When `prompt.md` exists, it is the user's new request and this dedicated session does only this:
 
 1. **Enhance** — restate the request sharply: goal, scope, constraints, acceptance criteria. Resolve ambiguities before committing it to the tree.
-2. **Internalize** — write the request into the stack-tree: add its tasks to `stack-tree/index.md`, decomposing into substack nodes as the request demands (divide and conquer).
+2. **Internalize** — write the request into the stack-tree: add its tasks to `docs/agent/stack-tree/index.md`, decomposing into substack nodes as the request demands (divide and conquer).
 3. **Remove** — delete `prompt.md`.
 
 Once `prompt.md` is gone, the loop resumes the normal flow below.
