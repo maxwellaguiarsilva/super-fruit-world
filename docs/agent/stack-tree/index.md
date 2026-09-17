@@ -27,6 +27,7 @@ The stack-tree is the contract's single persistent state: a flat folder of markd
 - [i18n-symlink-host.md](i18n-symlink-host.md) — #14 i18n symlink fails on symlink-less hosts
 - [underground-main-layout.md](underground-main-layout.md) — #15 full-room `wall` backdrop needs redesign
 - [underground-entry-collectibles.md](underground-entry-collectibles.md) — #16 coin/apple embedded in solid column
+- [stack-tree-compliance-reorg.md](stack-tree-compliance-reorg.md) — docs/agent line-limit compliance (audit 2026-09-17, 5 oversized docs)
 
 ## Reference (non-task)
 
@@ -37,6 +38,10 @@ The stack-tree is the contract's single persistent state: a flat folder of markd
 **2026-08-09 — Intake: internalize registers into the stack-tree**
 
 Migrated `docs/agent/status.md` + `docs/agent/technical-debt.md` into the stack-tree: created 13 nodes (active frame `slope-collision.md` + 11 open-debt level-0 nodes + `project-reference-docs.md`), registered each as a task link, set current path + session frame to the `slope-collision` loop-worker substack. Old registers left untouched for manual removal. Consumed and deleted `prompt.md`.
+
+**2026-09-17 — Intake: docs/agent line-limit compliance audit**
+
+Enhanced the runner's audit `prompt.md` into a sharp mandate (goal: every markdown under `docs/agent` below limits with zero info loss via deeper substacks; scope: 5 oversized docs in `docs/agent/`; constraint: active `slope-collision` frame untouched; acceptance: `find -L docs/agent -name '*.md' -exec wc -l {} +` all compliant). Verified stack-tree nodes already comply (index 43 lines, largest node 53). Internalized as pending level-0 task [stack-tree-compliance-reorg.md](stack-tree-compliance-reorg.md) — active path unchanged. Consumed and deleted `prompt.md`.
 
 ## Substack routing
 
