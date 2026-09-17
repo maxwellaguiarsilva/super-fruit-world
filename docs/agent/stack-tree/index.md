@@ -43,6 +43,10 @@ Migrated `docs/agent/status.md` + `docs/agent/technical-debt.md` into the stack-
 
 Enhanced the runner's audit `prompt.md` into a sharp mandate (goal: every markdown under `docs/agent` below limits with zero info loss via deeper substacks; scope: 5 oversized docs in `docs/agent/`; constraint: active `slope-collision` frame untouched; acceptance: `find -L docs/agent -name '*.md' -exec wc -l {} +` all compliant). Verified stack-tree nodes already comply (index 43 lines, largest node 53). Internalized as pending level-0 task [stack-tree-compliance-reorg.md](stack-tree-compliance-reorg.md) — active path unchanged. Consumed and deleted `prompt.md`.
 
+**2026-09-17 — Intake (repeat audit): docs/agent line-limit compliance, idempotent**
+
+Enhanced repeat audit `prompt.md` (same 5 offenders: `class-architecture.md` 2128, `note-frequency-calculator.md` 530, `game-design.md` 455, `technical-architecture.md` 305, `requirements.md` 205; goal zero info loss via depth; scope question unchanged — offenders live in `docs/agent/`, not `stack-tree/`; acceptance `find -L docs/agent -name '*.md' -exec wc -l {} +`). Verified stack-tree still complies (index 48 lines, largest node 53). No new node needed — already tracked by pending [stack-tree-compliance-reorg.md](stack-tree-compliance-reorg.md); active path unchanged. Consumed and deleted `prompt.md`.
+
 ## Substack routing
 
 - *When a task needs decomposition, create a child node markdown (a sibling file in this folder), link it under Tasks above, and update the Current path.*
