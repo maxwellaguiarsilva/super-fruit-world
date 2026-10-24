@@ -1,10 +1,12 @@
 class SceneManager {
   #scenes;
   #currentScene;
+  #currentSceneKey;
 
   constructor() {
     this.#scenes = new Map();
     this.#currentScene = null;
+    this.#currentSceneKey = null;
   }
 
   registerScene(name, scene) {
@@ -13,8 +15,9 @@ class SceneManager {
 
   unregisterScene(name) {
     this.#scenes.delete(name);
-    if (this.#currentScene && this.#currentScene.name === name) {
+    if (this.#currentSceneKey === name) {
       this.#currentScene = null;
+      this.#currentSceneKey = null;
     }
   }
 
@@ -31,6 +34,7 @@ class SceneManager {
     }
 
     this.#currentScene = nextScene;
+    this.#currentSceneKey = name;
     nextScene.enter(previousScene);
   }
 

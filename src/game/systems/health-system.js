@@ -3,7 +3,9 @@ class HealthSystem {
   #maxLife;
   #lives;
   #continues;
+  #startingLives;
   #invincibilityTimer;
+  #fireShieldTimer;
   #iframeTimer;
   #iframeDuration;
 
@@ -11,9 +13,11 @@ class HealthSystem {
     const merged = { ...HealthSystem.defaultConfig, ...config };
     this.#maxLife = merged['max-life'] ?? 10;
     this.#life = this.#maxLife;
-    this.#lives = merged['starting-lives'] ?? 5;
+    this.#startingLives = merged['starting-lives'] ?? 5;
+    this.#lives = this.#startingLives;
     this.#continues = merged['starting-continues'] ?? 1;
     this.#invincibilityTimer = 0;
+    this.#fireShieldTimer = 0;
     this.#iframeDuration = merged['iframe-timer'] ?? 1.0;
     this.#iframeTimer = 0;
   }
@@ -34,13 +38,17 @@ class HealthSystem {
   set continues(v) { this.#continues = Math.max(0, v); }
 
   get isDead() { return this.#life <= 0; }
-  get isGameOver() { return this.#lives <= 0 && this.#continues <= 0; }
+  get isLivesExhausted() { return this.#lives <= 0; }
+  get canContinue() { return this.#continues > 0; }
+  get isGameOver() { return this.isLivesExhausted && !this.canContinue; }
 
   get invincibilityTimer() { return this.#invincibilityTimer; }
+  get fireShieldTimer() { return this.#fireShieldTimer; }
+  get isFireShieldActive() { return this.#fireShieldTimer > 0; }
 
   takeDamage(amount) {
-    if (this.#invincibilityTimer > 0 || this.#iframeTimer > 0) {
-      return;
+    if (this.#invincibilityTimer > 0 || this.#fireShieldTimer > 0 || this.#iframeTimer > 0) {
+      return false;
     }
 
     this.#life -= amount;
@@ -50,6 +58,7 @@ class HealthSystem {
     }
 
     this.#iframeTimer = this.#iframeDuration;
+    return true;
   }
 
   heal(amount) {
@@ -65,22 +74,34 @@ class HealthSystem {
   }
 
   useContinue() {
-    if (this.#continues <= 0) {
+    if (!this.canContinue) {
       return false;
     }
     this.#continues--;
-    this.#lives = HealthSystem.defaultConfig['starting-lives'];
+    this.#lives = this.#startingLives;
     this.#life = this.#maxLife;
     return true;
   }
 
   respawn() {
-    this.#lives--;
+    if (this.#lives > 0) {
+      this.#lives--;
+    }
     this.#life = this.#maxLife;
+    return !this.isLivesExhausted;
   }
 
   set invincibilityTimer(seconds) {
     this.#invincibilityTimer = seconds;
+  }
+
+  applyFireShield(seconds) {
+    const duration = Number(seconds);
+    if (!Number.isFinite(duration) || duration <= 0) {
+      return false;
+    }
+    this.#fireShieldTimer = Math.max(this.#fireShieldTimer, duration);
+    return true;
   }
 
   update(dt) {
@@ -90,6 +111,10 @@ class HealthSystem {
 
     if (this.#invincibilityTimer > 0) {
       this.#invincibilityTimer = Math.max(0, this.#invincibilityTimer - dt);
+    }
+
+    if (this.#fireShieldTimer > 0) {
+      this.#fireShieldTimer = Math.max(0, this.#fireShieldTimer - dt);
     }
   }
 }

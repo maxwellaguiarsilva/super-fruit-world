@@ -1,16 +1,30 @@
+import { requireDependencies } from '../../engine/core/dependency-contract.js';
+
+const INVENTORY_DEPENDENCIES = ['audioEngine', 'usage', 'effects'];
+
 class Inventory {
   #items;
   #defaultSelected;
   #maxSlots;
   #isOpen;
   #audioEngine;
+  #usageByName;
+  #effects;
 
-  constructor(config, audioEngine) {
+  constructor(config, dependencies) {
+    const { audioEngine, usage, effects } = requireDependencies(
+      'Inventory',
+      dependencies,
+      INVENTORY_DEPENDENCIES
+    );
+
     this.#items = new Map();
     this.#defaultSelected = null;
     this.#maxSlots = config?.['max-slots'] ?? 8;
     this.#isOpen = false;
     this.#audioEngine = audioEngine;
+    this.#usageByName = usage ?? {};
+    this.#effects = effects;
   }
 
   get items() { return new Map(this.#items); }
@@ -25,6 +39,8 @@ class Inventory {
 
   get isOpen() { return this.#isOpen; }
   set isOpen(v) { this.#isOpen = v; }
+
+  get effects() { return this.#effects; }
 
   add(itemName, quantity) {
     const qty = quantity ?? 1;
@@ -55,6 +71,11 @@ class Inventory {
   }
 
   use(itemName) {
+    const usage = this.#usageByName[itemName];
+    if (!usage || typeof usage.action !== 'string') {
+      return false;
+    }
+
     const count = this.#items.get(itemName) ?? 0;
     if (count <= 0) {
       return false;
@@ -68,6 +89,8 @@ class Inventory {
           ? 'earth-use'
           : 'inventory-use';
     this.#audioEngine?.playSFX(sfxName);
+
+    this.#effects?.apply(usage);
     return true;
   }
 

@@ -1,7 +1,30 @@
 import { Section } from './section.js';
 
+function expandExtent(extent, box) {
+  if (extent === null) {
+    return { x: box.x, y: box.y, width: box.width, height: box.height };
+  }
+
+  const minX = Math.min(extent.x, box.x);
+  const minY = Math.min(extent.y, box.y);
+  const maxX = Math.max(extent.x + extent.width, box.x + box.width);
+  const maxY = Math.max(extent.y + extent.height, box.y + box.height);
+
+  return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+}
+
+function entityExtent(entity) {
+  return {
+    x: entity.x,
+    y: entity.y,
+    width: entity.width || 1,
+    height: entity.height || 1
+  };
+}
+
 class StageBase {
   #name;
+  #bgm;
   #entities;
   #sections;
   #sectionMap;
@@ -12,6 +35,7 @@ class StageBase {
 
   constructor(stageData) {
     this.#name = stageData.name;
+    this.#bgm = stageData.bgm ?? null;
     this.#entities = [];
     this.#sections = [];
     this.#sectionMap = new Map();
@@ -52,36 +76,31 @@ class StageBase {
   }
 
   #computeDimensions() {
-    let minX = Infinity;
-    let minY = Infinity;
-    let maxX = -Infinity;
-    let maxY = -Infinity;
+    let extent = { x: 0, y: 0, width: 0, height: 0 };
 
     for (const section of this.#sections) {
       const worldPos = section.getWorldPosition(this.#sectionMap);
-      const right = worldPos.x + section.width;
-      const bottom = worldPos.y + section.height;
-
-      if (worldPos.x < minX) minX = worldPos.x;
-      if (worldPos.y < minY) minY = worldPos.y;
-      if (right > maxX) maxX = right;
-      if (bottom > maxY) maxY = bottom;
+      extent = expandExtent(extent, {
+        x: worldPos.x,
+        y: worldPos.y,
+        width: section.width,
+        height: section.height
+      });
     }
 
-    if (this.#sections.length === 0) {
-      minX = 0;
-      minY = 0;
-      maxX = 0;
-      maxY = 0;
+    for (const entity of this.#entities) {
+      extent = expandExtent(extent, entityExtent(entity));
     }
 
-    this.#minX = minX;
-    this.#minY = minY;
-    this.#totalWidth = maxX - minX;
-    this.#totalHeight = maxY - minY;
+    this.reconfigureBounds(extent.x, extent.y, extent.width, extent.height);
+  }
+
+  recomputeBounds() {
+    this.#computeDimensions();
   }
 
   get name() { return this.#name; }
+  get bgm() { return this.#bgm; }
   get minX() { return this.#minX; }
   get minY() { return this.#minY; }
   get width() { return this.#totalWidth; }
@@ -110,7 +129,7 @@ class StageBase {
     };
   }
 
-  get entities() { return this.#entities; }
+  get entities() { return [...this.#entities]; }
 
   addEntity(entity) {
     this.#entities.push(entity);

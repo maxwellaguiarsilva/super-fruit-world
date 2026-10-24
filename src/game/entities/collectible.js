@@ -1,4 +1,5 @@
 import { Entity } from '../../engine/entities/entity.js';
+import { keyItemName } from '../utils/key-item-name.js';
 
 class Collectible extends Entity {
   #type;
@@ -49,7 +50,7 @@ class Collectible extends Entity {
         player.heal(effect.usage.value === 'full' ? player.healthSystem.maxLife : (effect.usage.value ?? 1));
       } else {
         const keyName = this.#collectibleConfig['key-name'] ?? effect['key-name'];
-        const itemName = keyName ? `key:${keyName}` : this.#type;
+        const itemName = keyName ? keyItemName(keyName) : this.#type;
         player.inventory.add(itemName, 1);
       }
     } else if (action === 'invincibility') {
@@ -87,11 +88,6 @@ class Collectible extends Entity {
       const index = this.#collectibleConfig.index ?? 0;
       if (player.stage) {
         player.stage.activateCheckpoint(index);
-      }
-    } else if (action === 'teleport-if-key') {
-      const requiredKey = this.#collectibleConfig['required-key'] ?? 'default';
-      if (player.inventory.has(`key:${requiredKey}`)) {
-        player.inventory.remove(`key:${requiredKey}`, 1);
       }
     } else if (action === 'complete-stage') {
       sfxName = null;

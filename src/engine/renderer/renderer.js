@@ -2,6 +2,8 @@ class Renderer {
   #canvas;
   #ctx;
   #unitScale;
+  #unitHeight;
+  #viewportFraction;
   #viewportWidth;
   #viewportHeight;
 
@@ -10,23 +12,40 @@ class Renderer {
     if (!canvas) {
       throw new Error(`Canvas not found: ${canvasSelector}`);
     }
+
+    const unitHeight = scaleConfig?.unitHeight;
+    if (typeof unitHeight !== 'number' || !(unitHeight > 0)) {
+      throw new Error(
+        `Renderer requires a positive numeric "unitHeight" in its scale configuration; received ${String(unitHeight)}.`
+      );
+    }
+
+    const viewportPercent = scaleConfig?.viewportPercent;
+    if (typeof viewportPercent !== 'number' || !(viewportPercent > 0)) {
+      throw new Error(
+        `Renderer requires a positive numeric "viewportPercent" in its scale configuration; received ${String(viewportPercent)}.`
+      );
+    }
+
     this.#canvas = canvas;
     this.#ctx = canvas.getContext('2d');
     this.#unitScale = 0;
+    this.#unitHeight = unitHeight;
+    this.#viewportFraction = viewportPercent / 100;
     this.#viewportWidth = 0;
     this.#viewportHeight = 0;
-    this.#resize(scaleConfig.unitHeight);
-    window.addEventListener('resize', () => this.#resize(scaleConfig.unitHeight));
+    this.#resize();
+    window.addEventListener('resize', () => this.#resize());
   }
 
-  #resize(unitHeight) {
-    const w = window.innerWidth * 0.9;
-    const h = window.innerHeight * 0.9;
+  #resize() {
+    const w = window.innerWidth * this.#viewportFraction;
+    const h = window.innerHeight * this.#viewportFraction;
     this.#canvas.width = w;
     this.#canvas.height = h;
     this.#canvas.style.width = `${w}px`;
     this.#canvas.style.height = `${h}px`;
-    this.#unitScale = h / unitHeight;
+    this.#unitScale = h / this.#unitHeight;
     this.#viewportWidth = w / this.#unitScale;
     this.#viewportHeight = h / this.#unitScale;
   }
@@ -125,11 +144,45 @@ class Renderer {
     }
   }
 
-  drawPolygon(cx, cy, radius, sides, rotation, cornerRadius, fillColor, borderColor, borderWidth) {
+  drawPolygonPath(points, fillColor, borderColor, borderWidth) {
+    if (!Array.isArray(points) || points.length < 3) {
+      return;
+    }
+
+    this.#ctx.beginPath();
+
+    points.forEach((point, index) => {
+      const px = point.x * this.#unitScale;
+      const py = point.y * this.#unitScale;
+
+      if (index === 0) {
+        this.#ctx.moveTo(px, py);
+      } else {
+        this.#ctx.lineTo(px, py);
+      }
+    });
+
+    this.#ctx.closePath();
+
+    if (fillColor) {
+      this.#ctx.fillStyle = fillColor;
+      this.#ctx.fill();
+    }
+
+    if (borderColor && borderWidth > 0) {
+      this.#ctx.strokeStyle = borderColor;
+      this.#ctx.lineWidth = borderWidth * this.#unitScale;
+      this.#ctx.lineJoin = 'round';
+      this.#ctx.stroke();
+    }
+
+    this.#ctx.lineJoin = 'miter';
+  }
+
+  drawPolygon(cx, cy, radius, sides, rotation, fillColor, borderColor, borderWidth) {
     const px = cx * this.#unitScale;
     const py = cy * this.#unitScale;
     const pr = radius * this.#unitScale;
-    const cr = Math.min(cornerRadius * this.#unitScale, pr / 2);
 
     const angleStep = (Math.PI * 2) / sides;
 
@@ -149,10 +202,6 @@ class Renderer {
 
     this.#ctx.closePath();
 
-    if (cr > 0) {
-      this.#ctx.lineJoin = 'round';
-    }
-
     if (fillColor) {
       this.#ctx.fillStyle = fillColor;
       this.#ctx.fill();
@@ -168,13 +217,28 @@ class Renderer {
     this.#ctx.lineJoin = 'miter';
   }
 
+  #scaleFont(font) {
+    return font.replace(/(\d+(?:\.\d+)?)px/, (_, size) => `${parseFloat(size) * this.#unitScale}px`);
+  }
+
+  measureText(text, font) {
+    if (typeof text !== 'string' || text.length === 0) {
+      return 0;
+    }
+
+    this.#ctx.save();
+    this.#ctx.font = this.#scaleFont(font);
+    const width = this.#ctx.measureText(text).width;
+    this.#ctx.restore();
+
+    return this.#unitScale > 0 ? width / this.#unitScale : 0;
+  }
+
   drawText(text, x, y, font, color, align) {
     const px = x * this.#unitScale;
     const py = y * this.#unitScale;
 
-    const scaledFont = font.replace(/(\d+(?:\.\d+)?)px/, (_, size) => `${parseFloat(size) * this.#unitScale}px`);
-
-    this.#ctx.font = scaledFont;
+    this.#ctx.font = this.#scaleFont(font);
     this.#ctx.fillStyle = color;
     this.#ctx.textAlign = align;
     this.#ctx.fillText(text, px, py);

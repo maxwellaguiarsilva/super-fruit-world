@@ -1,20 +1,20 @@
 class Ability {
   #name;
   #requiredLevel;
+  #initialDuration;
   #duration;
   #cooldownDuration;
   #cooldownRemaining;
   #isActive;
-  #activationType;
 
   constructor(config) {
     this.#name = config.name ?? 'unknown';
     this.#requiredLevel = config['required-level'] ?? 0;
-    this.#duration = config.duration ?? 0;
+    this.#initialDuration = config.duration ?? 0;
+    this.#duration = this.#initialDuration;
     this.#cooldownDuration = config.cooldown ?? 0;
     this.#cooldownRemaining = 0;
     this.#isActive = false;
-    this.#activationType = config['activation-type'] ?? 'hold';
   }
 
   get name() { return this.#name; }
@@ -24,15 +24,18 @@ class Ability {
 
   get isAvailable() { return true; }
   get isActive() { return this.#isActive; }
-  get duration() { return this.#duration; }
+  get duration() { return this.#initialDuration; }
+  get remainingDuration() { return this.#duration; }
   get cooldown() { return this.#cooldownDuration; }
   get cooldownRemaining() { return this.#cooldownRemaining; }
 
   activate(player, inputManager) {
-    if (this.#cooldownRemaining > 0) {
-      return;
+    if (this.#cooldownRemaining > 0 || this.#isActive) {
+      return false;
     }
+    this.#duration = this.#initialDuration;
     this.#isActive = true;
+    return true;
   }
 
   deactivate(player) {

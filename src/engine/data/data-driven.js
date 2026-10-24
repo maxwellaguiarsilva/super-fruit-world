@@ -39,6 +39,17 @@ class DataDriven {
     return value;
   }
 
+  static keyForDataPath(filePath) {
+    return DataDriven.#segmentsForDataPath(filePath).join('.');
+  }
+
+  static #segmentsForDataPath(filePath) {
+    return filePath
+      .replace(/^data\//, '')
+      .replace(/\.json$/, '')
+      .split('/');
+  }
+
   get all() {
     return new Map(this.#data);
   }
@@ -73,8 +84,7 @@ class DataDriven {
   }
 
   #validateKebabPath(path) {
-    const relative = path.replace(/^data\//, '').replace(/\.json$/, '');
-    const segments = relative.split('/');
+    const segments = DataDriven.#segmentsForDataPath(path);
     for (const segment of segments) {
       if (!KEBAB_PATTERN.test(segment)) {
         throw new Error(

@@ -1,33 +1,57 @@
-class SaveSystem {
-  #namespace;
-  #prefix;
+import { OnceReporter } from '../core/report-once.js';
 
-  constructor(namespace) {
-    this.#namespace = namespace;
+class SaveSystem {
+  #prefix;
+  #reporter;
+
+  constructor(namespace, options = {}) {
     this.#prefix = `${namespace}:`;
+    this.#reporter = new OnceReporter(options.logger);
   }
 
   save(key, data) {
+    const storageKey = `${this.#prefix}${key}`;
     try {
-      localStorage.setItem(`${this.#prefix}${key}`, JSON.stringify(data));
+      localStorage.setItem(storageKey, JSON.stringify(data));
+      return true;
     } catch {
+      this.#report('save', storageKey);
+      return false;
     }
   }
 
   load(key) {
+    const storageKey = `${this.#prefix}${key}`;
+
+    let raw;
     try {
-      const raw = localStorage.getItem(`${this.#prefix}${key}`);
-      if (raw === null) {
-        return null;
-      }
+      raw = localStorage.getItem(storageKey);
+    } catch {
+      this.#report('load', storageKey);
+      return null;
+    }
+
+    if (raw === null) {
+      return null;
+    }
+
+    try {
       return JSON.parse(raw);
     } catch {
+      this.#report('load', storageKey);
       return null;
     }
   }
 
   delete(key) {
-    localStorage.removeItem(`${this.#prefix}${key}`);
+    const storageKey = `${this.#prefix}${key}`;
+    try {
+      localStorage.removeItem(storageKey);
+      return true;
+    } catch {
+      this.#report('delete', storageKey);
+      return false;
+    }
   }
 
   has(key) {
@@ -45,6 +69,13 @@ class SaveSystem {
     for (const k of keysToRemove) {
       localStorage.removeItem(k);
     }
+  }
+
+  #report(operation, storageKey) {
+    this.#reporter.report(
+      `${operation}:${storageKey}`,
+      `[SaveSystem] ${operation} failed for key "${storageKey}".`
+    );
   }
 }
 

@@ -1,16 +1,18 @@
 {
-  "description": "Inventory key. Stored in the player's inventory on pickup. Used to unlock a matching key-door elsewhere in the stage. A key-door references a key by its key-name. The key persists only within the current stage.",
+  "description": "Key pickup. Adds key:<key-name> to the inventory, where <key-name> comes from the stage object that uses this file. The matching map node declares unlock-condition { type: key-required, key-name: <key-name> }, and a KeyDoor declares required-key: <key-name>. The stage object must declare key-name.",
   "type": "key",
   "visual": {
     "shape": "key",
-    "size": 0.6,
+    "size": 0.5,
     "fill-color": "yellow",
     "border-color": "dark-yellow",
     "border": "thin"
   },
   "effect": {
     "action": "add-to-inventory",
-    "auto-activate": false,
-    "key-name": null
+    "auto-activate": false
+  },
+  "inventory": {
+    "accumulates": true
   }
 }

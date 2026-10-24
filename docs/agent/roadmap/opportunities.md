@@ -1,0 +1,87 @@
+# Improvement Opportunities
+
+Subject: the current inventory of unresolved improvements. Each item records what exists, what it costs, and a candidate direction. Nothing here is ordered; the order lives in [next-steps.md](next-steps.md).
+
+Every item is code-verified unless it says otherwise. Items that were resolved by the delivered waves are kept in [Resolved](#resolved) with their resolution, so the inventory can be read as a ledger rather than as a snapshot.
+
+## Resolved
+
+| Original ID | Title | Resolution | Evidence |
+| --- | --- | --- | --- |
+| A1 | Title confirm did not transition | Title confirm dispatches `start-game`, which opens the initial or last stage. | `src/app/app.js`; smoke run. |
+| A2 | One hardcoded stage key | Scene keys derive from the stage data basename (DEC-4). | `stageSceneKey` in `src/app/content/stage-loader.js`. |
+| A3 | Map layer never constructed | The map scene is built at boot, rebuilt after a stage clear and when returning to the map, and reachable from the pause menu and the stage-clear screen. | `buildMapScene`, `refreshMap`, `leaveTo` in `src/app/app.js`. |
+| A4 | Map data contract mismatch | `MapStage` reads nodes, paths, labels and markers from `sections[].objects[]`. | `src/game/map/map-stage.js`, `data/map/fruit-world.json`. |
+| A5 | Teleporter specialization never used | Every teleporter kind has a dispatcher entry, a shared activation contract and a runtime routing test. | `src/game/stages/teleporters.js`, `test/teleporter-activation.test.js`. |
+| A6 | Teleporter markers discarded | Markers are added as stage entities and resolved by name through `Stage.getTeleporterMarker`. | `createTeleporterMarker`, `Stage.getTeleporterMarker`. |
+| A7 | No persistence | Automatic versioned progress with resume at the map (DEC-5). | `ProgressStore` in `src/game/systems/progression-system.js`, `test/progress-store.test.js`. |
+| A8 | Damage system unwired | Enemy and hazard damage flow through `DamageSystem` from the stage. | `src/game/stages/stage.js`, `test/damage-system.test.js`. |
+| A9 | End-screen confirms unassigned | Both end screens dispatch their configured actions. | `src/app/content/stage-loader.js`. |
+| A10 | Unhandled menu actions | Every declared action has a handler; unknown actions are reported. | `registerActions` in `src/app/app.js`, `test/scene-router.test.js`. |
+| A11 | Unreferenced top-level UI instances | One HUD and one construction path per screen; settings is reachable from title and pause. | `UiBuilder` in `src/app/factories/ui-builder.js`. |
+| A12 | Checkpoint count setter was a no-op | The count is derived from the checkpoint list. | `Stage.checkpointCount`. |
+| A13 | HUD tracker went stale | The HUD reads the player's note collection, which comes from the current stage. | `HUD.render`, `Player.noteCollection`. |
+| A14 | Dialogue engine unused | Stage intros play through `DialogueEngine` with typewriter and dismissal. | `src/app/content/stage-loader.js`, `src/game/scenes/scenes.js`. |
+| A15 | Loaded but unreferenced data | Every unreferenced collectible and per-enemy file was removed. The locale is one physical file with two names: `data/i18n/default.json` is a symbolic link to `data/i18n/en-us.json`. | `data/index.json` inventory, `data/collectibles/`, `data/enemies/`, `ls -l data/i18n/`. |
+| OP-01 | Six map nodes without stage data | All eight map nodes have stage data, including `starfruit-caverns-branch`. The stage catalog test asserts the eight files. | `data/stages/`, `test/stage-catalog.test.js`; `bun run validate` reports 0 warnings. |
+| OP-02 | Key-gated unlock has no implementation | `unlockedByCompletion` evaluates `stage-complete` and `key-required` against the completed set and the live inventory; `applyProgressToMapConfig` reads `progress.inventory`. | `src/game/systems/progression-system.js`, `test/progress-store.test.js`, `test/progress-writer.test.js`. |
+| OP-03 | Shadowed data and a locale alias | The shadowed `checkpoint` and `key-door` collectible files were removed. The locale is not a duplicate: `data/i18n/default.json` is a symbolic link to `data/i18n/en-us.json`, so there is one physical file and two indexed names. | `ls -l data/i18n/`, `data/index.json`, `bun run validate`. |
+| OP-04 | Shooter enemies never fire | Every shipped shooter object declares `detection-range`, `fire-rate` and `projectile-speed`; a data test pins the contract. | Stage data, `test/shooter-enemy-data.test.js`. |
+| OP-05 | Map teleporter family is inert | Map data no longer declares map teleporters or markers. `MapStage` reports and ignores a map-level teleporter. A `map-teleporter` object in stage data is dispatched and activated by the stage loop. | `data/map/fruit-world.json`, `src/game/map/map-stage.js`, `test/teleporter-activation.test.js`. |
+| OP-06 | Teleporter family is inert | All four kinds share `canActivate(context)` and `activate(context)`; the stage loop dispatches inner, special and map teleporters and key doors with edge-triggered overlap latching; marker targets resolve by marker name; a missing marker reports once and stays inert. | `src/game/stages/teleporters.js`, `src/game/stages/stage.js`, `test/teleporter-activation.test.js`. |
+| OP-07 | Projectile impact reacts to any entity | A projectile stops only on a solid entity or on a valid target: player shots damage the first enemy, enemy shots damage the player and pass through other enemies. Decorative tiles, collectibles, checkpoints and markers are ignored. | `src/game/entities/projectile.js`, `test/projectile-impact.test.js`. |
+| OP-08 | Slopes are rectangles | Slopes resolve and render as solid wedges through one `SlopeSurface`; landing, step-up, descending stick, the tall face, the underside and both orientations are covered. Slope data in Strawberry Fields and Fruit Basket Citadel aligns with the adjacent platforms. | `src/engine/physics/slope-surface.js`, `test/slope-collision.test.js`, `test/stage-catalog.test.js`. |
+| OP-09 | Unimplemented or unreachable abilities are advertised | Dash, crouch, slide-attack, flight with slow fall, double jump and air slide are implemented and gated by level. Tutorial and controls text names only working inputs. | `src/game/abilities/`, `src/game/entities/player.js`, `test/movement-abilities.test.js`, `test/combat-abilities.test.js`. |
+| OP-10 | Game over is unreachable | The stage scene enters the game-over state when lives are exhausted, whether or not a continue remains; the screen reads live continues and hides Continue at zero. | `src/game/scenes/scenes.js`, `src/game/ui/ui-components.js`, `test/stage-scene-game-over.test.js`, browser run. |
+| OP-11 | Death by damage had no consequence | `Stage.update` routes zero life through `respawnPlayer` once: one life is spent, notes reset, the player returns to the active checkpoint and life is restored. Invincibility, fire shield and invulnerability frames still block the damage first. The existing lives-exhausted check reaches game over after the last life. | `src/game/stages/stage.js`, `test/death-respawn.test.js`, `test/stage-scene-game-over.test.js`. |
+| OP-12 | Inventory items are consumed without effect | `ItemEffects` resolves `effect.usage.action`: restore-health, moon-gravity, fire-shield and earthquake. `Inventory.use` consumes one unit, plays the sound and applies the effect once. | `src/game/systems/item-effects.js`, `src/game/systems/inventory.js`, `test/item-effects.test.js`. |
+| OP-13 | Stage-clear summary is empty and end-screen data is stale | `Menu` honors `visible-condition`; `GameOverScreen` reads the live health system; `StageClearScreen` resolves the stage big fruit, the ability for that fruit's level and the live score at render time. | `src/game/ui/ui-components.js`, `src/app/factories/ui-builder.js`, `test/end-screen-ui.test.js`, browser run. |
+| OP-14 | Audio settings are live-only | `SettingsStore` persists a separate `settings` record; `AudioSettings` binds the engine volumes and writes through on every change; boot applies the saved values after engine construction. | `src/engine/audio/audio-settings.js`, `src/app/app.js`, `test/audio-settings.test.js`. |
+| OP-15 | Map labels clip at the viewport edge | Node labels are measured with `Renderer.measureText` and clamped inside the camera view by `clampLabelX`. | `src/game/map/label-layout.js`, `src/game/map/map-stage.js`, `test/map-label-layout.test.js`. |
+| OP-16 | HUD and UI configuration drift | The HUD draws the configured background and border, every element honors `enabled`, `inventory-indicator` shows the live selected item, `star-counter` was removed, and pause/game-over/stage-clear layout comes from `menu-defaults.layout` plus per-screen `layout-overrides`. | `src/game/ui/ui-components.js`, `data/ui/hud.json`, `data/ui/menus.json`, `test/hud-layout.test.js`, `test/menu-layout.test.js`. |
+| OP-17 | Level-up does not recolor the player | `applyLevelUp` assigns the resolved palette color for the new level. | `src/game/systems/progression-system.js`, `test/level-up-color.test.js`. |
+| OP-18 | Update rate does not pace the simulation | `GameLoop` runs a fixed timestep at `loop.update-rate` (60), passes the step in seconds, clamps a frame to 100 ms, caps at five steps per frame, renders once per frame and falls back to 60. | `src/engine/core/game-loop.js`, `test/game-loop.test.js`. |
+| OP-19 (settings half) | Audio settings persistence was considered unverified | A real browser run opened Settings from the title, moved Music Volume from 60% to 80% with two right presses, observed `bgm-volume: 0.8` in `localStorage["super-fruit-world:settings"]`, reloaded, and saw 80% with SFX still 100%. No console or page errors were recorded. | Browser run; `src/engine/audio/audio-settings.js`, `test/audio-settings.test.js`. |
+| OP-21 | Persistence write points are untested | `ProgressWriter` owns both write paths, and the tests cover the snapshot, the complete-stage merge and the order of snapshot then save. | `src/app/state/progress-writer.js`, `test/progress-writer.test.js`. |
+| OP-22 | Music CLI usage string does not match its invocation | `package.json` declares the `format-4-beat-music` alias, so the printed usage runs. | `package.json`, `test/music-formatter-cli.test.js`. |
+| OP-23 | No check enforces the layer rule | `bun run check:layers` scans every `.js` file under `src/` for static, side-effect, re-export and dynamic imports and fails on a violation. | `scripts/check-layers.js`, `test/check-layers.test.js`. |
+| OP-25 | Secret Waterfall declared a track that was not played | `StageBase` exposes the stage `bgm` and `StageScene.enter` plays `stage.bgm ?? stage.name`. All eight stage tracks are registered, so the branch plays `secret-waterfall`. | `src/engine/entities/stage-base.js`, `src/game/scenes/scenes.js`, `test/stage-bgm.test.js`. |
+| OP-26 | The inventory could discard a key | `Inventory.use` consumes only items with a declared `effect.usage.action`; keys and items without usage are not consumed and play no sound. The inventory confirm path and the select+shoot shortcut use the same method. | `src/game/systems/inventory.js`, `test/item-effects.test.js`, `test/inventory-use-path.test.js`. |
+| B1 | Player dependencies assigned ad hoc | One dependency object at construction (DEC-2). | `src/game/entities/player.js`, `test/dependency-contract.test.js`. |
+| B2 | Data accessor leaked into presentation | Presentation uses `TextResolver`; no UI module reads `DataDriven`. | `src/engine/data/text-resolver.js`, `src/app/factories/ui-builder.js`. |
+| B3 | Tile defaults applied twice | `resolveTileType` is the single owner; `Tile` consumes the configuration verbatim. | `test/normalization-ownership.test.js`. |
+| B4 | Enemy configuration normalized only in the application layer | The application layer remains the owner, and a test pins every key the enemy classes read against `parseEnemyConfig`. | `test/normalization-ownership.test.js`. |
+| B5 | Two bounds algorithms | `StageBase.recomputeBounds` is the only bounds computation; the loader calls it after dispatch. | `src/engine/entities/stage-base.js`, `test/stage-bounds.test.js`. |
+| B6 | Entity lists maintained twice | `Stage.addEntity` and `removeEntity` fill and prune every per-type view. | `src/game/stages/stage.js`, `test/stage-lists.test.js`. |
+| B7 | Type dispatch was a branch chain | One registry contract for abilities, enemies and stage objects (DEC-1). | `src/app/content/kind-registry.js`. |
+| B8 | Projectile class was a service locator | The projectile factory is injected into the stage, abilities and enemy factory. | `test/projectile-injection.test.js`. |
+| B9 | Dependency bags hid contracts | Bags remain, but each collaborator declares its key list and `requireDependencies` fails on a missing key. | `src/engine/core/dependency-contract.js`. |
+| B10 | Pass-through config wrappers | Removed; `UiBuilder` calls `resolveConfig` at construction. | `src/app/factories/ui-builder.js`. |
+| B11 | Scene router was an unused seam | It is the navigation and menu-action seam (DEC-3). | `src/app/navigation/scene-router.js`. |
+| B12 | Data path handled by string surgery | `DataDriven.keyForDataPath` is the single conversion. | `test/data-path.test.js`. |
+| C1 | Render unit hardcoded | Read from `game-config.visual-unit.value`. | `src/app/app.js`. |
+| C2 | Update rate hardcoded | Read from `game-config.loop.update-rate` and used as the fixed timestep (OP-18). | `src/app/app.js`, `src/engine/core/game-loop.js`. |
+| C3 | Data index generator missing | `scripts/generate-data-index.js` exists and is the documented regeneration step. | `scripts/generate-data-index.js`. |
+| C4 | No schema or validation | `bun run validate` checks the tree; see the rules in [../data-model.md](../data-model.md#validation). | `scripts/validate-data.js`, `test/validate-data.test.js`. |
+| D1 | No manifest or build pipeline | `package.json` declares the scripts and one development dependency; there is no stale bundle. | `package.json`, `.gitignore`. |
+| D2 | No tests or static checks | 666 tests across 63 files, plus the data validator, the layer check, the smoke test and the stage verification command. | `test/`, `scripts/validate-data.js`, `scripts/check-layers.js`, `scripts/smoke.js`, `scripts/verify-stages.js`. |
+| D3 | No boot smoke test | Headless Chromium boot and transition check. | `scripts/smoke.js`. |
+| D4 | Bun CLI outside the workflow | Declared as the `format-4-beat-music` script and documented. | [../tooling/music-format-cli.md](../tooling/music-format-cli.md). |
+| D5 | No documentation convention | The taxonomy, index and reading order are stated in [../README.md](../README.md). | `docs/agent/README.md`. |
+| D6 | Enemy drop tables were absent from shipped content | `drop-table` is the only drop configuration; seven later-stage enemy objects declare weighted tables, drops use the injected collectible factory, and `drop-rate`/`drop-type` are removed. The validator checks table shape, collectible references and weights. | `data/stages/`, `src/game/entities/enemy.js`, `scripts/validate-data.js`, `test/enemy-drops.test.js`. |
+
+## Open
+
+### Verification and tooling
+
+| ID | Title | Current state | Consequence | Candidate direction |
+| --- | --- | --- | --- | --- |
+| OP-19 | Teleporter traversal remains browser-unverified | The recorded browser runs cover all eight stage boots, game over after repeated pit deaths, the Avocado Grove stage-clear summary, and audio-settings persistence across a reload. Teleporter traversal inside a stage is unit-tested only. | A regression in teleporter routing or the overlap latch would not be caught by the recorded browser evidence. | Extend the browser harness with one teleporter traversal in Strawberry Fields. |
+| OP-20 | Full gameplay is not verified by play | `verify:stages` enters every stage through the map and checks its HUD and intro, but the complete Strawberry Fields → Fruit Basket Citadel run, including completion and the key-gated branch, is not played end to end. | Progression, checkpoints, note completion, the key pickup and the stage-clear chain are only partially exercised together. | Extend `verify:stages` to complete each stage, or record a manual run per release. |
+| OP-24 | The composition root has no direct test | `src/app/app.js` and `src/main.js` are imported by no test file. Every other former gap now has a suite: game loop, scene manager, camera, renderer, physics, UI element, scene router, scenes, map navigation, map labels, death respawn, stage collision dt and stage BGM. | Boot order, the action table and the key-unlock merge are covered only through extracted seams and browser runs; settings restore is additionally browser-verified. None is covered through the composition root. | Test the composition root through a fake data tree and stubbed browser globals, or extract the remaining boot phases into testable collaborators. |
+
+## Discarded approaches
+
+- Canvas pixel checksums as a regression signal: the title screen animates, so identical behavior produces different checksums.
+- Treating the application-layer extraction as permanently behavior-frozen: the zero-behavior-change contract was lifted after the extraction, so improving changes are permitted.
+- Comparing the whole canvas against a stored image: viewport size and font availability make the result environment-dependent. The smoke test uses coarse non-blank statistics instead.

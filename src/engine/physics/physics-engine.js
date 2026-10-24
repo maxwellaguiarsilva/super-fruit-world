@@ -26,9 +26,10 @@ class PhysicsEngine {
   }
 
   applyGravity(entity, dt) {
+    const gravity = this.#gravity * this.#gravityMultiplier(entity);
     entity.velocity = {
       x: entity.velocity.x,
-      y: Math.min(entity.velocity.y + this.#gravity * dt, this.#maxFallSpeed)
+      y: Math.min(entity.velocity.y + gravity * dt, this.#maxFallSpeed)
     };
   }
 
@@ -49,8 +50,13 @@ class PhysicsEngine {
   getAppliedForce(entity) {
     return {
       x: 0,
-      y: this.#gravity
+      y: this.#gravity * this.#gravityMultiplier(entity)
     };
+  }
+
+  #gravityMultiplier(entity) {
+    const multiplier = entity?.gravityMultiplier;
+    return Number.isFinite(multiplier) ? multiplier : 1;
   }
 }
 

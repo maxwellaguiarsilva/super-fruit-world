@@ -6,14 +6,25 @@ class NoteCollectionTracker {
   #rewardTriggered;
 
   constructor(noteRangeConfig) {
+    // The declared scale is the contract when present: note order N plays the
+    // Nth declared note. `lowest` and `count` are the fallback for callers that
+    // only provide a range, in which case the names are generated in whole-tone
+    // steps from the lowest note.
+    const declaredNotes = Array.isArray(noteRangeConfig.notes)
+      ? noteRangeConfig.notes.filter((note) => typeof note === 'string' && note.length > 0)
+      : [];
     const lowest = noteRangeConfig.lowest ?? 'c4';
-    const count = noteRangeConfig.count ?? 8;
+    const count = declaredNotes.length > 0 ? declaredNotes.length : (noteRangeConfig.count ?? 8);
 
     this.#totalNotes = count;
     this.#collected = [];
-    this.#noteNames = [];
+    this.#noteNames = [...declaredNotes];
     this.#lastCollected = null;
     this.#rewardTriggered = false;
+
+    if (this.#noteNames.length > 0) {
+      return;
+    }
 
     const semitones = ['c', 'c#', 'd', 'd#', 'e', 'f', 'f#', 'g', 'g#', 'a', 'a#', 'b'];
     const lowestMatch = /^([a-g])([#bx]*)(-?\d+)$/i.exec(lowest);

@@ -1,0 +1,111 @@
+{
+  "description": "Sixth stage — Pitaya Canyon. A scorched canyon route of spikes, shooters and narrow ledges, with two checkpoints, eight musical notes, and a pitaya big-fruit that evolves the player to level 6 (magenta). The final stretch is guarded by heavy patrol enemies.",
+  "name": "pitaya-canyon",
+  "display-name-key": "stage.pitaya-canyon",
+  "big-fruit": "pitaya",
+  "type": "horizontal-scrolling",
+  "theme": "canyon",
+  "bgm": "pitaya-canyon",
+  "dialogue": {
+    "intro": [
+      { "speaker": "Pitaya", "text": "dialogue.pitaya-canyon.intro-1" },
+      { "speaker": "Pitaya", "text": "dialogue.pitaya-canyon.intro-2" },
+      { "speaker": "Pitaya", "text": "dialogue.pitaya-canyon.intro-3" }
+    ]
+  },
+  "sections": [
+    {
+      "name": "canyon-rim",
+      "parent-section": "root",
+      "position": { "x": 0, "y": 0 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 24, "height": 1 } },
+        { "type": "decorative", "position": { "x": 0, "y": -2 }, "size": { "width": 24, "height": 2 }, "visual": { "fill-color": "dark-red" } },
+        { "type": "player-spawn", "position": { "x": 3, "y": 0 } },
+        { "type": "coin", "position": { "x": 6, "y": -1 } },
+        { "type": "ammo", "position": { "x": 8, "y": -1 } },
+        { "type": "apple", "position": { "x": 10, "y": -1 } },
+        { "type": "musical-note", "position": { "x": 13, "y": -1.5 }, "note-order": 1 },
+        { "type": "spike", "variant": "spike", "position": { "x": 16, "y": -0.5 }, "size": { "width": 1, "height": 0.5 } },
+        { "type": "triangle-patrol", "color": "red", "position": { "x": 19, "y": -1 }, "patrol-range": 2 },
+        { "type": "heart", "position": { "x": 22, "y": -1 } }
+      ]
+    },
+    {
+      "name": "deadfall",
+      "parent-section": "root",
+      "position": { "x": 24, "y": 0 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 6, "height": 1 } },
+        { "type": "platform", "position": { "x": 8, "y": -1 }, "size": { "width": 6, "height": 1 } },
+        { "type": "spike", "variant": "spike", "position": { "x": 10, "y": -1.5 }, "size": { "width": 1, "height": 0.5 } },
+        { "type": "coin", "position": { "x": 12, "y": -2 } },
+        { "type": "triangle-shooter", "color": "red", "position": { "x": 13, "y": -2 }, "patrol-range": 2, "detection-range": 7, "fire-rate": 1.0, "projectile-speed": 4 },
+        { "type": "platform", "position": { "x": 16, "y": -2 }, "size": { "width": 6, "height": 1 } },
+        { "type": "musical-note", "position": { "x": 18, "y": -3.5 }, "note-order": 2 },
+        { "type": "square-patrol", "color": "red", "position": { "x": 19, "y": -3 }, "patrol-range": 2 },
+        { "type": "platform", "position": { "x": 24, "y": -1 }, "size": { "width": 5, "height": 1 } },
+        { "type": "spike", "variant": "spike", "position": { "x": 26, "y": -1.5 }, "size": { "width": 1, "height": 0.5 } },
+        { "type": "musical-note", "position": { "x": 27, "y": -2.5 }, "note-order": 3 },
+        { "type": "pit", "position": { "x": 0, "y": 1 }, "size": { "width": 30, "height": 6 } }
+      ]
+    },
+    {
+      "name": "ember-climb",
+      "parent-section": "root",
+      "position": { "x": 53, "y": -1 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 6, "height": 1 } },
+        { "type": "checkpoint", "position": { "x": 3, "y": 0 } },
+        { "type": "platform", "position": { "x": 8, "y": -2 }, "size": { "width": 5, "height": 1 } },
+        { "type": "musical-note", "position": { "x": 9, "y": -3.5 }, "note-order": 4 },
+        { "type": "square-shooter", "color": "green", "position": { "x": 11, "y": -3 }, "patrol-range": 2, "detection-range": 7, "fire-rate": 0.9, "projectile-speed": 4.5 },
+        { "type": "platform", "position": { "x": 15, "y": -4 }, "size": { "width": 5, "height": 1 } },
+        { "type": "coin", "position": { "x": 16, "y": -5 } },
+        { "type": "spike", "variant": "spike", "position": { "x": 18, "y": -4.5 }, "size": { "width": 1, "height": 0.5 } },
+        { "type": "musical-note", "position": { "x": 20, "y": -5.5 }, "note-order": 5 },
+        { "type": "platform", "position": { "x": 23, "y": -2 }, "size": { "width": 5, "height": 1 } },
+        { "type": "ammo", "position": { "x": 25, "y": -3 } },
+        { "type": "checkpoint", "position": { "x": 26, "y": -2 } }
+      ]
+    },
+    {
+      "name": "magma-run",
+      "parent-section": "root",
+      "position": { "x": 81, "y": -3 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 8, "height": 1 } },
+        { "type": "platform", "position": { "x": 10, "y": -1 }, "size": { "width": 5, "height": 1 } },
+        { "type": "spike", "variant": "spike", "position": { "x": 12, "y": -1.5 }, "size": { "width": 1, "height": 0.5 } },
+        { "type": "musical-note", "position": { "x": 13, "y": -2.5 }, "note-order": 6 },
+        { "type": "triangle-shooter", "color": "red", "position": { "x": 14, "y": -2 }, "patrol-range": 2, "detection-range": 8, "fire-rate": 0.8, "projectile-speed": 5 },
+        { "type": "platform", "position": { "x": 18, "y": -2 }, "size": { "width": 5, "height": 1 } },
+        { "type": "coin", "position": { "x": 19, "y": -3 } },
+        { "type": "square-patrol", "color": "red", "position": { "x": 21, "y": -3 }, "patrol-range": 1 },
+        { "type": "platform", "position": { "x": 25, "y": -3 }, "size": { "width": 5, "height": 1 } },
+        { "type": "musical-note", "position": { "x": 26, "y": -4.5 }, "note-order": 7 },
+        { "type": "heptagon-patrol", "color": "magenta", "position": { "x": 28, "y": -4 }, "patrol-range": 1, "drop-table": [{ "type": "coin", "weight": 3 }, { "type": "heart", "weight": 1 }, { "type": "earth", "weight": 1 }] },
+        { "type": "platform", "position": { "x": 31, "y": -1 }, "size": { "width": 5, "height": 1 } },
+        { "type": "heart", "position": { "x": 33, "y": -2 } }
+      ]
+    },
+    {
+      "name": "pitaya-heart",
+      "parent-section": "root",
+      "position": { "x": 117, "y": -4 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 26, "height": 1 } },
+        { "type": "decorative", "position": { "x": 0, "y": -2 }, "size": { "width": 26, "height": 2 }, "visual": { "fill-color": "dark-red" } },
+        { "type": "coin", "position": { "x": 2, "y": -1 } },
+        { "type": "apple", "position": { "x": 4, "y": -1 } },
+        { "type": "musical-note", "position": { "x": 6, "y": -1.5 }, "note-order": 8 },
+        { "type": "triangle-shooter", "color": "green", "position": { "x": 9, "y": -1 }, "patrol-range": 2, "detection-range": 8, "fire-rate": 0.7, "projectile-speed": 5 },
+        { "type": "square-patrol", "color": "magenta", "position": { "x": 12, "y": -1 }, "patrol-range": 2 },
+        { "type": "big-fruit", "collectible": "pitaya", "position": { "x": 17, "y": -1.5 } },
+        { "type": "hexagon-patrol", "color": "magenta", "position": { "x": 20, "y": -1 }, "patrol-range": 2, "drop-table": [{ "type": "coin", "weight": 4 }, { "type": "moon", "weight": 1 }] },
+        { "type": "heart", "position": { "x": 22, "y": -1 } },
+        { "type": "exit-door", "position": { "x": 24, "y": -1 } }
+      ]
+    }
+  ]
+}

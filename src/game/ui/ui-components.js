@@ -1,40 +1,94 @@
-import { UIElement } from '../../engine/ui/ui-element.js';
+import { UIElement, anchorPosition } from '../../engine/ui/ui-element.js';
+
+function withOpacity(color, opacity) {
+  if (typeof color !== 'string' || !color.startsWith('#')
+    || opacity === undefined || opacity === null || opacity >= 1) {
+    return color;
+  }
+
+  const hex = color.slice(1);
+  if (hex.length !== 6) {
+    return color;
+  }
+
+  const red = parseInt(hex.slice(0, 2), 16);
+  const green = parseInt(hex.slice(2, 4), 16);
+  const blue = parseInt(hex.slice(4, 6), 16);
+  return `rgba(${red}, ${green}, ${blue}, ${opacity})`;
+}
 
 class HUD extends UIElement {
   #player;
-  #noteCollection;
-  #dataDriven;
+  #textResolver;
   #hudConfig;
+  #bordersConfig;
 
-  constructor(hudConfig, player, noteCollection, dataDriven) {
+  constructor(hudConfig, player, textResolver, bordersConfig = null) {
     super({ x: 0, y: 0, width: 40, height: 30 });
     this.#hudConfig = hudConfig;
     this.#player = player;
-    this.#noteCollection = noteCollection;
-    this.#dataDriven = dataDriven;
+    this.#textResolver = textResolver;
+    this.#bordersConfig = bordersConfig;
   }
 
   get player() { return this.#player; }
-  get noteCollection() { return this.#noteCollection; }
+  get noteCollection() { return this.#player ? this.#player.noteCollection : null; }
 
   update(dt) {
     super.update(dt);
   }
 
+  #borderWidth(style) {
+    const border = this.#bordersConfig?.borders?.[style];
+    return typeof border?.width === 'number' ? border.width : 0;
+  }
+
+  #renderBackground(renderer, hudCfg) {
+    const background = hudCfg.background;
+    if (!background) {
+      return;
+    }
+
+    const color = withOpacity(background.color, background.opacity);
+    renderer.drawRect(0, 0, renderer.viewportWidth, hudCfg.height, 0, color, null, 0);
+  }
+
+  #renderBorder(renderer, hudCfg) {
+    const border = hudCfg.border;
+    if (!border) {
+      return;
+    }
+
+    const width = this.#borderWidth(border.style);
+    if (width <= 0 || !border.color) {
+      return;
+    }
+
+    renderer.drawLine(0, hudCfg.height, renderer.viewportWidth, hudCfg.height, border.color, width);
+  }
+
   render(renderer) {
+    const cfg = this.#hudConfig;
+    if (!cfg || cfg.hud?.enabled === false) {
+      return;
+    }
+
     if (!this.#player) {
       return;
     }
 
-    const cfg = this.#hudConfig;
+    const hudCfg = cfg.hud;
     const elements = cfg.elements;
-    const textCfg = cfg.hud.text;
+    const textCfg = hudCfg.text;
     const fontFamily = textCfg['font-family'];
     const defaultLabelSize = textCfg['label-size'];
     const defaultValueSize = textCfg['value-size'];
 
+    this.#renderBackground(renderer, hudCfg);
+    this.#renderBorder(renderer, hudCfg);
+
     const lifeCfg = elements['life-bar'];
-    if (lifeCfg.enabled !== false) {
+    if (lifeCfg && lifeCfg.enabled !== false) {
       const lbOffset = lifeCfg.offset;
       const lbSize = lifeCfg.size;
       const lbX = lbOffset.x;
@@ -45,21 +99,21 @@ class HUD extends UIElement {
         lifeCfg['empty-color'], '#000000', 0.02);
       renderer.drawRect(lbX, lbY, lbSize.width * lifeRatio, lbSize.height, lifeCfg['corner-radius'],
         lifeCfg['fill-color'], null, 0);
+    }
 
-      const levelCfg = elements['level-indicator'];
-      if (levelCfg.enabled !== false) {
-        const lvOffset = levelCfg.offset;
-        const lvPrefix = this.#dataDriven['i18n.default.hud.level-prefix'];
-        const lvText = `${lvPrefix}${this.#player.level}`;
-        renderer.drawText(lvText, lvOffset.x, lvOffset.y + defaultValueSize,
-          `${defaultValueSize}px ${fontFamily}`, levelCfg['label-color'], 'left');
-      }
+    const levelCfg = elements['level-indicator'];
+    if (levelCfg && levelCfg.enabled !== false) {
+      const lvOffset = levelCfg.offset;
+      const lvPrefix = this.#textResolver.text('hud.level-prefix');
+      const lvText = `${lvPrefix}${this.#player.level}`;
+      renderer.drawText(lvText, lvOffset.x, lvOffset.y + defaultValueSize,
+        `${defaultValueSize}px ${fontFamily}`, levelCfg['label-color'], 'left');
     }
 
     const ammoCfg = elements['ammo-counter'];
-    if (ammoCfg.enabled !== false) {
+    if (ammoCfg && ammoCfg.enabled !== false) {
       const amOffset = ammoCfg.offset;
-      const amPrefix = this.#dataDriven['i18n.default.hud.ammo-prefix'];
+      const amPrefix = this.#textResolver.text('hud.ammo-prefix');
       const ammoType = 'ammo';
       const amText = `${amPrefix}${this.#player.inventory.count(ammoType)}`;
       renderer.drawText(amText, amOffset.x, amOffset.y + defaultValueSize,
@@ -67,10 +121,10 @@ class HUD extends UIElement {
     }
 
     const coinCfg = elements['coin-counter'];
-    if (coinCfg.enabled !== false) {
+    if (coinCfg && coinCfg.enabled !== false) {
       const coOffset = coinCfg.offset;
       const coSize = coinCfg['icon-size'];
-      const coPrefix = this.#dataDriven['i18n.default.hud.coins-prefix'];
+      const coPrefix = this.#textResolver.text('hud.coins-prefix');
       const coins = this.#player.scoreSystem ? this.#player.scoreSystem.coins : 0;
       const coinR = coSize.width / 2;
       renderer.drawCircle(coOffset.x, coOffset.y + coinR, coinR,
@@ -80,35 +134,70 @@ class HUD extends UIElement {
     }
 
     const scoreCfg = elements['score-counter'];
-    if (scoreCfg.enabled !== false) {
+    if (scoreCfg && scoreCfg.enabled !== false) {
       const scOffset = scoreCfg.offset;
-      const scPrefix = this.#dataDriven['i18n.default.hud.score-prefix'];
+      const scPrefix = this.#textResolver.text('hud.score-prefix');
       const score = this.#player.scoreSystem ? this.#player.scoreSystem.score : 0;
       renderer.drawText(`${scPrefix}${score}`, renderer.viewportWidth - scOffset.x, scOffset.y + defaultValueSize,
         `${defaultValueSize}px ${fontFamily}`, scoreCfg['label-color'], 'right');
     }
 
-    if (this.#noteCollection) {
-      const ntCfg = elements['note-tracker'];
-      if (ntCfg.enabled !== false) {
-        const ntOffset = ntCfg.offset;
-        const noteInfo = `${this.#noteCollection.collectedCount}/${this.#noteCollection.totalNotes}`;
-        const ntPrefix = this.#dataDriven['i18n.default.hud.notes-prefix'];
-        const ntX = renderer.viewportWidth + ntOffset.x;
-        renderer.drawText(`${ntPrefix}${noteInfo}`, ntX, ntOffset.y + defaultValueSize,
-          `${defaultValueSize}px ${fontFamily}`, ntCfg['filled-color'], 'left');
+    const noteCollection = this.#player.noteCollection;
+    const ntCfg = elements['note-tracker'];
+    if (noteCollection && ntCfg && ntCfg.enabled !== false) {
+      const ntOffset = ntCfg.offset;
+      const noteInfo = `${noteCollection.collectedCount}/${noteCollection.totalNotes}`;
+      const ntPrefix = this.#textResolver.text('hud.notes-prefix');
+      const ntX = renderer.viewportWidth + ntOffset.x;
+      renderer.drawText(`${ntPrefix}${noteInfo}`, ntX, ntOffset.y + defaultValueSize,
+        `${defaultValueSize}px ${fontFamily}`, ntCfg['filled-color'], 'left');
 
-        const slotSize = ntCfg['slot-size'];
-        const slotGap = ntCfg['slot-gap'];
-        const noteY = ntOffset.y + slotSize.height + 0.15;
-        for (let i = 0; i < this.#noteCollection.totalNotes; i++) {
-          const isCollected = this.#noteCollection.isCollected(i + 1);
-          const noteColor = isCollected
-            ? ntCfg['filled-color']
-            : ntCfg['empty-color'];
-          renderer.drawCircle(ntX + i * (slotSize.width + slotGap), noteY, slotSize.width / 2,
-            noteColor, '#000000', 0.01);
-        }
+      const slotSize = ntCfg['slot-size'];
+      const slotGap = ntCfg['slot-gap'];
+      const noteY = ntOffset.y + slotSize.height + 0.15;
+      for (let i = 0; i < noteCollection.totalNotes; i++) {
+        const isCollected = noteCollection.isCollected(i + 1);
+        const noteColor = isCollected
+          ? ntCfg['filled-color']
+          : ntCfg['empty-color'];
+        renderer.drawCircle(ntX + i * (slotSize.width + slotGap), noteY, slotSize.width / 2,
+          noteColor, '#000000', 0.01);
+      }
+    }
+
+    const inventoryCfg = elements['inventory-indicator'];
+    if (inventoryCfg && inventoryCfg.enabled !== false) {
+      const size = inventoryCfg.size;
+      const position = anchorPosition(
+        inventoryCfg.anchor,
+        inventoryCfg.offset,
+        size.width,
+        size.height,
+        renderer.viewportWidth,
+        renderer.viewportHeight
+      );
+      const borderWidth = this.#borderWidth(inventoryCfg.border);
+
+      renderer.drawRect(position.x, position.y, size.width, size.height,
+        inventoryCfg['corner-radius'] ?? 0, inventoryCfg['fill-color'] ?? null,
+        inventoryCfg['border-color'] ?? null, borderWidth);
+
+      const labelOffset = inventoryCfg['label-offset'] ?? { x: 0, y: 0 };
+      const label = this.#textResolver.text(inventoryCfg['label-key']);
+      renderer.drawText(label, position.x + size.width / 2 + labelOffset.x,
+        position.y + labelOffset.y + defaultLabelSize,
+        `${defaultLabelSize}px ${fontFamily}`, inventoryCfg['label-color'], 'center');
+
+      const inventory = this.#player.inventory;
+      const selected = inventory?.defaultSelected ?? null;
+      if (selected) {
+        const count = typeof inventory.count === 'function' ? inventory.count(selected) : 0;
+        renderer.drawText(selected, position.x + size.width / 2,
+          position.y + size.height * 0.45,
+          `${defaultLabelSize}px ${fontFamily}`, inventoryCfg['item-color'], 'center');
+        renderer.drawText(`x${count}`, position.x + size.width / 2,
+          position.y + size.height * 0.9,
+          `${defaultLabelSize}px ${fontFamily}`, inventoryCfg['count-color'], 'center');
       }
     }
   }
@@ -116,7 +205,7 @@ class HUD extends UIElement {
 
 class Menu extends UIElement {
   #selectedIndex;
-  #dataDriven;
+  #textResolver;
   #items;
   #titleKey;
   #titleColor;
@@ -124,15 +213,20 @@ class Menu extends UIElement {
   #fontFamily;
   #startOffset;
   #onClose;
+  #onConfirm;
   #buttonConfig;
   #subtitleKey;
   #subtitleConfig;
   #hintKey;
   #hintConfig;
+  #overlay;
+  #overlayOpacity;
+  #layout;
+  #conditions;
 
-  constructor(menuConfig, dataDriven) {
+  constructor(menuConfig, textResolver, conditions = {}) {
     super(menuConfig);
-    this.#dataDriven = dataDriven;
+    this.#textResolver = textResolver;
     this.#selectedIndex = 0;
     this.#items = menuConfig.items;
     this.#titleKey = menuConfig['title-key'];
@@ -145,20 +239,94 @@ class Menu extends UIElement {
     this.#subtitleConfig = menuConfig.subtitle;
     this.#hintKey = menuConfig['hint-key'];
     this.#hintConfig = menuConfig.hint;
+    this.#overlay = menuConfig.overlay;
+    this.#overlayOpacity = menuConfig['overlay-opacity'];
+    this.#layout = menuConfig.layout ?? {};
+    this.#conditions = conditions;
     this.#onClose = null;
+    this.#onConfirm = null;
   }
 
-  get selectedIndex() { return this.#selectedIndex; }
+  #conditionSatisfied(conditionName) {
+    if (!conditionName) {
+      return true;
+    }
+
+    const evaluator = this.#conditions[conditionName];
+    if (typeof evaluator !== 'function') {
+      return true;
+    }
+
+    return evaluator() !== false;
+  }
+
+  isItemVisible(item) {
+    if (!item || item.visible === false) {
+      return false;
+    }
+
+    return this.#conditionSatisfied(item['visible-condition'] ?? item.visibleCondition ?? null);
+  }
+
+  get visibleItemIndices() {
+    const indices = [];
+    for (let i = 0; i < this.#items.length; i++) {
+      if (this.isItemVisible(this.#items[i])) {
+        indices.push(i);
+      }
+    }
+    return indices;
+  }
+
+  get visibleItems() {
+    return this.visibleItemIndices.map((index) => this.#items[index]);
+  }
+
+  #syncSelection() {
+    const indices = this.visibleItemIndices;
+    if (indices.length === 0) {
+      this.#selectedIndex = -1;
+      return;
+    }
+
+    if (!indices.includes(this.#selectedIndex)) {
+      this.#selectedIndex = indices[0];
+    }
+  }
+
+  get selectedIndex() {
+    this.#syncSelection();
+    return this.#selectedIndex;
+  }
 
   navigateUp() {
-    this.#selectedIndex = (this.#selectedIndex - 1 + this.#items.length) % this.#items.length;
+    this.#syncSelection();
+    const indices = this.visibleItemIndices;
+    if (indices.length === 0) {
+      return;
+    }
+
+    const position = indices.indexOf(this.#selectedIndex);
+    this.#selectedIndex = indices[(position - 1 + indices.length) % indices.length];
   }
 
   navigateDown() {
-    this.#selectedIndex = (this.#selectedIndex + 1) % this.#items.length;
+    this.#syncSelection();
+    const indices = this.visibleItemIndices;
+    if (indices.length === 0) {
+      return;
+    }
+
+    const position = indices.indexOf(this.#selectedIndex);
+    this.#selectedIndex = indices[(position + 1) % indices.length];
   }
 
   confirm() {
+    this.#syncSelection();
+    const item = this.#items[this.#selectedIndex];
+    if (item && this.isItemVisible(item) && this.#onConfirm) {
+      this.#onConfirm(item.action);
+    }
   }
 
   back() {
@@ -170,13 +338,19 @@ class Menu extends UIElement {
   get onClose() { return this.#onClose; }
   set onClose(fn) { this.#onClose = fn; }
 
+  get onConfirm() { return this.#onConfirm; }
+  set onConfirm(fn) { this.#onConfirm = fn; }
+
   get items() { return [...this.#items]; }
-  get dataDriven() { return this.#dataDriven; }
+  get textResolver() { return this.#textResolver; }
   get titleKey() { return this.#titleKey; }
   get titleColor() { return this.#titleColor; }
   get titleFontSize() { return this.#titleFontSize; }
   get fontFamily() { return this.#fontFamily; }
   get startOffset() { return this.#startOffset; }
+  get overlay() { return this.#overlay; }
+  get overlayOpacity() { return this.#overlayOpacity; }
+  get layout() { return this.#layout; }
 
   update(dt, inputManager) {
     super.update(dt);
@@ -202,36 +376,54 @@ class Menu extends UIElement {
       return;
     }
 
+    this.renderSubtitle(renderer);
+    this.renderItems(renderer);
+    this.renderHint(renderer);
+  }
+
+  renderOverlay(renderer) {
+    const background = this.#overlay;
+    const color = withOpacity(background?.['background-color'] ?? '#000000', this.#overlayOpacity);
+    renderer.drawRect(0, 0, renderer.viewportWidth, renderer.viewportHeight, 0, color, null, 0);
+  }
+
+  renderItems(renderer, startY = null) {
     const btn = this.#buttonConfig;
     const gap = btn['gap'];
     const fontSize = btn['font-size'];
     const selectedColor = btn['selected-text-color'];
     const defaultColor = btn['text-color'];
+    const selectedPrefix = btn['selected-prefix'] ?? '> ';
+    const selectedSuffix = btn['selected-suffix'] ?? ' <';
+    const defaultPrefix = btn['default-prefix'] ?? '';
+    const defaultSuffix = btn['default-suffix'] ?? '';
     const itemHeight = btn['size'].height;
+    const visibleIndices = this.visibleItemIndices;
 
-    const startY = (this.#startOffset && this.#startOffset.y > 0)
+    this.#syncSelection();
+
+    const firstY = startY ?? ((this.#startOffset && this.#startOffset.y > 0)
       ? this.#startOffset.y
-      : (renderer.viewportHeight / 2 - this.#items.length * (itemHeight + gap) / 2);
+      : (renderer.viewportHeight / 2 - visibleIndices.length * (itemHeight + gap) / 2));
 
-    this.renderSubtitle(renderer);
-
-    for (let i = 0; i < this.#items.length; i++) {
-      const item = this.#items[i];
-      const label = this.#dataDriven['i18n.default.' + item.label];
-      const isSelected = i === this.#selectedIndex;
+    for (let row = 0; row < visibleIndices.length; row++) {
+      const index = visibleIndices[row];
+      const item = this.#items[index];
+      const label = this.#textResolver.text(item.label);
+      const isSelected = index === this.#selectedIndex;
       const color = isSelected ? selectedColor : defaultColor;
 
       renderer.drawText(
-        isSelected ? `> ${label} <` : label,
+        isSelected
+          ? `${selectedPrefix}${label}${selectedSuffix}`
+          : `${defaultPrefix}${label}${defaultSuffix}`,
         renderer.viewportWidth / 2,
-        startY + i * (itemHeight + gap),
+        firstY + row * (itemHeight + gap),
         `${fontSize}px ${this.#fontFamily}`,
         color,
         'center'
       );
     }
-
-    this.renderHint(renderer);
   }
 
   renderSubtitle(renderer) {
@@ -247,7 +439,7 @@ class Menu extends UIElement {
       return;
     }
 
-    const label = this.#dataDriven['i18n.default.' + textKey];
+    const label = this.#textResolver.text(textKey);
     const offset = config.offset;
     const x = renderer.viewportWidth / 2 + offset.x;
     const y = (config.anchor === 'bottom-center')
@@ -259,212 +451,480 @@ class Menu extends UIElement {
 }
 
 class TitleMenu extends Menu {
-  constructor(menuConfig, dataDriven) {
-    super(menuConfig, dataDriven);
-  }
-
-  confirm() {
-    const item = this.items[this.selectedIndex];
-    if (item && this.onConfirm) {
-      this.onConfirm(item.action);
-    }
+  constructor(menuConfig, textResolver) {
+    super(menuConfig, textResolver);
   }
 }
 
 class PauseMenu extends Menu {
-  #stage;
+  constructor(menuConfig, textResolver) {
+    super(menuConfig, textResolver);
+  }
 
-  constructor(menuConfig, dataDriven, stage) {
-    super(menuConfig, dataDriven);
-    this.#stage = stage;
+  render(renderer) {
+    this.renderOverlay(renderer);
+
+    const layout = this.layout;
+    const titleLayout = layout.title ?? {};
+    const startY = layout.items?.['start-y'] ?? 4.2;
+
+    const titleKey = this.titleKey;
+    const pauseLabel = this.textResolver.text(titleKey);
+    renderer.drawText(pauseLabel, renderer.viewportWidth / 2, titleLayout['offset-y'] ?? 2.2,
+      `${this.titleFontSize + (titleLayout['font-size-offset'] ?? 0.2)}px ${this.fontFamily}`,
+      this.titleColor, 'center');
+
+    this.renderItems(renderer, startY);
+    this.renderHint(renderer);
+  }
+}
+
+class SettingsMenu extends Menu {
+  #settings;
+  #sliders;
+  #buttonConfig;
+  #selectedRow;
+
+  constructor(menuConfig, textResolver, settings) {
+    super(menuConfig, textResolver);
+    this.#settings = settings;
+    this.#sliders = menuConfig.sliders ?? [];
+    this.#buttonConfig = menuConfig.button;
+    this.#selectedRow = 0;
+  }
+
+  get settings() { return this.#settings; }
+
+  get selectedRow() { return this.#selectedRow; }
+
+  #rowCount() {
+    return this.#sliders.length + this.visibleItems.length;
+  }
+
+  #visibleButtons() {
+    return this.visibleItems;
+  }
+
+  #syncSelectedRow() {
+    const count = this.#rowCount();
+    if (count === 0) {
+      this.#selectedRow = 0;
+      return;
+    }
+
+    if (this.#selectedRow >= count) {
+      this.#selectedRow = count - 1;
+    }
+  }
+
+  #selectedSlider() {
+    return this.#selectedRow < this.#sliders.length ? this.#sliders[this.#selectedRow] : null;
+  }
+
+  #selectedItem() {
+    const index = this.#selectedRow - this.#sliders.length;
+    if (index < 0) {
+      return null;
+    }
+    return this.#visibleButtons()[index] ?? null;
+  }
+
+  #readSetting(settingKey) {
+    return this.#settings ? this.#settings.get(settingKey) : 0;
+  }
+
+  #writeSetting(settingKey, value) {
+    this.#settings?.set(settingKey, value);
+  }
+
+  #adjustSelected(delta) {
+    const slider = this.#selectedSlider();
+    if (!slider) {
+      return;
+    }
+
+    const min = slider.min ?? 0;
+    const max = slider.max ?? 1;
+    const step = slider.step ?? 0.1;
+    const current = this.#readSetting(slider['setting-key']);
+    const next = Math.min(max, Math.max(min, Math.round((current + delta * step) * 100) / 100));
+    this.#writeSetting(slider['setting-key'], next);
+  }
+
+  navigateUp() {
+    const count = this.#rowCount();
+    if (count === 0) {
+      return;
+    }
+    this.#syncSelectedRow();
+    this.#selectedRow = (this.#selectedRow - 1 + count) % count;
+  }
+
+  navigateDown() {
+    const count = this.#rowCount();
+    if (count === 0) {
+      return;
+    }
+    this.#syncSelectedRow();
+    this.#selectedRow = (this.#selectedRow + 1) % count;
   }
 
   confirm() {
-    const item = this.items[this.selectedIndex];
+    this.#syncSelectedRow();
+    const item = this.#selectedItem();
     if (item && this.onConfirm) {
       this.onConfirm(item.action);
     }
   }
 
+  back() {
+    if (this.onClose) {
+      this.onClose();
+    }
+  }
+
+  update(dt, inputManager) {
+    if (!inputManager) {
+      return;
+    }
+    if (inputManager.isPressed('up')) {
+      this.navigateUp();
+    }
+    if (inputManager.isPressed('down')) {
+      this.navigateDown();
+    }
+    if (inputManager.isPressed('left')) {
+      this.#adjustSelected(-1);
+    }
+    if (inputManager.isPressed('right')) {
+      this.#adjustSelected(1);
+    }
+    if (inputManager.isPressed('confirm')) {
+      this.confirm();
+    }
+    if (inputManager.isPressed('back')) {
+      this.back();
+    }
+  }
+
   render(renderer) {
-    renderer.drawRect(0, 0, renderer.viewportWidth, renderer.viewportHeight, 0, 'rgba(0,0,0,0.7)', null, 0);
+    renderer.drawRect(0, 0, renderer.viewportWidth, renderer.viewportHeight, 0, '#000000', null, 0);
 
-    const titleKey = this.titleKey;
-    const pauseLabel = this.dataDriven['i18n.default.' + titleKey];
-    renderer.drawText(pauseLabel, renderer.viewportWidth / 2, 2.2, `${this.titleFontSize + 0.2}px ${this.fontFamily}`, this.titleColor, 'center');
+    const layout = this.layout;
+    const titleLayout = layout.title ?? {};
+    const itemsLayout = layout.items ?? {};
+    const rowsLayout = layout.rows ?? {};
+    const rowGap = rowsLayout.gap ?? 1.15;
+    const firstRowY = itemsLayout['start-y'] ?? 3.0;
+    const buttonGap = itemsLayout.gap ?? 0.6;
+    const selectedPrefix = itemsLayout['selected-prefix'] ?? '> ';
+    const selectedSuffix = itemsLayout['selected-suffix'] ?? ' <';
+    const defaultPrefix = itemsLayout['default-prefix'] ?? '';
+    const defaultSuffix = itemsLayout['default-suffix'] ?? '';
 
-    const gap = 0.15;
-    const fontSize = 0.3;
-    const startY = (this.startOffset && this.startOffset.y > 0) ? this.startOffset.y : 4.2;
+    const settingsLabel = this.textResolver.text(this.titleKey);
+    renderer.drawText(settingsLabel, renderer.viewportWidth / 2, titleLayout['offset-y'] ?? 1.5,
+      `${this.titleFontSize + (titleLayout['font-size-offset'] ?? 0.1)}px ${this.fontFamily}`,
+      this.titleColor, 'center');
 
-    for (let i = 0; i < this.items.length; i++) {
-      const item = this.items[i];
-      const label = this.dataDriven['i18n.default.' + item.label];
-      const isSelected = i === this.selectedIndex;
-      const color = isSelected ? '#FFFF00' : '#888888';
+    const btn = this.#buttonConfig;
+    const selectedColor = btn['selected-text-color'];
+    const defaultColor = btn['text-color'];
 
+    for (let i = 0; i < this.#sliders.length; i++) {
+      this.#renderSlider(renderer, this.#sliders[i], i, firstRowY + i * rowGap, selectedColor, defaultColor,
+        selectedPrefix, selectedSuffix, defaultPrefix, defaultSuffix);
+    }
+
+    const buttonsY = firstRowY + this.#sliders.length * rowGap;
+    const visibleButtons = this.#visibleButtons();
+    this.#syncSelectedRow();
+    for (let i = 0; i < visibleButtons.length; i++) {
+      const item = visibleButtons[i];
+      const label = this.textResolver.text(item.label);
+      const isSelected = this.#selectedRow === this.#sliders.length + i;
       renderer.drawText(
-        isSelected ? `> ${label}` : `  ${label}`,
+        isSelected
+          ? `${selectedPrefix}${label}${selectedSuffix}`
+          : `${defaultPrefix}${label}${defaultSuffix}`,
         renderer.viewportWidth / 2,
-        startY + i * (0.55 + gap),
-        `${fontSize}px ${this.fontFamily}`,
-        color,
+        buttonsY + i * buttonGap,
+        `${btn['font-size']}px ${this.fontFamily}`,
+        isSelected ? selectedColor : defaultColor,
         'center'
       );
     }
 
     this.renderHint(renderer);
   }
-}
 
-class SettingsMenu extends Menu {
-  #audioEngine;
+  #renderSlider(renderer, slider, index, y, selectedColor, defaultColor,
+    selectedPrefix, selectedSuffix, defaultPrefix, defaultSuffix) {
+    const isSelected = this.#selectedRow === index;
+    const label = this.textResolver.text(slider['label-key']);
+    const value = this.#readSetting(slider['setting-key']);
+    const min = slider.min ?? 0;
+    const max = slider.max ?? 1;
+    const ratio = max > min ? (value - min) / (max - min) : 0;
 
-  constructor(menuConfig, dataDriven, audioEngine) {
-    super(menuConfig, dataDriven);
-    this.#audioEngine = audioEngine;
-  }
+    renderer.drawText(
+      isSelected
+        ? `${selectedPrefix}${label}${selectedSuffix}`
+        : `${defaultPrefix}${label}${defaultSuffix}`,
+      renderer.viewportWidth / 2,
+      y,
+      `${this.#buttonConfig['font-size']}px ${this.fontFamily}`,
+      isSelected ? selectedColor : defaultColor,
+      'center'
+    );
 
-  get masterVolume() {
-    return this.#audioEngine ? this.#audioEngine.masterVolume : 1;
-  }
+    const trackSize = slider['track-size'] ?? { width: 4.0, height: 0.3 };
+    const trackX = renderer.viewportWidth / 2 - trackSize.width / 2;
+    const trackY = y + 0.3;
 
-  set masterVolume(v) {
-    if (this.#audioEngine) {
-      this.#audioEngine.masterVolume = v;
-    }
-  }
+    renderer.drawRect(trackX, trackY, trackSize.width, trackSize.height, slider['corner-radius'] ?? 0.1,
+      slider['track-color'], null, 0);
+    renderer.drawRect(trackX, trackY, trackSize.width * ratio, trackSize.height, slider['corner-radius'] ?? 0.1,
+      slider['fill-color'], null, 0);
+    renderer.drawCircle(trackX + trackSize.width * ratio, trackY + trackSize.height / 2,
+      slider['thumb-radius'] ?? 0.2, slider['thumb-color'], null, 0);
 
-  get bgmVolume() {
-    return this.#audioEngine ? this.#audioEngine.bgmVolume : 1;
-  }
-
-  set bgmVolume(v) {
-    if (this.#audioEngine) {
-      this.#audioEngine.bgmVolume = v;
-    }
-  }
-
-  get sfxVolume() {
-    return this.#audioEngine ? this.#audioEngine.sfxVolume : 1;
-  }
-
-  set sfxVolume(v) {
-    if (this.#audioEngine) {
-      this.#audioEngine.sfxVolume = v;
-    }
-  }
-
-  confirm() {
-  }
-
-  render(renderer) {
-    renderer.drawRect(0, 0, renderer.viewportWidth, renderer.viewportHeight, 0, '#000000', null, 0);
-
-    const settingsLabel = this.dataDriven['i18n.default.menu.settings.title'];
-    renderer.drawText(settingsLabel, renderer.viewportWidth / 2, 2, `${this.titleFontSize + 0.1}px ${this.fontFamily}`, this.titleColor, 'center');
-
-    this.renderHint(renderer);
+    const percent = `${Math.round(ratio * 100)}%`;
+    renderer.drawText(percent, trackX + trackSize.width + 0.4, trackY + trackSize.height,
+      `${this.#buttonConfig['font-size']}px ${this.fontFamily}`, defaultColor, 'left');
   }
 }
 
 class GameOverScreen extends Menu {
-  #continuesAvailable;
-  #livesRemaining;
+  #healthSystem;
 
-  constructor(menuConfig, dataDriven, continuesAvailable, livesRemaining) {
-    super(menuConfig, dataDriven);
-    this.#continuesAvailable = continuesAvailable;
-    this.#livesRemaining = livesRemaining;
+  constructor(menuConfig, textResolver, healthSystem) {
+    super(menuConfig, textResolver, {
+      'has-continues': () => this.canContinue
+    });
+    this.#healthSystem = healthSystem;
   }
 
-  confirm() {
-    if (this.onConfirm) {
-      this.onConfirm('continue');
+  get continues() {
+    return this.#healthSystem ? this.#healthSystem.continues : 0;
+  }
+
+  get lives() {
+    return this.#healthSystem ? this.#healthSystem.lives : 0;
+  }
+
+  get canContinue() {
+    if (!this.#healthSystem) {
+      return false;
     }
+    if (typeof this.#healthSystem.canContinue === 'boolean') {
+      return this.#healthSystem.canContinue;
+    }
+    return this.#healthSystem.continues > 0;
   }
 
   render(renderer) {
-    renderer.drawRect(0, 0, renderer.viewportWidth, renderer.viewportHeight, 0, '#000000', null, 0);
+    this.renderOverlay(renderer);
+
+    const layout = this.layout;
+    const titleLayout = layout.title ?? {};
+    const rows = layout.rows ?? {};
+    const rowFontSize = rows['font-size'] ?? 0.45;
 
     const titleKey = this.titleKey;
-    const gameOverLabel = this.dataDriven['i18n.default.' + titleKey];
-    renderer.drawText(gameOverLabel, renderer.viewportWidth / 2, 2.5, `${this.titleFontSize + 0.2}px ${this.fontFamily}`, this.titleColor, 'center');
+    const gameOverLabel = this.textResolver.text(titleKey);
+    renderer.drawText(gameOverLabel, renderer.viewportWidth / 2, titleLayout['offset-y'] ?? 2.5,
+      `${this.titleFontSize + (titleLayout['font-size-offset'] ?? 0.2)}px ${this.fontFamily}`,
+      this.titleColor, 'center');
 
-    const continuesPrefix = this.dataDriven['i18n.default.menu.game-over.continues-prefix'];
-    const continuesText = `${continuesPrefix}${this.#continuesAvailable}`;
-    renderer.drawText(continuesText, renderer.viewportWidth / 2, 4.5, `0.45px ${this.fontFamily}`, this.titleColor, 'center');
+    const continuesPrefix = this.textResolver.text('menu.game-over.continues-prefix');
+    const continuesText = `${continuesPrefix}${this.continues}`;
+    renderer.drawText(continuesText, renderer.viewportWidth / 2,
+      rows.continues?.['offset-y'] ?? 4.5, `${rowFontSize}px ${this.fontFamily}`, this.titleColor, 'center');
 
-    if (this.#continuesAvailable > 0) {
-      const hint = this.dataDriven['i18n.default.menu.game-over.continue-hint'];
-      renderer.drawText(hint, renderer.viewportWidth / 2, 6.0, `0.45px ${this.fontFamily}`, this.titleColor, 'center');
+    const livesPrefix = this.textResolver.text('hud.lives-prefix');
+    const livesText = `${livesPrefix}${this.lives}`;
+    renderer.drawText(livesText, renderer.viewportWidth / 2,
+      rows.lives?.['offset-y'] ?? 5.3, `${rowFontSize}px ${this.fontFamily}`, this.titleColor, 'center');
+
+    if (this.continues > 0) {
+      const hint = this.textResolver.text('menu.game-over.continue-hint');
+      renderer.drawText(hint, renderer.viewportWidth / 2,
+        rows['continue-hint']?.['offset-y'] ?? 6.0, `${rowFontSize}px ${this.fontFamily}`, this.titleColor, 'center');
     }
+
+    this.renderItems(renderer, layout.items?.['start-y'] ?? 7.2);
   }
 }
 
 class StageClearScreen extends Menu {
   #stageName;
-  #collectibleCollected;
-  #abilityGained;
-  #score;
+  #stageNameKey;
+  #fruitProvider;
+  #abilityProvider;
+  #scoreProvider;
 
-  constructor(menuConfig, dataDriven, stageName, collectibleCollected, abilityGained, score) {
-    super(menuConfig, dataDriven);
-    this.#stageName = stageName;
-    this.#collectibleCollected = collectibleCollected;
-    this.#abilityGained = abilityGained;
-    this.#score = score;
+  constructor(menuConfig, textResolver, providers = {}) {
+    super(menuConfig, textResolver);
+    this.#stageName = providers.stageName ?? '';
+    this.#stageNameKey = providers.stageNameKey ?? null;
+    this.#fruitProvider = providers.fruit ?? (() => null);
+    this.#abilityProvider = providers.abilities ?? (() => []);
+    this.#scoreProvider = providers.score ?? (() => 0);
   }
 
-  confirm() {
-    if (this.onConfirm) {
-      this.onConfirm('next');
+  #stageDisplayName() {
+    return this.#stageNameKey ? this.textResolver.text(this.#stageNameKey) : this.#stageName;
+  }
+
+  #fruitLabel() {
+    const fruit = this.#fruitProvider();
+    return fruit ? this.textResolver.text(`fruits.${fruit}`) : '';
+  }
+
+  #abilityLabel() {
+    const abilities = this.#abilityProvider() ?? [];
+    return abilities
+      .filter((ability) => typeof ability === 'string' && ability.length > 0)
+      .map((ability) => this.textResolver.text(`player.abilities.${ability}`))
+      .join(', ');
+  }
+
+  render(renderer) {
+    this.renderOverlay(renderer);
+
+    const layout = this.layout;
+    const titleLayout = layout.title ?? {};
+    const rows = layout.rows ?? {};
+    const rowFontSize = rows['font-size'] ?? 0.4;
+    const stageNameRow = rows['stage-name'] ?? {};
+
+    const titleKey = this.titleKey;
+    const clearLabel = this.textResolver.text(titleKey);
+    renderer.drawText(clearLabel, renderer.viewportWidth / 2, titleLayout['offset-y'] ?? 2.0,
+      `${this.titleFontSize + (titleLayout['font-size-offset'] ?? 0.2)}px ${this.fontFamily}`,
+      this.titleColor, 'center');
+
+    renderer.drawText(this.#stageDisplayName(), renderer.viewportWidth / 2,
+      stageNameRow['offset-y'] ?? 3.5, `${stageNameRow['font-size'] ?? 0.5}px ${this.fontFamily}`,
+      this.titleColor, 'center');
+
+    const fruitLabel = this.#fruitLabel();
+    if (fruitLabel) {
+      const collectedPrefix = this.textResolver.text('menu.stage-clear.collected-prefix');
+      renderer.drawText(`${collectedPrefix}${fruitLabel}`, renderer.viewportWidth / 2,
+        rows.fruit?.['offset-y'] ?? 4.5, `${rowFontSize}px ${this.fontFamily}`, this.titleColor, 'center');
+    }
+
+    const abilityLabel = this.#abilityLabel();
+    if (abilityLabel) {
+      const abilityPrefix = this.textResolver.text('menu.stage-clear.ability-prefix');
+      renderer.drawText(`${abilityPrefix}${abilityLabel}`, renderer.viewportWidth / 2,
+        rows.ability?.['offset-y'] ?? 5.5, `${rowFontSize}px ${this.fontFamily}`, this.titleColor, 'center');
+    }
+
+    const scorePrefix = this.textResolver.text('menu.stage-clear.score-prefix');
+    const score = this.#scoreProvider() ?? 0;
+    renderer.drawText(`${scorePrefix}${score}`, renderer.viewportWidth / 2,
+      rows.score?.['offset-y'] ?? 6.5, `${rowFontSize}px ${this.fontFamily}`, this.titleColor, 'center');
+
+    const hint = this.textResolver.text('menu.stage-clear.continue-hint');
+    renderer.drawText(hint, renderer.viewportWidth / 2,
+      rows['continue-hint']?.['offset-y'] ?? 8.0, `${rowFontSize}px ${this.fontFamily}`, this.titleColor, 'center');
+
+    this.renderItems(renderer, layout.items?.['start-y'] ?? 8.8);
+  }
+}
+
+class InfoScreen extends UIElement {
+  #textResolver;
+  #titleKey;
+  #titleColor;
+  #titleFontSize;
+  #fontFamily;
+  #lineKeys;
+  #lineConfig;
+  #hintKey;
+  #hintConfig;
+  #startOffset;
+  #onClose;
+
+  constructor(infoConfig, textResolver) {
+    super({ x: 0, y: 0, width: 40, height: 30 });
+    this.#textResolver = textResolver;
+    this.#titleKey = infoConfig['title-key'];
+    this.#titleColor = infoConfig['title-color'];
+    this.#titleFontSize = infoConfig['title-font-size'];
+    this.#fontFamily = infoConfig['font-family'];
+    this.#lineKeys = infoConfig.lines ?? [];
+    this.#lineConfig = infoConfig.line;
+    this.#hintKey = infoConfig['hint-key'];
+    this.#hintConfig = infoConfig.hint;
+    this.#startOffset = infoConfig['start-offset'] ?? { x: 0, y: 2.8 };
+    this.#onClose = null;
+  }
+
+  get onClose() { return this.#onClose; }
+  set onClose(fn) { this.#onClose = fn; }
+
+  update(dt, inputManager) {
+    super.update(dt);
+
+    if (!inputManager) {
+      return;
+    }
+
+    if (inputManager.isPressed('confirm')) {
+      if (this.#onClose) {
+        this.#onClose();
+      }
+    } else if (inputManager.isPressed('back')) {
+      if (this.#onClose) {
+        this.#onClose();
+      }
     }
   }
 
   render(renderer) {
     renderer.drawRect(0, 0, renderer.viewportWidth, renderer.viewportHeight, 0, '#000000', null, 0);
 
-    const titleKey = this.titleKey;
-    const clearLabel = this.dataDriven['i18n.default.' + titleKey];
-    renderer.drawText(clearLabel, renderer.viewportWidth / 2, 2.0, `${this.titleFontSize + 0.2}px ${this.fontFamily}`, this.titleColor, 'center');
+    const title = this.#textResolver.text(this.#titleKey);
+    renderer.drawText(title, renderer.viewportWidth / 2, this.#startOffset.y,
+      `${this.#titleFontSize}px ${this.#fontFamily}`, this.#titleColor, 'center');
 
-    renderer.drawText(this.#stageName, renderer.viewportWidth / 2, 3.5, `0.5px ${this.fontFamily}`, this.titleColor, 'center');
+    const fontSize = this.#lineConfig['font-size'] ?? 0.3;
+    const lineColor = this.#lineConfig.color;
+    const lineGap = this.#lineConfig.gap ?? 0.55;
+    const lineStartY = this.#startOffset.y + 1.4;
 
-    if (this.#collectibleCollected) {
-      const collectedPrefix = this.dataDriven['i18n.default.menu.stage-clear.collected-prefix'];
-      renderer.drawText(`${collectedPrefix}${this.#collectibleCollected}`, renderer.viewportWidth / 2, 4.5, `0.4px ${this.fontFamily}`, this.titleColor, 'center');
+    for (let i = 0; i < this.#lineKeys.length; i++) {
+      const line = this.#textResolver.text(this.#lineKeys[i]);
+      renderer.drawText(line, renderer.viewportWidth / 2, lineStartY + i * lineGap,
+        `${fontSize}px ${this.#fontFamily}`, lineColor, 'center');
     }
 
-    if (this.#abilityGained) {
-      const abilityPrefix = this.dataDriven['i18n.default.menu.stage-clear.ability-prefix'];
-      renderer.drawText(`${abilityPrefix}${this.#abilityGained}`, renderer.viewportWidth / 2, 5.5, `0.4px ${this.fontFamily}`, this.titleColor, 'center');
+    if (this.#hintKey && this.#hintConfig) {
+      const hint = this.#textResolver.text(this.#hintKey);
+      renderer.drawText(hint, renderer.viewportWidth / 2, renderer.viewportHeight - 0.5,
+        `${this.#hintConfig['font-size']}px ${this.#fontFamily}`, this.#hintConfig.color, 'center');
     }
-
-    if (this.#score > 0) {
-      const scorePrefix = this.dataDriven['i18n.default.menu.stage-clear.score-prefix'];
-      renderer.drawText(`${scorePrefix}${this.#score}`, renderer.viewportWidth / 2, 6.5, `0.4px ${this.fontFamily}`, this.titleColor, 'center');
-    }
-
-    const hint = this.dataDriven['i18n.default.menu.stage-clear.continue-hint'];
-    renderer.drawText(hint, renderer.viewportWidth / 2, 8.0, `0.4px ${this.fontFamily}`, this.titleColor, 'center');
   }
 }
 
 class InventoryUI extends UIElement {
   #inventory;
-  #dataDriven;
+  #textResolver;
   #selectedSlot;
   #cols;
   #rows;
   #fontFamily;
   #invUIConfig;
 
-  constructor(inventoryConfig, inventory, dataDriven) {
+  constructor(inventoryConfig, inventory, textResolver) {
     super(inventoryConfig);
     this.#invUIConfig = inventoryConfig;
     this.#inventory = inventory;
-    this.#dataDriven = dataDriven;
+    this.#textResolver = textResolver;
     this.#fontFamily = inventoryConfig.inventory['font-family'];
     this.#selectedSlot = 0;
     this.#cols = inventoryConfig.inventory.columns;
@@ -556,14 +1016,14 @@ class InventoryUI extends UIElement {
     const startX = (renderer.viewportWidth - (slotSize * this.#cols + gap.x * (this.#cols - 1))) / 2 + gridOffset.x;
     const startY = (renderer.viewportHeight - (slotSize * this.#rows + gap.y * (this.#rows - 1))) / 2 + gridOffset.y;
 
-    const title = this.#dataDriven['i18n.default.' + titleCfg['label-key']];
+    const title = this.#textResolver.text(titleCfg['label-key']);
     renderer.drawText(title, renderer.viewportWidth / 2, startY - 1,
       `${titleCfg['font-size']}px ${this.#fontFamily}`, titleCfg.color, 'center');
 
     const selectedBorderColor = slotCfg['selected-border-color'];
     const defaultBorderColor = slotCfg['border-color'];
     const slotFillColor = slotCfg['filled-fill-color'];
-    const emptySlotLabel = this.#dataDriven['i18n.default.' + invCfg['empty-slot']['label-key']];
+    const emptySlotLabel = this.#textResolver.text(invCfg['empty-slot']['label-key']);
     const emptyTextColor = invCfg['empty-slot']['text-color'];
 
     for (let row = 0; row < this.#rows; row++) {
@@ -613,7 +1073,7 @@ class InventoryUI extends UIElement {
       if (!hint) {
         continue;
       }
-      const hintLabel = this.#dataDriven['i18n.default.' + hint['label-key']];
+      const hintLabel = this.#textResolver.text(hint['label-key']);
       const hintColor = hint.color;
       const hintFontSize = hint['font-size'];
       renderer.drawText(hintLabel, hintColWidth * (i + 0.5), footerY,
@@ -622,4 +1082,4 @@ class InventoryUI extends UIElement {
   }
 }
 
-export { HUD, Menu, TitleMenu, PauseMenu, SettingsMenu, GameOverScreen, StageClearScreen, InventoryUI };
+export { HUD, Menu, TitleMenu, PauseMenu, SettingsMenu, GameOverScreen, StageClearScreen, InfoScreen, InventoryUI };

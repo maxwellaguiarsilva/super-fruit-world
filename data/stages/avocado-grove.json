@@ -1,0 +1,81 @@
+{
+  "description": "Second stage — Avocado Grove. A short terrace climb through a shaded grove, with a checkpoint on the first terrace, eight musical notes spread along the route, and an avocado big-fruit that evolves the player to level 2 (green), unlocking the shoot ability. The climb ends at an exit door guarded by patrol enemies.",
+  "name": "avocado-grove",
+  "display-name-key": "stage.avocado-grove",
+  "big-fruit": "avocado",
+  "type": "horizontal-scrolling",
+  "theme": "grassland",
+  "bgm": "avocado-grove",
+  "dialogue": {
+    "intro": [
+      { "speaker": "Avocado", "text": "dialogue.avocado-grove.intro-1" },
+      { "speaker": "Avocado", "text": "dialogue.avocado-grove.intro-2" },
+      { "speaker": "Avocado", "text": "dialogue.avocado-grove.intro-3" }
+    ]
+  },
+  "sections": [
+    {
+      "name": "grove-entrance",
+      "parent-section": "root",
+      "position": { "x": 0, "y": 0 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 26, "height": 1 } },
+        { "type": "decorative", "position": { "x": 0, "y": -2 }, "size": { "width": 26, "height": 2 }, "visual": { "fill-color": "dark-green" } },
+        { "type": "player-spawn", "position": { "x": 3, "y": 0 } },
+        { "type": "coin", "position": { "x": 5, "y": -1 } },
+        { "type": "coin", "position": { "x": 7, "y": -1 } },
+        { "type": "coin", "position": { "x": 9, "y": -1 } },
+        { "type": "ammo", "position": { "x": 11, "y": -1 } },
+        { "type": "apple", "position": { "x": 13, "y": -1 } },
+        { "type": "triangle-patrol", "color": "red", "position": { "x": 16, "y": -1 }, "patrol-range": 3 },
+        { "type": "musical-note", "position": { "x": 19, "y": -1.5 }, "note-order": 1 },
+        { "type": "platform", "position": { "x": 21, "y": -2 }, "size": { "width": 4, "height": 1 } },
+        { "type": "musical-note", "position": { "x": 22, "y": -3.5 }, "note-order": 2 },
+        { "type": "coin", "position": { "x": 24, "y": -3 } }
+      ]
+    },
+    {
+      "name": "terrace-climb",
+      "parent-section": "root",
+      "position": { "x": 26, "y": 0 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 6, "height": 1 } },
+        { "type": "checkpoint", "position": { "x": 3, "y": 0 } },
+        { "type": "platform", "position": { "x": 7, "y": -1 }, "size": { "width": 5, "height": 1 } },
+        { "type": "coin", "position": { "x": 8, "y": -2 } },
+        { "type": "square-patrol", "color": "red", "position": { "x": 10, "y": -2 }, "patrol-range": 1 },
+        { "type": "platform", "position": { "x": 13, "y": -2 }, "size": { "width": 5, "height": 1 } },
+        { "type": "square-patrol", "color": "red", "position": { "x": 14, "y": -3 }, "patrol-range": 1 },
+        { "type": "musical-note", "position": { "x": 15.5, "y": -3.5 }, "note-order": 3 },
+        { "type": "ammo", "position": { "x": 16.5, "y": -3 } },
+        { "type": "coin", "position": { "x": 17.2, "y": -3 } },
+        { "type": "platform", "position": { "x": 19, "y": -3 }, "size": { "width": 5, "height": 1 } },
+        { "type": "musical-note", "position": { "x": 19.5, "y": -4.5 }, "note-order": 4 },
+        { "type": "coin", "position": { "x": 21, "y": -4 } },
+        { "type": "musical-note", "position": { "x": 22.5, "y": -4.5 }, "note-order": 5 },
+        { "type": "heart", "position": { "x": 23.2, "y": -4 } }
+      ]
+    },
+    {
+      "name": "avocado-heart",
+      "parent-section": "root",
+      "position": { "x": 52, "y": -3 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 26, "height": 1 } },
+        { "type": "decorative", "position": { "x": 0, "y": -2 }, "size": { "width": 26, "height": 2 }, "visual": { "fill-color": "dark-green" } },
+        { "type": "coin", "position": { "x": 2, "y": -1 } },
+        { "type": "musical-note", "position": { "x": 3, "y": -1.5 }, "note-order": 6 },
+        { "type": "apple", "position": { "x": 5, "y": -1 } },
+        { "type": "triangle-patrol", "color": "red", "position": { "x": 7, "y": -1 }, "patrol-range": 2 },
+        { "type": "coin", "position": { "x": 9, "y": -1 } },
+        { "type": "musical-note", "position": { "x": 10, "y": -1.5 }, "note-order": 7 },
+        { "type": "big-fruit", "collectible": "avocado", "position": { "x": 13, "y": -1.5 } },
+        { "type": "ammo", "position": { "x": 16, "y": -1 } },
+        { "type": "coin", "position": { "x": 18, "y": -1 } },
+        { "type": "square-patrol", "color": "green", "position": { "x": 20, "y": -1 }, "patrol-range": 2 },
+        { "type": "musical-note", "position": { "x": 22, "y": -1.5 }, "note-order": 8 },
+        { "type": "exit-door", "position": { "x": 24, "y": -1 } }
+      ]
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import { Entity } from '../../engine/entities/entity.js';
+import { entityBox, boxesOverlap } from '../../engine/physics/aabb.js';
 
 class Projectile extends Entity {
   #damage;
@@ -23,6 +24,10 @@ class Projectile extends Entity {
   get isProjectile() { return true; }
 
   update(dt, stage) {
+    if (!this.isAlive) {
+      return;
+    }
+
     this.x += this.velocity.x * dt;
     this.y += this.velocity.y * dt;
 
@@ -30,41 +35,53 @@ class Projectile extends Entity {
 
     if (this.#travelDistance >= this.#maxTravel) {
       this.isAlive = false;
+      return;
     }
 
-    if (stage) {
-      for (const entity of stage.entities) {
-        if (entity === this.#source || entity === this) {
-          continue;
-        }
-        if (entity.isAlive === false) {
-          continue;
-        }
+    if (!stage) {
+      return;
+    }
 
-        const hitboxA = this.hitbox;
-        const hitboxB = entity.hitbox;
+    const isEnemyShot = this.#source?.isEnemy === true;
 
-        const overlap = (
-          (this.x + hitboxA.x) < (entity.x + hitboxB.x + hitboxB.width) &&
-          (this.x + hitboxA.x + hitboxA.width) > (entity.x + hitboxB.x) &&
-          (this.y + hitboxA.y) < (entity.y + hitboxB.y + hitboxB.height) &&
-          (this.y + hitboxA.y + hitboxA.height) > (entity.y + hitboxB.y)
-        );
+    for (const entity of stage.entities) {
+      if (entity === this.#source || entity === this || entity.isAlive === false) {
+        continue;
+      }
 
-        if (overlap) {
-          if (entity.takeDamage) {
-            entity.takeDamage(this.#damage);
-          }
-          this.isAlive = false;
-          break;
-        }
+      if (!this.#overlaps(entity)) {
+        continue;
+      }
 
-        if (entity.isSolid && entity.isSolid !== false) {
-          this.isAlive = false;
-          break;
-        }
+      if (entity.isSolid === true) {
+        this.isAlive = false;
+        return;
+      }
+
+      if (!isEnemyShot && entity.isEnemy === true && typeof entity.takeDamage === 'function') {
+        entity.takeDamage(this.#damage);
+        this.isAlive = false;
+        return;
       }
     }
+
+    if (!isEnemyShot) {
+      return;
+    }
+
+    const player = stage.player;
+    if (!player || player === this.#source || player.isAlive === false) {
+      return;
+    }
+
+    if (this.#overlaps(player) && typeof player.takeDamage === 'function') {
+      player.takeDamage(this.#damage);
+      this.isAlive = false;
+    }
+  }
+
+  #overlaps(entity) {
+    return boxesOverlap(entityBox(this), entityBox(entity));
   }
 
   render(renderer) {

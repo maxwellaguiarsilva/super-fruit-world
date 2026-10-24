@@ -1,5 +1,5 @@
 {
-  "description": "Angled collision surface. The specific angle is defined by the named slope type in the stage layout (slope-30, slope-45, slope-60) with an inverted boolean. The engine converts the named type to an angle using trigonometry at runtime.",
+  "description": "Angled collision surface. The walkable surface is the diagonal of the tile box, so its effective angle comes from the object width and height. The named slope type (slope-30, slope-45, slope-60) supplies the declared angle; when that angle does not match the tile aspect ratio the engine derives the surface from the size. An inverted slope mirrors the diagonal horizontally.",
   "type": "slope",
   "visual": {
     "fill-color": "white",

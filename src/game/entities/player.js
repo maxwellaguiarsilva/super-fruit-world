@@ -1,4 +1,16 @@
 import { Entity } from '../../engine/entities/entity.js';
+import { requireDependencies } from '../../engine/core/dependency-contract.js';
+
+const PLAYER_DEPENDENCIES = [
+  'playerConfig',
+  'abilities',
+  'inventory',
+  'healthSystem',
+  'scoreSystem',
+  'progressionSystem',
+  'audioEngine',
+  'stage'
+];
 
 class Player extends Entity {
   #level;
@@ -10,14 +22,27 @@ class Player extends Entity {
   #healthSystem;
   #scoreSystem;
   #progressionSystem;
-  #noteCollection;
   #audioEngine;
   #stage;
   #damageTimer;
   #playerConfig;
   #isClimbing;
+  #isCrouching;
+  #moonGravityTimer;
+  #moonGravityMultiplier;
 
-  constructor(playerConfig, inputManager, physicsEngine, abilities, inventory, healthSystem) {
+  constructor(dependencies) {
+    const {
+      playerConfig,
+      abilities,
+      inventory,
+      healthSystem,
+      scoreSystem,
+      progressionSystem,
+      audioEngine,
+      stage
+    } = requireDependencies('Player', dependencies, PLAYER_DEPENDENCIES);
+
     super(0, 0, playerConfig.size, playerConfig.size);
 
     this.#playerConfig = playerConfig;
@@ -28,8 +53,15 @@ class Player extends Entity {
     this.#abilities = abilities;
     this.#inventory = inventory;
     this.#healthSystem = healthSystem;
+    this.#scoreSystem = scoreSystem;
+    this.#progressionSystem = progressionSystem;
+    this.#audioEngine = audioEngine;
+    this.#stage = stage;
     this.#damageTimer = 0;
     this.#isClimbing = false;
+    this.#isCrouching = false;
+    this.#moonGravityTimer = 0;
+    this.#moonGravityMultiplier = 1;
   }
 
   get level() { return this.#level; }
@@ -54,31 +86,61 @@ class Player extends Entity {
   get healthSystem() { return this.#healthSystem; }
 
   get scoreSystem() { return this.#scoreSystem; }
-  set scoreSystem(v) { this.#scoreSystem = v; }
 
   get progressionSystem() { return this.#progressionSystem; }
-  set progressionSystem(v) { this.#progressionSystem = v; }
 
-  get noteCollection() { return this.#noteCollection; }
-  set noteCollection(v) { this.#noteCollection = v; }
+  get noteCollection() { return this.#stage ? this.#stage.noteCollection : null; }
 
   get audioEngine() { return this.#audioEngine; }
-  set audioEngine(v) { this.#audioEngine = v; }
 
   get stage() { return this.#stage; }
+  // Declared constructor key, bound by the owning stage because the stage is constructed with the player.
   set stage(v) { this.#stage = v; }
 
   get isClimbing() { return this.#isClimbing; }
   set isClimbing(v) { this.#isClimbing = v; }
+
+  get isCrouching() { return this.#isCrouching; }
+  set isCrouching(v) { this.#isCrouching = v; }
+
+  get walkSpeed() { return this.#playerConfig['walk-speed']; }
+
+  get moonGravityTimer() { return this.#moonGravityTimer; }
+
+  get isMoonGravityActive() { return this.#moonGravityTimer > 0; }
+
+  get gravityMultiplier() {
+    return this.#moonGravityTimer > 0 ? this.#moonGravityMultiplier : 1;
+  }
+
+  applyMoonGravity(duration, multiplier) {
+    const seconds = Number(duration);
+    const factor = Number(multiplier);
+    if (!Number.isFinite(seconds) || seconds <= 0) {
+      return false;
+    }
+    if (!Number.isFinite(factor) || factor <= 0 || factor >= 1) {
+      return false;
+    }
+
+    this.#moonGravityTimer = Math.max(this.#moonGravityTimer, seconds);
+    this.#moonGravityMultiplier = factor;
+    return true;
+  }
 
   get isInvincible() {
     return this.#healthSystem.invincibilityTimer > 0;
   }
 
   takeDamage(amount) {
-    this.#healthSystem.takeDamage(amount);
+    const applied = this.#healthSystem.takeDamage(amount);
+    if (!applied) {
+      return false;
+    }
+
     this.#damageTimer = 1.0;
     this.#audioEngine?.playSFX(this.#healthSystem.isDead ? 'death' : 'hit');
+    return true;
   }
 
   heal(amount) {
@@ -93,8 +155,34 @@ class Player extends Entity {
     this.#audioEngine?.playSFX('jump');
   }
 
+  tryJump(inputManager) {
+    const flight = this.ability('flight');
+    if (flight && flight.tryTakeoff(this, inputManager)) {
+      this.jump();
+      return true;
+    }
+
+    if (this.onGround || this.#isClimbing) {
+      this.ability('double-jump')?.consumeGroundJump(this);
+      this.jump();
+      return true;
+    }
+
+    const doubleJump = this.ability('double-jump');
+    if (doubleJump && doubleJump.consumeAirJump(this)) {
+      this.jump();
+      return true;
+    }
+
+    return false;
+  }
+
   update(dt, inputManager) {
-    const walkSpeed = this.#playerConfig['walk-speed'];
+    const crouch = this.ability('crouch');
+    crouch?.refreshState?.(this, inputManager);
+
+    const crouchMultiplier = this.#isCrouching ? (crouch?.speedMultiplier ?? 1) : 1;
+    const walkSpeed = this.#playerConfig['walk-speed'] * crouchMultiplier;
     const walkAccel = this.#playerConfig['walk-acceleration'];
 
     let moveX = 0;
@@ -109,8 +197,8 @@ class Player extends Entity {
         this.#direction = 1;
       }
 
-      if (inputManager.isPressed('jump') && (this.onGround || this.#isClimbing)) {
-        this.jump();
+      if (inputManager.isPressed('jump')) {
+        this.tryJump(inputManager);
       }
     }
 
@@ -137,15 +225,22 @@ class Player extends Entity {
       this.#faceState = 'normal';
     }
 
+    if (this.#moonGravityTimer > 0) {
+      this.#moonGravityTimer = Math.max(0, this.#moonGravityTimer - dt);
+      if (this.#moonGravityTimer === 0) {
+        this.#moonGravityMultiplier = 1;
+      }
+    }
+
     this.#healthSystem.update(dt);
   }
 
   render(renderer) {
     const alpha = this.#damageTimer > 0 ? 0.5 : 1.0;
 
-    const radius = this.width / 2;
-    const cx = this.x + radius;
-    const cy = this.y + radius;
+    const radius = (this.width / 2) * (this.#isCrouching ? 0.8 : 1);
+    const cx = this.x + this.width / 2;
+    const cy = this.y + this.height - radius;
 
     renderer.drawCircle(cx, cy, radius, this.#color, '#000000', 0.05);
 

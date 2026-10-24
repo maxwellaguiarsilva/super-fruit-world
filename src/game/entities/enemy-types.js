@@ -5,8 +5,8 @@ class PatrolEnemy extends Enemy {
   #direction;
   #localX;
 
-  constructor(enemyConfig, stage) {
-    super(enemyConfig, stage);
+  constructor(enemyConfig, stage, deps = {}) {
+    super(enemyConfig, stage, deps);
     this.#patrolRange = enemyConfig['patrol-range'];
     this.#direction = 1;
     this.#localX = 0;
@@ -38,8 +38,11 @@ class ShooterEnemy extends Enemy {
   #detectionRange;
   #fireTimer;
 
-  constructor(enemyConfig, stage) {
-    super(enemyConfig, stage);
+  constructor(enemyConfig, stage, deps = {}) {
+    if (typeof deps.projectileFactory !== 'function') {
+      throw new Error('ShooterEnemy requires a projectile factory.');
+    }
+    super(enemyConfig, stage, deps);
     this.#fireRate = enemyConfig['fire-rate'];
     this.#projectileSpeed = enemyConfig['projectile-speed'];
     this.#detectionRange = enemyConfig['detection-range'];
@@ -65,34 +68,25 @@ class ShooterEnemy extends Enemy {
         const vx = Math.cos(angle) * this.#projectileSpeed;
         const vy = Math.sin(angle) * this.#projectileSpeed;
 
-        const Projectile = stage.constructor.projectileClass;
-        if (Projectile) {
-          const proj = new Projectile(this.x, this.y, vx, vy, 1, this, stage.projectileConfig);
-          stage.addEntity(proj);
-        }
+        const proj = this.projectileFactory(this.x, this.y, vx, vy, 1, this);
+        stage.addEntity(proj);
       }
     }
   }
 }
 
 class FlyerEnemy extends Enemy {
-  #dropRate;
-  #dropType;
   #hoverAmplitude;
   #hoverFrequency;
   #hoverTimer;
 
-  constructor(enemyConfig, stage) {
-    super(enemyConfig, stage);
-    this.#dropRate = enemyConfig['drop-rate'];
-    this.#dropType = enemyConfig['drop-type'];
+  constructor(enemyConfig, stage, deps = {}) {
+    super(enemyConfig, stage, deps);
     this.#hoverAmplitude = enemyConfig['hover-amplitude'];
     this.#hoverFrequency = enemyConfig['hover-frequency'];
     this.#hoverTimer = 0;
   }
 
-  get dropRate() { return this.#dropRate; }
-  get dropType() { return this.#dropType; }
   get hoverAmplitude() { return this.#hoverAmplitude; }
   get hoverFrequency() { return this.#hoverFrequency; }
   get isFlyer() { return true; }
@@ -104,8 +98,8 @@ class FlyerEnemy extends Enemy {
 }
 
 class BossEnemy extends Enemy {
-  constructor(enemyConfig, stage) {
-    super(enemyConfig, stage);
+  constructor(enemyConfig, stage, deps = {}) {
+    super(enemyConfig, stage, deps);
   }
 
   render(renderer) {
@@ -117,7 +111,7 @@ class BossEnemy extends Enemy {
 
     renderer.drawPolygon(
       cx, cy, radius, this.shape,
-      0, 0.08,
+      0,
       fillColor,
       '#FFFFFF',
       0.06
@@ -125,7 +119,7 @@ class BossEnemy extends Enemy {
 
     renderer.drawPolygon(
       cx, cy, radius * 0.6, 4,
-      Math.PI / 4, 0.05,
+      Math.PI / 4,
       '#000000',
       null,
       0

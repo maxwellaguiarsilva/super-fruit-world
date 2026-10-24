@@ -1,3 +1,25 @@
+function anchorPosition(anchor, offset, width, height, viewportWidth, viewportHeight) {
+  const x = offset?.x ?? 0;
+  const y = offset?.y ?? 0;
+
+  switch (anchor) {
+    case 'top-right':
+      return { x: viewportWidth - x - width, y };
+    case 'top-center':
+      return { x: (viewportWidth - width) / 2 + x, y };
+    case 'center':
+      return { x: (viewportWidth - width) / 2 + x, y: (viewportHeight - height) / 2 + y };
+    case 'bottom-left':
+      return { x, y: viewportHeight - y - height };
+    case 'bottom-right':
+      return { x: viewportWidth - x - width, y: viewportHeight - y - height };
+    case 'bottom-center':
+      return { x: (viewportWidth - width) / 2 + x, y: viewportHeight - y - height };
+    default:
+      return { x, y };
+  }
+}
+
 class UIElement {
   #x;
   #y;
@@ -52,51 +74,23 @@ class UIElement {
   }
 
   computeScreenPosition(camera) {
-    const vw = camera ? camera.width : 40;
-    const vh = camera ? camera.height : 30;
-
-    let sx, sy;
-
-    switch (this.#anchor) {
-      case 'top-left':
-        sx = this.#x;
-        sy = this.#y;
-        break;
-      case 'top-right':
-        sx = vw - this.#x - this.#width;
-        sy = this.#y;
-        break;
-      case 'top-center':
-        sx = (vw - this.#width) / 2 + this.#x;
-        sy = this.#y;
-        break;
-      case 'center':
-        sx = (vw - this.#width) / 2 + this.#x;
-        sy = (vh - this.#height) / 2 + this.#y;
-        break;
-      case 'bottom-left':
-        sx = this.#x;
-        sy = vh - this.#y - this.#height;
-        break;
-      case 'bottom-right':
-        sx = vw - this.#x - this.#width;
-        sy = vh - this.#y - this.#height;
-        break;
-      case 'bottom-center':
-        sx = (vw - this.#width) / 2 + this.#x;
-        sy = vh - this.#y - this.#height;
-        break;
-      default:
-        sx = this.#x;
-        sy = this.#y;
-    }
+    const viewportWidth = camera ? camera.width : 40;
+    const viewportHeight = camera ? camera.height : 30;
+    const position = anchorPosition(
+      this.#anchor,
+      { x: this.#x, y: this.#y },
+      this.#width,
+      this.#height,
+      viewportWidth,
+      viewportHeight
+    );
 
     if (camera) {
-      sx += camera.x;
-      sy += camera.y;
+      position.x += camera.x;
+      position.y += camera.y;
     }
 
-    return { x: sx, y: sy };
+    return position;
   }
 
   update(dt) {
@@ -119,4 +113,4 @@ class UIElement {
   }
 }
 
-export { UIElement };
+export { UIElement, anchorPosition };

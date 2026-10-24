@@ -13,7 +13,8 @@
     "auto-activate": false,
     "usage": {
       "action": "moon-gravity",
-      "duration": 30
+      "duration": 30,
+      "multiplier": 0.4
     }
   },
   "inventory": {

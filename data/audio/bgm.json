@@ -4,6 +4,13 @@
     "title-screen": "data/audio/bgm/title-screen.json",
     "world-map": "data/audio/bgm/world-map.json",
     "strawberry-fields": "data/audio/bgm/strawberry-fields.json",
+    "avocado-grove": "data/audio/bgm/avocado-grove.json",
+    "banana-beach": "data/audio/bgm/banana-beach.json",
+    "blueberry-peaks": "data/audio/bgm/blueberry-peaks.json",
+    "starfruit-caverns": "data/audio/bgm/starfruit-caverns.json",
+    "pitaya-canyon": "data/audio/bgm/pitaya-canyon.json",
+    "fruit-basket-citadel": "data/audio/bgm/fruit-basket-citadel.json",
+    "secret-waterfall": "data/audio/bgm/secret-waterfall.json",
     "stage-clear": "data/audio/bgm/stage-clear.json"
   }
 }

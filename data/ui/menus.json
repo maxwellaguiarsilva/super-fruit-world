@@ -2,7 +2,7 @@
   "description": "Menu screen definitions. All positions in visual units. Colors reference data/colors.json by name. Borders reference data/borders.json by name. Label keys reference data/i18n strings.",
   "menu-defaults": {
     "overlay": {
-      "background-color": "black",
+      "background-color": "dark-black",
       "background-opacity": 0.9
     },
     "font-family": "'Comic Sans MS', 'Comic Sans', monospace",
@@ -30,6 +30,10 @@
       "selected-fill-color": "white",
       "selected-text-color": "black",
       "text-color": "white",
+      "selected-prefix": "> ",
+      "selected-suffix": " <",
+      "default-prefix": "",
+      "default-suffix": "",
       "font-size": 0.3,
       "anchor": "top-center"
     },
@@ -38,6 +42,18 @@
       "color": "dark-white",
       "anchor": "bottom-center",
       "offset": { "x": 0, "y": -0.5 }
+    },
+    "layout": {
+      "title": { "offset-y": 2.0, "font-size-offset": 0.2 },
+      "items": {
+        "start-y": 4.2,
+        "gap": 0.6,
+        "selected-prefix": "> ",
+        "selected-suffix": " <",
+        "default-prefix": "",
+        "default-suffix": ""
+      },
+      "rows": { "font-size": 0.45, "gap": 1.15 }
     }
   },
   "menus": {
@@ -60,8 +76,21 @@
       "overlay-opacity": 0.7,
       "layout": "centered-vertical",
       "start-offset": { "x": 0, "y": 3.0 },
+      "layout-overrides": {
+        "title": { "offset-y": 2.2 },
+        "items": { "start-y": 3.0 }
+      },
+      "button": {
+        "selected-text-color": "yellow",
+        "text-color": "dark-white",
+        "selected-prefix": "> ",
+        "selected-suffix": "",
+        "default-prefix": "  ",
+        "default-suffix": ""
+      },
       "buttons": [
         { "label-key": "menu.pause.resume", "action": "resume" },
+        { "label-key": "menu.pause.settings", "action": "open-settings" },
         { "label-key": "menu.pause.restart-stage", "action": "restart-stage" },
         { "label-key": "menu.pause.quit-to-map", "action": "quit-to-map" },
         { "label-key": "menu.pause.quit-to-menu", "action": "quit-to-menu" }
@@ -73,6 +102,18 @@
       "title-key": "menu.settings.title",
       "layout": "centered-vertical",
       "start-offset": { "x": 0, "y": 3.0 },
+      "layout-overrides": {
+        "title": { "offset-y": 1.5, "font-size-offset": 0.1 },
+        "items": {
+          "start-y": 3.0,
+          "gap": 0.6,
+          "selected-prefix": "> ",
+          "selected-suffix": " <",
+          "default-prefix": "",
+          "default-suffix": ""
+        },
+        "rows": { "gap": 1.15 }
+      },
       "sliders": [
         {
           "label-key": "menu.settings.music-volume",
@@ -112,6 +153,17 @@
       "title-key": "menu.game-over.title",
       "layout": "centered-vertical",
       "start-offset": { "x": 0, "y": 3.5 },
+      "overlay-opacity": 1,
+      "layout-overrides": {
+        "title": { "offset-y": 2.5 },
+        "items": { "start-y": 7.2 },
+        "rows": {
+          "font-size": 0.45,
+          "continues": { "offset-y": 4.5 },
+          "lives": { "offset-y": 5.3 },
+          "continue-hint": { "offset-y": 6.0 }
+        }
+      },
       "buttons": [
         { "label-key": "menu.game-over.continue", "action": "continue", "visible-condition": "has-continues" },
         { "label-key": "menu.game-over.quit", "action": "quit-to-menu" }
@@ -123,6 +175,18 @@
       "title-key": "menu.stage-clear.title",
       "layout": "centered-vertical",
       "start-offset": { "x": 0, "y": 3.0 },
+      "overlay-opacity": 1,
+      "layout-overrides": {
+        "items": { "start-y": 8.8 },
+        "rows": {
+          "font-size": 0.4,
+          "stage-name": { "offset-y": 3.5, "font-size": 0.5 },
+          "fruit": { "offset-y": 4.5 },
+          "ability": { "offset-y": 5.5 },
+          "score": { "offset-y": 6.5 },
+          "continue-hint": { "offset-y": 8.0 }
+        }
+      },
       "summary": {
         "fruit-label-key": "menu.stage-clear.fruit-collected",
         "ability-label-key": "menu.stage-clear.new-ability",
@@ -137,6 +201,52 @@
         { "label-key": "menu.stage-clear.continue", "action": "continue-to-map" }
       ],
       "hint-key": null
+    }
+  },
+  "info-screens": {
+    "tutorial": {
+      "description": "Read-only tutorial screen opened from the title menu.",
+      "title-key": "menu.tutorial.title",
+      "start-offset": { "x": 0, "y": 2.4 },
+      "lines": [
+        "menu.tutorial.line-1",
+        "menu.tutorial.line-2",
+        "menu.tutorial.line-3",
+        "menu.tutorial.line-4",
+        "menu.tutorial.line-5"
+      ],
+      "line": { "font-size": 0.28, "color": "white", "gap": 0.55 },
+      "hint-key": "input.info-hint"
+    },
+    "show-credits": {
+      "description": "Read-only credits screen opened from the title menu.",
+      "title-key": "menu.credits.title",
+      "start-offset": { "x": 0, "y": 2.4 },
+      "lines": [
+        "menu.credits.line-1",
+        "menu.credits.line-2",
+        "menu.credits.line-3",
+        "menu.credits.line-4"
+      ],
+      "line": { "font-size": 0.28, "color": "white", "gap": 0.55 },
+      "hint-key": "input.info-hint"
+    },
+    "open-controls": {
+      "description": "Read-only controls listing opened from the settings screen.",
+      "title-key": "menu.controls.title",
+      "start-offset": { "x": 0, "y": 2.0 },
+      "lines": [
+        "menu.controls.line-1",
+        "menu.controls.line-2",
+        "menu.controls.line-3",
+        "menu.controls.line-4",
+        "menu.controls.line-5",
+        "menu.controls.line-6",
+        "menu.controls.line-7",
+        "menu.controls.line-8"
+      ],
+      "line": { "font-size": 0.25, "color": "white", "gap": 0.45 },
+      "hint-key": "input.info-hint"
     }
   }
 }

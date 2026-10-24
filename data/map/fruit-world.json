@@ -1,5 +1,5 @@
 {
-  "description": "World map for Super Fruit World. Organizes stages into continents, areas, and individual stage nodes. Uses the section system for spatial layout and teleporter markers for navigation. Branching paths are supported from day 1.",
+  "description": "World map for Super Fruit World. Organizes stages into continents, areas, and individual stage nodes. Uses the section system for spatial layout, with paths connecting stage nodes. Branching paths are supported from day 1.",
   "name": "fruit-world",
   "display-name-key": "map.fruit-world",
   "type": "world",
@@ -51,11 +51,6 @@
           "from": "avocado-grove",
           "to": "banana-beach",
           "visual": { "fill-color": "dark-white" }
-        },
-        {
-          "type": "teleporter-marker",
-          "name": "fields-exit-marker",
-          "position": { "x": 2, "y": 2 }
         }
       ]
     },
@@ -160,65 +155,6 @@
           "from": "starfruit-caverns",
           "to": "starfruit-caverns-branch",
           "visual": { "fill-color": "dark-yellow", "style": "dashed" }
-        }
-      ]
-    },
-    {
-      "name": "inter-continent-paths",
-      "parent-section": "root",
-      "position": { "x": 0, "y": 0 },
-      "objects": [
-        {
-          "type": "map-teleporter",
-          "name": "path-green-to-azure",
-          "position": { "x": 10, "y": 0 },
-          "target-marker": "continent-2-arrival",
-          "display-name-key": "teleporter.to-azure-highlands",
-          "visual": { "fill-color": "cyan", "border-color": "dark-cyan" }
-        },
-        {
-          "type": "teleporter-marker",
-          "name": "continent-2-arrival",
-          "position": { "x": 20, "y": 1 }
-        },
-        {
-          "type": "map-teleporter",
-          "name": "path-azure-to-volcanic",
-          "position": { "x": 26, "y": 0 },
-          "target-marker": "continent-3-arrival",
-          "display-name-key": "teleporter.to-volcanic-frontier",
-          "visual": { "fill-color": "cyan", "border-color": "dark-cyan" }
-        },
-        {
-          "type": "teleporter-marker",
-          "name": "continent-3-arrival",
-          "position": { "x": 0, "y": 11 }
-        },
-        {
-          "type": "map-teleporter",
-          "name": "path-volcanic-to-final",
-          "position": { "x": 6, "y": 10 },
-          "target-marker": "continent-4-arrival",
-          "display-name-key": "teleporter.to-final-horizon",
-          "visual": { "fill-color": "cyan", "border-color": "dark-cyan" }
-        },
-        {
-          "type": "teleporter-marker",
-          "name": "continent-4-arrival",
-          "position": { "x": 20, "y": 11 }
-        },
-        {
-          "type": "map-teleporter",
-          "name": "path-azure-to-secret",
-          "position": { "x": 26, "y": 1 },
-          "target-marker": "secret-grove-arrival",
-          "display-name-key": "teleporter.to-secret-grove",
-          "visual": { "fill-color": "dark-yellow", "border-color": "yellow" }
-        },
-        {
-          "type": "teleporter-marker",
-          "name": "secret-grove-arrival",
-          "position": { "x": 12, "y": 16 }
         }
       ]
     }

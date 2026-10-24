@@ -1,0 +1,13 @@
+{
+  "description": "Starfruit Caverns BGM. Slow cave melody with a soft sine lead and echoing phrases.",
+  "bpm": 96,
+  "wave": "sine",
+  "notes": [
+    ["a4", 2], ["c5", 1], ["b4", 1],
+    ["a4", 1], ["e4", 1], ["g4", 2],
+    ["f4", 1], ["a4", 1], ["c5", 1], ["e5", 1],
+    ["d5", 1], ["c5", 1], ["a4", 2],
+    ["g4", 1], ["a4", 1], ["c5", 1], ["b4", 1],
+    ["a4", 1], ["g4", 1], ["e4", 2]
+  ]
+}

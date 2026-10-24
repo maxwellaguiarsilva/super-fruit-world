@@ -29,6 +29,33 @@ class FlightAbility extends Ability {
   get isSlowFalling() { return this.#isSlowFalling; }
   get isFlying() { return this.#isFlying; }
   get dashTimer() { return this.#dashTimer; }
+  get flightTimer() { return this.#flightTimer; }
+
+  // The player calls this before the jump clears the ground state, so the
+  // take-off gate sees the same onGround value the charge was accumulated on.
+  tryTakeoff(player, inputManager) {
+    if (player.level < this.requiredLevel) {
+      return false;
+    }
+    if (!player.onGround) {
+      return false;
+    }
+    if (!inputManager || !inputManager.isDown('dash')) {
+      return false;
+    }
+    if (this.#dashTimer < this.#dashChargeRequired) {
+      return false;
+    }
+
+    this.#beginFlight();
+    return true;
+  }
+
+  #beginFlight() {
+    this.#isFlying = true;
+    this.#flightTimer = this.#flightDuration;
+    this.#dashTimer = 0;
+  }
 
   update(player, dt, inputManager) {
     super.update(player, dt, inputManager);
@@ -37,6 +64,7 @@ class FlightAbility extends Ability {
       this.#isFlying = false;
       this.#isSlowFalling = false;
       this.#dashTimer = 0;
+      this.#flightTimer = 0;
       return;
     }
 
@@ -46,11 +74,38 @@ class FlightAbility extends Ability {
 
     if (player.onGround && inputManager.isDown('dash')) {
       this.#dashTimer += dt;
-    } else if (!inputManager.isDown('dash')) {
+    } else if (!this.#isFlying) {
       this.#dashTimer = Math.max(0, this.#dashTimer - dt * 2);
     }
 
-    if (!player.onGround && player.velocity.y > 0 && inputManager.isDown('jump')) {
+    // Fallback for callers that update the ability directly instead of going
+    // through Player.tryJump; the player path already consumed the take-off.
+    if (
+      !this.#isFlying
+      && player.onGround
+      && inputManager.isDown('dash')
+      && this.#dashTimer >= this.#dashChargeRequired
+      && inputManager.isPressed('jump')
+    ) {
+      this.#beginFlight();
+    }
+
+    if (this.#isFlying) {
+      if (inputManager.isDown('jump') && this.#flightTimer > 0) {
+        player.velocity = {
+          x: player.velocity.x,
+          y: -this.#flightSpeed
+        };
+        this.#flightTimer = Math.max(0, this.#flightTimer - dt);
+        if (this.#flightTimer <= 0) {
+          this.#isFlying = false;
+        }
+      } else {
+        this.#isFlying = false;
+      }
+    }
+
+    if (!this.#isFlying && !player.onGround && player.velocity.y > 0 && inputManager.isDown('jump')) {
       this.#isSlowFalling = true;
       player.velocity = {
         x: player.velocity.x,
@@ -60,35 +115,7 @@ class FlightAbility extends Ability {
       this.#isSlowFalling = false;
     }
 
-    if (this.#dashTimer >= this.#dashChargeRequired && player.onGround) {
-      if (!this.#isFlying && inputManager.isPressed('jump')) {
-        this.#isFlying = true;
-        this.#flightTimer = this.#flightDuration;
-      }
-    }
-
-    if (this.#isFlying) {
-      if (inputManager.isDown('jump') && this.#flightTimer > 0) {
-        player.velocity = {
-          x: player.velocity.x,
-          y: -this.#flightSpeed
-        };
-        this.#flightTimer -= dt;
-
-        if (inputManager.isDown('left')) {
-          player.velocity = { x: -this.#flightSpeed * 0.7, y: player.velocity.y };
-        }
-        if (inputManager.isDown('right')) {
-          player.velocity = { x: this.#flightSpeed * 0.7, y: player.velocity.y };
-        }
-      } else {
-        this.#isFlying = false;
-        this.#dashTimer = 0;
-      }
-    }
-
-    if (player.onGround && !inputManager.isDown('jump')) {
-      this.#isFlying = false;
+    if (player.onGround && !this.#isFlying) {
       this.#flightTimer = 0;
     }
   }

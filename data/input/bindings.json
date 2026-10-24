@@ -138,7 +138,7 @@
   "gamepad": {
     "dead-zone": 0.15,
     "axis-threshold": 0.5,
-    "button-count": 17,
+    "button-count": 16,
     "button-map": {
       "button-0": { "index": 0, "label": "A (Cross)" },
       "button-1": { "index": 1, "label": "B (Circle)" },

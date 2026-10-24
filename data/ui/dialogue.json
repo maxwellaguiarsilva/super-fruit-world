@@ -1,0 +1,45 @@
+{
+  "description": "Dialogue overlay layout and styling. The dialogue is a band anchored to the bottom of the viewport, drawn above the stage, the HUD and every screen overlay. All sizes are in visual units. Colors reference data/colors.json by name. Label keys reference data/i18n strings.",
+  "dialogue": {
+    "enabled": true,
+    "anchor": "bottom-center",
+    "margin": 0.5,
+    "height": 3.4,
+    "max-height": 6.0,
+    "max-width": 14.0,
+    "padding": { "x": 0.6, "y": 0.45 },
+    "font-family": "'Comic Sans MS', 'Comic Sans', monospace",
+    "box": {
+      "fill-color": "black",
+      "border-color": "white",
+      "border-width": 0.1,
+      "corner-radius": 0.2
+    },
+    "speaker": {
+      "font-size": 0.28,
+      "color": "cyan",
+      "plate": {
+        "fill-color": "dark-blue",
+        "border-color": "white",
+        "border-width": 0.1,
+        "corner-radius": 0.12,
+        "padding": { "x": 0.3, "y": 0.14 }
+      }
+    },
+    "text": {
+      "font-size": 0.4,
+      "color": "white",
+      "line-height": 0.5,
+      "gap": 0.25
+    },
+    "hint": {
+      "label-key": "dialogue.advance-hint",
+      "font-size": 0.24,
+      "color": "dark-white",
+      "offset": { "x": -0.6, "y": -0.22 }
+    },
+    "typewriter": {
+      "characters-per-second": 30
+    }
+  }
+}

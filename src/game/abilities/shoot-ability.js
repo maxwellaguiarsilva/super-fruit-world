@@ -8,9 +8,15 @@ class ShootAbility extends Ability {
   #fireTimer;
 
   #ammoType;
+  #projectileFactory;
 
-  constructor(config) {
+  constructor(config, deps = {}) {
+    if (typeof deps.projectileFactory !== 'function') {
+      throw new Error('ShootAbility requires a projectile factory.');
+    }
+
     super(config);
+    this.#projectileFactory = deps.projectileFactory;
     this.#projectileSpeed = config['projectile-speed'] ?? 1.0;
     this.#fireRate = config['fire-rate'] ?? 2.0;
     this.#shieldDamageReduction = config['shield-damage-reduction'] ?? 0.9;
@@ -60,11 +66,8 @@ class ShootAbility extends Ability {
       if (player.stage) {
         const cx = player.x + player.width / 2;
         const cy = player.y + player.height / 2;
-        const Projectile = player.stage.constructor.projectileClass;
-        if (Projectile) {
-          const proj = new Projectile(cx, cy, speed * dir, 0, 1, player, player.stage.projectileConfig);
-          player.stage.addEntity(proj);
-        }
+        const proj = this.#projectileFactory(cx, cy, speed * dir, 0, 1, player);
+        player.stage.addEntity(proj);
       }
     }
   }

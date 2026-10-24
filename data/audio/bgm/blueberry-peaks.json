@@ -1,0 +1,15 @@
+{
+  "description": "Blueberry Peaks BGM. Rising highland melody with a triangle lead and long suspended notes.",
+  "bpm": 132,
+  "wave": "triangle",
+  "notes": [
+    ["e4", 1], ["g4", 1], ["b4", 1], ["d5", 1],
+    ["c5", 1], ["b4", 1], ["g4", 2],
+    ["a4", 1], ["c5", 1], ["e5", 1], ["d5", 1],
+    ["b4", 1], ["a4", 1], ["g4", 2],
+    ["e4", 0.5], ["g4", 0.5], ["a4", 0.5], ["b4", 0.5],
+    ["c5", 1], ["b4", 1], ["a4", 1], ["g4", 1],
+    ["e4", 1], ["g4", 1], ["b4", 1], ["e5", 1],
+    ["d5", 1], ["b4", 1], ["g4", 2]
+  ]
+}

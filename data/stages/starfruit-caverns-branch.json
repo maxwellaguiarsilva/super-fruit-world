@@ -1,0 +1,52 @@
+{
+  "description": "Optional secret stage — Secret Waterfall. A short bonus route hidden behind the Starfruit Caverns, with five musical notes, one checkpoint, and a bonus starfruit big-fruit for players who already reached level 5. Reaching it requires the secret-grove key.",
+  "name": "starfruit-caverns-branch",
+  "display-name-key": "stage.secret-waterfall",
+  "big-fruit": "starfruit",
+  "type": "horizontal-scrolling",
+  "theme": "cavern",
+  "bgm": "secret-waterfall",
+  "dialogue": {
+    "intro": [
+      { "speaker": "Secret", "text": "dialogue.starfruit-caverns-branch.intro-1" },
+      { "speaker": "Secret", "text": "dialogue.starfruit-caverns-branch.intro-2" }
+    ]
+  },
+  "sections": [
+    {
+      "name": "waterfall-ledge",
+      "parent-section": "root",
+      "position": { "x": 0, "y": 0 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 24, "height": 1 } },
+        { "type": "decorative", "position": { "x": 0, "y": -2 }, "size": { "width": 24, "height": 2 }, "visual": { "fill-color": "dark-cyan" } },
+        { "type": "player-spawn", "position": { "x": 3, "y": 0 } },
+        { "type": "coin", "position": { "x": 6, "y": -1 } },
+        { "type": "apple", "position": { "x": 8, "y": -1 } },
+        { "type": "ammo", "position": { "x": 10, "y": -1 } },
+        { "type": "musical-note", "position": { "x": 12, "y": -1.5 }, "note-order": 1 },
+        { "type": "triangle-patrol", "color": "cyan", "position": { "x": 15, "y": -1 }, "patrol-range": 2 },
+        { "type": "musical-note", "position": { "x": 18, "y": -1.5 }, "note-order": 2 },
+        { "type": "heart", "position": { "x": 21, "y": -1 } }
+      ]
+    },
+    {
+      "name": "secret-grove",
+      "parent-section": "root",
+      "position": { "x": 24, "y": 0 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 24, "height": 1 } },
+        { "type": "decorative", "position": { "x": 0, "y": -2 }, "size": { "width": 24, "height": 2 }, "visual": { "fill-color": "dark-cyan" } },
+        { "type": "checkpoint", "position": { "x": 3, "y": 0 } },
+        { "type": "coin", "position": { "x": 5, "y": -1 } },
+        { "type": "musical-note", "position": { "x": 7, "y": -1.5 }, "note-order": 3 },
+        { "type": "square-patrol", "color": "cyan", "position": { "x": 9, "y": -1 }, "patrol-range": 2 },
+        { "type": "musical-note", "position": { "x": 11, "y": -1.5 }, "note-order": 4 },
+        { "type": "moon", "position": { "x": 13, "y": -1.5 } },
+        { "type": "big-fruit", "collectible": "starfruit", "position": { "x": 16, "y": -1.5 } },
+        { "type": "musical-note", "position": { "x": 19, "y": -1.5 }, "note-order": 5 },
+        { "type": "exit-door", "position": { "x": 21, "y": -1 } }
+      ]
+    }
+  ]
+}

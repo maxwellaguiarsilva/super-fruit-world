@@ -1,0 +1,13 @@
+{
+  "description": "Banana Beach BGM. Bright shoreline melody with a bouncy square lead.",
+  "bpm": 120,
+  "wave": "square",
+  "notes": [
+    ["c4", 1], ["e4", 1], ["g4", 1], ["a4", 1],
+    ["g4", 1], ["e4", 1], ["d4", 2],
+    ["e4", 1], ["g4", 1], ["a4", 1], ["c5", 1],
+    ["a4", 1], ["g4", 1], ["e4", 2],
+    ["d4", 1], ["e4", 1], ["g4", 1], ["e4", 1],
+    ["c4", 1], ["d4", 1], ["c4", 2]
+  ]
+}

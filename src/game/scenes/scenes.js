@@ -30,11 +30,47 @@ class TitleScene extends Scene {
     renderer.clear();
 
     const titleKey = this.#titleMenu.titleKey || 'menu.main.title';
-    const title = this.#titleMenu.dataDriven['i18n.default.' + titleKey];
+    const title = this.#titleMenu.textResolver.text(titleKey);
     const titleFont = `${this.#titleMenu.titleFontSize}px ${this.#titleMenu.fontFamily}`;
     renderer.drawText(title, renderer.viewportWidth / 2, 2.0, titleFont, this.#titleMenu.titleColor, 'center');
 
     this.#titleMenu.render(renderer);
+  }
+}
+
+class SettingsScene extends Scene {
+  #settingsMenu;
+
+  constructor(settingsMenu) {
+    super('settings');
+    this.#settingsMenu = settingsMenu;
+  }
+
+  update(dt, inputManager) {
+    this.#settingsMenu.update(dt, inputManager);
+  }
+
+  render(renderer) {
+    renderer.clear();
+    this.#settingsMenu.render(renderer);
+  }
+}
+
+class InfoScene extends Scene {
+  #infoScreen;
+
+  constructor(name, infoScreen) {
+    super(name);
+    this.#infoScreen = infoScreen;
+  }
+
+  update(dt, inputManager) {
+    this.#infoScreen.update(dt, inputManager);
+  }
+
+  render(renderer) {
+    renderer.clear();
+    this.#infoScreen.render(renderer);
   }
 }
 
@@ -47,12 +83,15 @@ class StageScene extends Scene {
   #inventoryUI;
   #audioEngine;
   #camera;
+  #dialogueEngine;
   #isPaused;
   #isInventoryOpen;
   #isGameOver;
   #isStageClear;
+  #introPlayed;
+  #stageClearNotified;
 
-  constructor(stage, hud, pauseMenu, gameOverScreen, stageClearScreen, inventoryUI, audioEngine) {
+  constructor(stage, hud, pauseMenu, gameOverScreen, stageClearScreen, inventoryUI, audioEngine, dialogueEngine = null, camera = null) {
     super('stage');
     this.#stage = stage;
     this.#hud = hud;
@@ -61,11 +100,14 @@ class StageScene extends Scene {
     this.#stageClearScreen = stageClearScreen;
     this.#inventoryUI = inventoryUI;
     this.#audioEngine = audioEngine;
-    this.#camera = null;
+    this.#camera = camera;
+    this.#dialogueEngine = dialogueEngine;
     this.#isPaused = false;
     this.#isInventoryOpen = false;
     this.#isGameOver = false;
     this.#isStageClear = false;
+    this.#introPlayed = false;
+    this.#stageClearNotified = false;
   }
 
   get isPaused() { return this.#isPaused; }
@@ -85,13 +127,17 @@ class StageScene extends Scene {
   get stage() { return this.#stage; }
   get player() { return this.#stage?.player; }
 
-  set camera(c) { this.#camera = c; }
-
   enter(previousScene) {
     if (this.#audioEngine) {
-      this.#audioEngine.playBGM(this.#stage.name);
+      this.#audioEngine.playBGM(this.#stage.bgm ?? this.#stage.name);
     }
     this.#stage.activate();
+
+    if (!this.#introPlayed && this.#dialogueEngine) {
+      this.#introPlayed = true;
+      this.#snapCameraToPlayer();
+      this.#dialogueEngine.playSequence('intro');
+    }
   }
 
   exit(nextScene) {
@@ -101,16 +147,55 @@ class StageScene extends Scene {
     this.#stage.deactivate();
   }
 
+  #followPlayerCamera() {
+    if (!this.#camera) {
+      return;
+    }
+
+    this.#camera.follow(this.#stage.player, 0.1);
+    this.#camera.constrainToBounds(this.#stage.bounds);
+  }
+
+  #snapCameraToPlayer() {
+    if (!this.#camera) {
+      return;
+    }
+
+    this.#camera.follow(this.#stage.player, 1);
+    this.#camera.constrainToBounds(this.#stage.bounds);
+  }
+
   update(dt, inputManager) {
     if (this.#stage.isCompleted) {
       this.#isStageClear = true;
+      if (!this.#stageClearNotified) {
+        this.#stageClearNotified = true;
+        this.onStageClear?.();
+      }
     }
 
-    if (this.#stage.player.healthSystem.isGameOver) {
+    if (this.#stage.player.healthSystem.isLivesExhausted) {
       this.#isGameOver = true;
     }
 
+    if (this.#dialogueEngine?.isActive) {
+      this.#dialogueEngine.update(dt, inputManager);
+      this.#followPlayerCamera();
+      return;
+    }
+
+    if (this.#isGameOver || this.#isStageClear) {
+      if (this.#isGameOver) {
+        this.#gameOverScreen.update(dt, inputManager);
+      } else {
+        this.#stageClearScreen.update(dt, inputManager);
+      }
+      return;
+    }
+
     if (inputManager) {
+      const usesDefaultItem = inputManager.isPressed('select') && inputManager.isPressed('shoot');
+
       if (inputManager.isPressed('pause')) {
         if (this.#isInventoryOpen) {
           this.#isInventoryOpen = false;
@@ -120,7 +205,7 @@ class StageScene extends Scene {
         }
       }
 
-      if (inputManager.isPressed('select') && !this.#isPaused) {
+      if (inputManager.isPressed('select') && !usesDefaultItem && !this.#isPaused) {
         this.#isInventoryOpen = !this.#isInventoryOpen;
         this.#inventoryUI.inventory.isOpen = this.#isInventoryOpen;
         if (this.#isInventoryOpen) {
@@ -128,7 +213,7 @@ class StageScene extends Scene {
         }
       }
 
-      if (inputManager.isPressed('select') && inputManager.isPressed('shoot')) {
+      if (usesDefaultItem && !this.#isPaused && !this.#isInventoryOpen) {
         const defaultItem = this.#inventoryUI.inventory.defaultSelected;
         if (defaultItem) {
           this.#inventoryUI.inventory.use(defaultItem);
@@ -140,17 +225,9 @@ class StageScene extends Scene {
       this.#pauseMenu.update(dt, inputManager);
     } else if (this.#isInventoryOpen) {
       this.#inventoryUI.handleInput(inputManager);
-    } else if (this.#isGameOver) {
-      this.#gameOverScreen.update(dt, inputManager);
-    } else if (this.#isStageClear) {
-      this.#stageClearScreen.update(dt, inputManager);
     } else {
       this.#stage.update(dt, inputManager);
-
-      if (this.#camera) {
-        this.#camera.follow(this.#stage.player, 0.1);
-        this.#camera.constrainToBounds(this.#stage.bounds);
-      }
+      this.#followPlayerCamera();
     }
   }
 
@@ -174,15 +251,17 @@ class StageScene extends Scene {
 
     this.#hud.render(renderer);
 
-    if (this.#isPaused) {
-      this.#pauseMenu.render(renderer);
-    } else if (this.#isInventoryOpen) {
-      this.#inventoryUI.render(renderer);
-    } else if (this.#isGameOver) {
+    if (this.#isGameOver) {
       this.#gameOverScreen.render(renderer);
     } else if (this.#isStageClear) {
       this.#stageClearScreen.render(renderer);
+    } else if (this.#isPaused) {
+      this.#pauseMenu.render(renderer);
+    } else if (this.#isInventoryOpen) {
+      this.#inventoryUI.render(renderer);
     }
+
+    this.#dialogueEngine?.render(renderer);
   }
 }
 
@@ -190,13 +269,15 @@ class MapScene extends Scene {
   #mapStage;
   #pauseMenu;
   #audioEngine;
+  #camera;
   #isPaused;
 
-  constructor(mapStage, pauseMenu, audioEngine) {
+  constructor(mapStage, pauseMenu, audioEngine, camera = null) {
     super('map');
     this.#mapStage = mapStage;
     this.#pauseMenu = pauseMenu;
     this.#audioEngine = audioEngine;
+    this.#camera = camera;
     this.#isPaused = false;
   }
 
@@ -210,7 +291,22 @@ class MapScene extends Scene {
     this.#isPaused = v;
   }
 
+  #centerCamera() {
+    if (!this.#camera) {
+      return;
+    }
+
+    const position = this.#mapStage.activeNodePosition;
+    if (!position) {
+      return;
+    }
+
+    this.#camera.x = position.x - this.#camera.width / 2;
+    this.#camera.y = position.y - this.#camera.height / 2;
+  }
+
   enter(previousScene) {
+    this.#centerCamera();
     if (this.#audioEngine) {
       this.#audioEngine.playBGM('world-map');
     }
@@ -239,12 +335,22 @@ class MapScene extends Scene {
         }
       }
     }
+
+    this.#centerCamera();
   }
 
   render(renderer) {
     renderer.clear();
 
-    this.#mapStage.render(renderer);
+    if (this.#camera) {
+      renderer.cameraTransform = this.#camera;
+    }
+
+    this.#mapStage.render(renderer, this.#camera);
+
+    if (this.#camera) {
+      renderer.restoreCameraTransform();
+    }
 
     if (this.#isPaused) {
       this.#pauseMenu.render(renderer);
@@ -252,4 +358,4 @@ class MapScene extends Scene {
   }
 }
 
-export { TitleScene, StageScene, MapScene };
+export { TitleScene, SettingsScene, InfoScene, StageScene, MapScene };

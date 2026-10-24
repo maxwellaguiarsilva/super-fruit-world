@@ -1,0 +1,113 @@
+{
+  "description": "Fourth stage — Blueberry Peaks. A highland climb built from narrow ledges and pits, with two checkpoints, eight musical notes, and a blueberry big-fruit that evolves the player to level 4 (blue). The summit is guarded by heavier patrol enemies.",
+  "name": "blueberry-peaks",
+  "display-name-key": "stage.blueberry-peaks",
+  "big-fruit": "blueberry",
+  "type": "horizontal-scrolling",
+  "theme": "highlands",
+  "bgm": "blueberry-peaks",
+  "dialogue": {
+    "intro": [
+      { "speaker": "Blueberry", "text": "dialogue.blueberry-peaks.intro-1" },
+      { "speaker": "Blueberry", "text": "dialogue.blueberry-peaks.intro-2" },
+      { "speaker": "Blueberry", "text": "dialogue.blueberry-peaks.intro-3" }
+    ]
+  },
+  "sections": [
+    {
+      "name": "foothill",
+      "parent-section": "root",
+      "position": { "x": 0, "y": 0 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 22, "height": 1 } },
+        { "type": "decorative", "position": { "x": 0, "y": -2 }, "size": { "width": 22, "height": 2 }, "visual": { "fill-color": "dark-blue" } },
+        { "type": "player-spawn", "position": { "x": 3, "y": 0 } },
+        { "type": "coin", "position": { "x": 6, "y": -1 } },
+        { "type": "coin", "position": { "x": 8, "y": -1 } },
+        { "type": "apple", "position": { "x": 10, "y": -1 } },
+        { "type": "ammo", "position": { "x": 12, "y": -1 } },
+        { "type": "musical-note", "position": { "x": 15, "y": -1.5 }, "note-order": 1 },
+        { "type": "triangle-patrol", "color": "blue", "position": { "x": 17, "y": -1 }, "patrol-range": 3 },
+        { "type": "heart", "position": { "x": 20, "y": -1 } }
+      ]
+    },
+    {
+      "name": "first-climb",
+      "parent-section": "root",
+      "position": { "x": 22, "y": 0 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 5, "height": 1 } },
+        { "type": "platform", "position": { "x": 7, "y": -2 }, "size": { "width": 5, "height": 1 } },
+        { "type": "coin", "position": { "x": 8, "y": -3 } },
+        { "type": "musical-note", "position": { "x": 10, "y": -3.5 }, "note-order": 2 },
+        { "type": "square-patrol", "color": "blue", "position": { "x": 11, "y": -3 }, "patrol-range": 1 },
+        { "type": "platform", "position": { "x": 14, "y": -4 }, "size": { "width": 5, "height": 1 } },
+        { "type": "coin", "position": { "x": 15, "y": -5 } },
+        { "type": "musical-note", "position": { "x": 17, "y": -5.5 }, "note-order": 3 },
+        { "type": "triangle-patrol", "color": "blue", "position": { "x": 18, "y": -5 }, "patrol-range": 1 },
+        { "type": "platform", "position": { "x": 21, "y": -3 }, "size": { "width": 5, "height": 1 } },
+        { "type": "coin", "position": { "x": 22, "y": -4 } },
+        { "type": "checkpoint", "position": { "x": 24, "y": -3 } },
+        { "type": "heart", "position": { "x": 25, "y": -4 } }
+      ]
+    },
+    {
+      "name": "gap-run",
+      "parent-section": "root",
+      "position": { "x": 48, "y": -3 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 4, "height": 1 } },
+        { "type": "platform", "position": { "x": 6, "y": -1 }, "size": { "width": 4, "height": 1 } },
+        { "type": "coin", "position": { "x": 7, "y": -2 } },
+        { "type": "musical-note", "position": { "x": 8, "y": -2.5 }, "note-order": 4 },
+        { "type": "platform", "position": { "x": 12, "y": -2 }, "size": { "width": 4, "height": 1 } },
+        { "type": "coin", "position": { "x": 13, "y": -3 } },
+        { "type": "square-patrol", "color": "blue", "position": { "x": 14, "y": -3 }, "patrol-range": 1 },
+        { "type": "platform", "position": { "x": 18, "y": -3 }, "size": { "width": 4, "height": 1 } },
+        { "type": "musical-note", "position": { "x": 19, "y": -4.5 }, "note-order": 5 },
+        { "type": "apple", "position": { "x": 21, "y": -4 } },
+        { "type": "platform", "position": { "x": 24, "y": -2 }, "size": { "width": 5, "height": 1 } },
+        { "type": "ammo", "position": { "x": 26, "y": -3 } },
+        { "type": "checkpoint", "position": { "x": 27, "y": -2 } },
+        { "type": "pit", "position": { "x": 0, "y": 1 }, "size": { "width": 29, "height": 8 } }
+      ]
+    },
+    {
+      "name": "summit-trail",
+      "parent-section": "root",
+      "position": { "x": 77, "y": -5 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 6, "height": 1 } },
+        { "type": "platform", "position": { "x": 8, "y": -2 }, "size": { "width": 5, "height": 1 } },
+        { "type": "coin", "position": { "x": 9, "y": -3 } },
+        { "type": "musical-note", "position": { "x": 11, "y": -3.5 }, "note-order": 6 },
+        { "type": "square-patrol", "color": "blue", "position": { "x": 12, "y": -3 }, "patrol-range": 1 },
+        { "type": "platform", "position": { "x": 15, "y": -4 }, "size": { "width": 5, "height": 1 } },
+        { "type": "coin", "position": { "x": 16, "y": -5 } },
+        { "type": "musical-note", "position": { "x": 18, "y": -5.5 }, "note-order": 7 },
+        { "type": "triangle-patrol", "color": "blue", "position": { "x": 19, "y": -5 }, "patrol-range": 1 },
+        { "type": "platform", "position": { "x": 22, "y": -3 }, "size": { "width": 6, "height": 1 } },
+        { "type": "heart", "position": { "x": 24, "y": -4 } },
+        { "type": "ammo", "position": { "x": 26, "y": -4 } }
+      ]
+    },
+    {
+      "name": "blueberry-peak",
+      "parent-section": "root",
+      "position": { "x": 105, "y": -8 },
+      "objects": [
+        { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 26, "height": 1 } },
+        { "type": "decorative", "position": { "x": 0, "y": -2 }, "size": { "width": 26, "height": 2 }, "visual": { "fill-color": "dark-blue" } },
+        { "type": "coin", "position": { "x": 2, "y": -1 } },
+        { "type": "apple", "position": { "x": 4, "y": -1 } },
+        { "type": "musical-note", "position": { "x": 6, "y": -1.5 }, "note-order": 8 },
+        { "type": "square-patrol", "color": "blue", "position": { "x": 8, "y": -1 }, "patrol-range": 2 },
+        { "type": "triangle-patrol", "color": "cyan", "position": { "x": 11, "y": -1 }, "patrol-range": 2 },
+        { "type": "big-fruit", "collectible": "blueberry", "position": { "x": 16, "y": -1.5 } },
+        { "type": "hexagon-patrol", "color": "cyan", "position": { "x": 19, "y": -1 }, "patrol-range": 2, "drop-table": [{ "type": "coin", "weight": 3 }, { "type": "ammo", "weight": 1 }] },
+        { "type": "heart", "position": { "x": 22, "y": -1 } },
+        { "type": "exit-door", "position": { "x": 24, "y": -1 } }
+      ]
+    }
+  ]
+}

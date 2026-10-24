@@ -1,0 +1,20 @@
+{
+  "name": "super-fruit-world",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "serve": "bun scripts/serve.js",
+    "data:index": "bun scripts/generate-data-index.js",
+    "validate": "bun scripts/validate-data.js",
+    "check:layers": "bun scripts/check-layers.js",
+    "smoke": "bun scripts/smoke.js",
+    "verify": "bun run validate && bun run check:layers && bun run test && bun run smoke",
+    "verify:stages": "bun scripts/verify-stages.js",
+    "test": "bun test",
+    "format-4-beat-music": "bun src/engine/audio/format-4-beat-music.ts"
+  },
+  "devDependencies": {
+    "playwright-core": "1.64.1"
+  }
+}

@@ -7,21 +7,24 @@ class Enemy extends Entity {
   #damageOutput;
   #isBoss;
   #dropTable;
-  #enemyConfig;
-  #localX;
+  #projectileFactory;
+  #random;
 
-  constructor(enemyConfig, stage) {
-    const size = enemyConfig['is-boss'] ? 3.0 : 1.0;
-    super(0, 0, size, size);
+  constructor(enemyConfig, stage, deps = {}) {
+    if (!Number.isFinite(enemyConfig?.size)) {
+      throw new Error('Enemy requires a normalized configuration with a numeric "size".');
+    }
 
-    this.#enemyConfig = enemyConfig;
+    super(0, 0, enemyConfig.size, enemyConfig.size);
+
     this.#shape = enemyConfig.shape;
     this.#colorIndex = enemyConfig['color-index'];
     this.#colorPalette = enemyConfig['color-palette'];
     this.#damageOutput = enemyConfig['damage-output'];
-    this.#isBoss = enemyConfig['is-boss'] === true;
+    this.#isBoss = enemyConfig['is-boss'];
     this.#dropTable = enemyConfig['drop-table'];
-    this.#localX = 0;
+    this.#projectileFactory = deps.projectileFactory ?? null;
+    this.#random = deps.random ?? Math.random;
   }
 
   get shape() { return this.#shape; }
@@ -32,6 +35,7 @@ class Enemy extends Entity {
   get isFlyer() { return false; }
   get isEnemy() { return true; }
   get colorPalette() { return this.#colorPalette; }
+  get projectileFactory() { return this.#projectileFactory; }
 
   takeDamage(amount) {
     this.#colorIndex = Math.max(0, this.#colorIndex - amount);
@@ -47,7 +51,7 @@ class Enemy extends Entity {
     }
 
     const totalWeight = this.#dropTable.reduce((sum, entry) => sum + entry.weight, 0);
-    let roll = Math.random() * totalWeight;
+    let roll = this.#random() * totalWeight;
 
     for (const entry of this.#dropTable) {
       roll -= entry.weight;
@@ -71,7 +75,7 @@ class Enemy extends Entity {
 
     renderer.drawPolygon(
       cx, cy, radius, this.#shape,
-      0, 0.05,
+      0,
       fillColor,
       '#000000',
       0.03

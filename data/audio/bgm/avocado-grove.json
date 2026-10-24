@@ -1,0 +1,11 @@
+{
+  "description": "Avocado Grove BGM. Single-channel melody in a calm, mid-tempo groove.",
+  "bpm": 112,
+  "wave": "sine",
+  "notes": [
+    ["g4", 1], ["a4", 1], ["b4", 1], ["d5", 1],
+    ["c5", 1], ["b4", 1], ["a4", 2],
+    ["g4", 1], ["a4", 1], ["g4", 1], ["e4", 1],
+    ["d4", 1], ["e4", 1], ["g4", 2]
+  ]
+}

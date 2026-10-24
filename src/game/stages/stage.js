@@ -1,6 +1,20 @@
 import { StageBase } from '../../engine/entities/stage-base.js';
+import { requireDependencies } from '../../engine/core/dependency-contract.js';
+import { entityBox } from '../../engine/physics/aabb.js';
 import { Projectile } from '../entities/projectile.js';
 import { Collectible } from '../entities/collectible.js';
+import { Enemy } from '../entities/enemy.js';
+import { Tile } from '../entities/tile.js';
+
+const STAGE_DEPENDENCIES = [
+  'player',
+  'physicsEngine',
+  'collisionSolver',
+  'collectibleFactory',
+  'noteCollection',
+  'projectileFactory',
+  'damageSystem'
+];
 
 class Checkpoint {
   #index;
@@ -45,8 +59,6 @@ class Checkpoint {
 }
 
 class Stage extends StageBase {
-  static projectileClass = Projectile;
-
   #player;
   #physicsEngine;
   #collisionSolver;
@@ -57,69 +69,88 @@ class Stage extends StageBase {
   #collectibles;
   #enemies;
   #projectiles;
+  #checkpoints;
   #teleporters;
-  #stageConfig;
-  #projectileConfig;
+  #projectileFactory;
+  #damageSystem;
+  #navigation;
+  #teleporterLatch;
+  #stompLatch;
+  #collectibleFactory;
 
-  constructor(stageConfig, player, physicsEngine, collisionSolver, collectibleFactory, enemyFactory, noteCollection, projectileConfig) {
-    super(stageConfig);
+  constructor(stageData, dependencies) {
+    super(stageData);
 
-    this.#stageConfig = stageConfig;
-    this.#player = player;
-    this.#physicsEngine = physicsEngine;
-    this.#collisionSolver = collisionSolver;
-    this.#noteCollection = noteCollection;
-    this.#projectileConfig = projectileConfig;
+    const deps = requireDependencies('Stage', dependencies, STAGE_DEPENDENCIES);
+
+    if (typeof deps.projectileFactory !== 'function') {
+      throw new Error('Stage requires a projectile factory.');
+    }
+
+    this.#player = deps.player;
+    this.#physicsEngine = deps.physicsEngine;
+    this.#collisionSolver = deps.collisionSolver;
+    this.#collectibleFactory = deps.collectibleFactory;
+    this.#noteCollection = deps.noteCollection;
+    this.#projectileFactory = deps.projectileFactory;
+    this.#damageSystem = deps.damageSystem;
     this.#activeCheckpoint = 0;
     this.#isCompleted = false;
     this.#tiles = [];
     this.#collectibles = [];
     this.#enemies = [];
     this.#projectiles = [];
+    this.#checkpoints = [];
     this.#teleporters = [];
+    this.#navigation = deps.navigation ?? null;
+    this.#teleporterLatch = new Set();
+    this.#stompLatch = new Set();
 
-    player.stage = this;
+    this.#player.stage = this;
   }
 
   get player() { return this.#player; }
   get isCompleted() { return this.#isCompleted; }
   get noteCollection() { return this.#noteCollection; }
-  get projectileConfig() { return this.#projectileConfig; }
+  get projectileFactory() { return this.#projectileFactory; }
 
   get tilesList() { return this.#tiles; }
-  set tilesList(v) { this.#tiles = v; }
-
   get enemiesList() { return this.#enemies; }
-  set enemiesList(v) { this.#enemies = v; }
-
   get collectiblesList() { return this.#collectibles; }
-  set collectiblesList(v) { this.#collectibles = v; }
+  get checkpointsList() { return this.#checkpoints; }
 
-  get checkpointsList() { return this._checkpoints; }
-  set checkpointsList(v) { this._checkpoints = v; }
-  _checkpoints = [];
-
-  get checkpointCount() { return this._checkpoints.length; }
-  set checkpointCount(v) {}
+  get checkpointCount() { return this.#checkpoints.length; }
 
   get spawnPoint() { return this._spawnPoint; }
   set spawnPoint(v) { this._spawnPoint = v; }
 
   _spawnPoint = { x: 2, y: 0 };
 
+  get teleporters() { return [...this.#teleporters]; }
+
   addTeleporter(tp) {
     this.#teleporters.push(tp);
   }
 
-  get checkpoints() {
-    const cps = [];
-    for (const entity of super.entities) {
-      if (entity instanceof Checkpoint) {
-        cps.push(entity);
-      }
-    }
-    return cps.concat(this._checkpoints);
+  getTeleporterMarker(name) {
+    return this.entitiesByType('teleporter-marker').find((marker) => marker.name === name) ?? null;
   }
+
+  overlappingEnemies(entity = this.#player) {
+    const box = entityBox(entity);
+    if (!box) {
+      return [];
+    }
+
+    return this.#enemies.filter((enemy) => {
+      if (!enemy.isAlive) {
+        return false;
+      }
+      return this.#collisionSolver.checkAABB(box, entityBox(enemy));
+    });
+  }
+
+  get checkpoints() { return [...this.#checkpoints]; }
 
   get activeCheckpoint() { return this.#activeCheckpoint; }
 
@@ -155,9 +186,40 @@ class Stage extends StageBase {
     this.#player.audioEngine?.playSFX('stage-clear');
   }
 
-  handleTeleporter(teleporter, player) {
-    if (teleporter.activate) {
-      teleporter.activate(player, this);
+  handleTeleporter(teleporter, player = this.#player) {
+    return teleporter.activate(this.#createTeleporterContext(player));
+  }
+
+  #createTeleporterContext(player) {
+    return {
+      player,
+      overlaps: (teleporter) => this.#overlapsTeleporter(teleporter, player),
+      markerFor: (markerName) => this.getTeleporterMarker(markerName),
+      navigate: (sceneName) => this.#navigateToScene(sceneName),
+      inventory: player.inventory ?? null,
+      report: (message) => console.warn(message)
+    };
+  }
+
+  #overlapsTeleporter(teleporter, player) {
+    return this.#collisionSolver.checkAABB(entityBox(player), entityBox(teleporter));
+  }
+
+  #navigateToScene(sceneName) {
+    if (!sceneName) {
+      return false;
+    }
+
+    if (!this.#navigation || typeof this.#navigation.navigate !== 'function') {
+      console.warn(`[teleporter] Cannot navigate to scene "${sceneName}": the stage has no navigation seam.`);
+      return false;
+    }
+
+    try {
+      return this.#navigation.navigate(sceneName) !== false;
+    } catch (error) {
+      console.warn(`[teleporter] Navigation to scene "${sceneName}" failed: ${error.message}`);
+      return false;
     }
   }
 
@@ -166,18 +228,12 @@ class Stage extends StageBase {
       return;
     }
 
-    const initialPlayerBox = {
-      x: this.#player.x + this.#player.hitbox.x,
-      y: this.#player.y + this.#player.hitbox.y,
-      width: this.#player.hitbox.width,
-      height: this.#player.hitbox.height
-    };
+    const initialPlayerBox = entityBox(this.#player);
 
     let isOnLadder = false;
     for (const tile of this.#tiles) {
       if (tile.isAlive && tile.isClimbable) {
-        const tileBox = { x: tile.x, y: tile.y, width: tile.width, height: tile.height };
-        if (this.#collisionSolver.checkAABB(initialPlayerBox, tileBox)) {
+        if (this.#collisionSolver.checkAABB(initialPlayerBox, entityBox(tile))) {
           isOnLadder = true;
           break;
         }
@@ -212,6 +268,7 @@ class Stage extends StageBase {
 
     this.#physicsEngine.integratePosition(this.#player, dt);
 
+    const wasOnGround = this.#player.onGround;
     this.#player.onGround = false;
 
     for (const tile of this.#tiles) {
@@ -219,22 +276,34 @@ class Stage extends StageBase {
         continue;
       }
 
-      const tileBox = { x: tile.x, y: tile.y, width: tile.width, height: tile.height };
-      const playerBox = {
-        x: this.#player.x + this.#player.hitbox.x,
-        y: this.#player.y + this.#player.hitbox.y,
-        width: this.#player.hitbox.width,
-        height: this.#player.hitbox.height
-      };
+      const tileBox = entityBox(tile);
+      const playerBox = entityBox(this.#player);
+      const slopeSurface = tile.isSlope ? tile.slopeSurface : null;
 
-      if (!this.#collisionSolver.checkAABB(playerBox, tileBox)) {
+      if (!slopeSurface && !this.#collisionSolver.checkAABB(playerBox, tileBox)) {
         continue;
       }
 
-      if (tile.isSolid) {
+      if (slopeSurface && tile.isSolid) {
+        const result = this.#collisionSolver.resolveSlopeCollision(
+          { position: this.#player.position, velocity: this.#player.velocity, hitbox: this.#player.hitbox, onGround: wasOnGround },
+          tile,
+          dt
+        );
+
+        if (result.collided) {
+          this.#player.position = result.position;
+          this.#player.velocity = result.velocity;
+          if (result.onGround) {
+            this.#player.onGround = true;
+            this.#player.isClimbing = false;
+          }
+        }
+      } else if (tile.isSolid) {
         const result = this.#collisionSolver.resolveCollision(
           { position: this.#player.position, velocity: this.#player.velocity, hitbox: this.#player.hitbox, onGround: this.#player.onGround },
-          tileBox
+          tileBox,
+          dt
         );
 
         this.#player.position = result.position;
@@ -246,7 +315,7 @@ class Stage extends StageBase {
       }
 
       if (tile.isDeadly) {
-        this.#player.takeDamage(tile.damageValue);
+        this.#damageSystem.applyHazardDamage(this.#player, tile.damageValue);
       }
 
       if (tile.isLiquid) {
@@ -257,26 +326,31 @@ class Stage extends StageBase {
       }
     }
 
+    const playerBox = entityBox(this.#player);
+
     for (const collectible of this.#collectibles) {
       if (!collectible.isAlive) {
         continue;
       }
 
-      const playerBox = {
-        x: this.#player.x + this.#player.hitbox.x,
-        y: this.#player.y + this.#player.hitbox.y,
-        width: this.#player.hitbox.width,
-        height: this.#player.hitbox.height
-      };
-      const colBox = {
-        x: collectible.x,
-        y: collectible.y,
-        width: collectible.width,
-        height: collectible.height
+      if (this.#collisionSolver.checkAABB(playerBox, entityBox(collectible))) {
+        collectible.collect(this.#player);
+      }
+    }
+
+    for (const checkpoint of this.#checkpoints) {
+      if (checkpoint.isActive) {
+        continue;
+      }
+
+      // A checkpoint is placed at the surface it belongs to, so its contact volume is the cell above its origin.
+      const checkpointBox = {
+        ...entityBox(checkpoint),
+        y: checkpoint.y - checkpoint.height
       };
 
-      if (this.#collisionSolver.checkAABB(playerBox, colBox)) {
-        collectible.collect(this.#player);
+      if (this.#collisionSolver.checkAABB(playerBox, checkpointBox)) {
+        this.activateCheckpoint(checkpoint.index);
       }
     }
 
@@ -294,91 +368,94 @@ class Stage extends StageBase {
       if (!enemy.isFlyer) {
         this.#physicsEngine.integratePosition(enemy, dt);
 
+        const enemyWasOnGround = enemy.onGround;
         enemy.onGround = false;
         for (const tile of this.#tiles) {
           if (!tile.isAlive || !tile.isSolid) {
             continue;
           }
 
-          const tileBox = { x: tile.x, y: tile.y, width: tile.width, height: tile.height };
-          const enemyBox = {
-            x: enemy.x + enemy.hitbox.x,
-            y: enemy.y + enemy.hitbox.y,
-            width: enemy.hitbox.width,
-            height: enemy.hitbox.height
-          };
+          const tileBox = entityBox(tile);
+          const enemyBox = entityBox(enemy);
+          const slopeSurface = tile.isSlope ? tile.slopeSurface : null;
 
-          if (this.#collisionSolver.checkAABB(enemyBox, tileBox)) {
-            const oldVelX = enemy.velocity.x;
-            const result = this.#collisionSolver.resolveCollision(
+          if (!slopeSurface && !this.#collisionSolver.checkAABB(enemyBox, tileBox)) {
+            continue;
+          }
+
+          const oldVelX = enemy.velocity.x;
+          const result = slopeSurface
+            ? this.#collisionSolver.resolveSlopeCollision(
+              { position: enemy.position, velocity: enemy.velocity, hitbox: enemy.hitbox, onGround: enemyWasOnGround },
+              tile,
+              dt
+            )
+            : this.#collisionSolver.resolveCollision(
               { position: enemy.position, velocity: enemy.velocity, hitbox: enemy.hitbox, onGround: enemy.onGround },
               tileBox,
               dt
             );
 
-            enemy.position = result.position;
-            enemy.velocity = result.velocity;
-            if (result.onGround) {
-              enemy.onGround = true;
-            }
+          if (!result.collided) {
+            continue;
+          }
 
-            if (enemy.onWallHit && oldVelX !== 0 && result.velocity.x === 0) {
-              enemy.onWallHit();
-            }
+          enemy.position = result.position;
+          enemy.velocity = result.velocity;
+          if (result.onGround) {
+            enemy.onGround = true;
+          }
+
+          if (enemy.onWallHit && oldVelX !== 0 && result.velocity.x === 0) {
+            enemy.onWallHit();
           }
         }
       }
 
-      const playerBox = {
-        x: this.#player.x + this.#player.hitbox.x,
-        y: this.#player.y + this.#player.hitbox.y,
-        width: this.#player.hitbox.width,
-        height: this.#player.hitbox.height
-      };
-      const enemyBox = {
-        x: enemy.x + enemy.hitbox.x,
-        y: enemy.y + enemy.hitbox.y,
-        width: enemy.hitbox.width,
-        height: enemy.hitbox.height
-      };
+      const playerBox = entityBox(this.#player);
+      const enemyBox = entityBox(enemy);
 
-      if (this.#collisionSolver.checkAABB(playerBox, enemyBox)) {
-        const playerBottom = this.#player.y + this.#player.hitbox.y + this.#player.hitbox.height;
-        const enemyTop = enemy.y;
-
-        if (this.#player.velocity.y > 0 && playerBottom - enemyTop < 0.3) {
-          enemy.takeDamage(1);
-          this.#player.audioEngine?.playSFX('attack');
-          this.#player.velocity = { x: this.#player.velocity.x, y: -0.5 };
-        } else if (!this.#player.isInvincible) {
-          const damage = enemy.damageOutput;
-          const shieldActive = this.#player.ability('shoot')?.isShielding;
-          const actualDamage = shieldActive ? damage * 0.1 : damage;
-          this.#player.takeDamage(actualDamage);
-        }
-      }
-    }
-
-    for (const teleporter of this.#teleporters) {
-      if (!teleporter.isActive) {
+      if (!this.#collisionSolver.checkAABB(playerBox, enemyBox)) {
+        this.#stompLatch.delete(enemy);
         continue;
       }
 
-      const playerBox = {
-        x: this.#player.x + this.#player.hitbox.x,
-        y: this.#player.y + this.#player.hitbox.y,
-        width: this.#player.hitbox.width,
-        height: this.#player.hitbox.height
-      };
-      const tpBox = {
-        x: teleporter.x,
-        y: teleporter.y,
-        width: 1,
-        height: 1
-      };
+      const playerBottom = this.#player.y + this.#player.hitbox.y + this.#player.hitbox.height;
+      const enemyTop = enemy.y;
+      const canStomp = this.#player.velocity.y > 0 && playerBottom - enemyTop < 0.3;
 
-      if (inputManager && inputManager.isPressed('up') && this.#collisionSolver.checkAABB(playerBox, tpBox)) {
-        this.handleTeleporter(teleporter, this.#player);
+      if (canStomp && !this.#stompLatch.has(enemy)) {
+        this.#stompLatch.add(enemy);
+        enemy.takeDamage(1);
+        this.#player.audioEngine?.playSFX('attack');
+        this.#player.velocity = { x: this.#player.velocity.x, y: -0.5 };
+      } else if (!this.#stompLatch.has(enemy)) {
+        this.#damageSystem.applyEnemyDamage(this.#player, enemy);
+      }
+    }
+
+    const teleporterContext = this.#createTeleporterContext(this.#player);
+    for (const teleporter of this.#teleporters) {
+      if (!teleporterContext.overlaps(teleporter)) {
+        this.#teleporterLatch.delete(teleporter);
+        continue;
+      }
+
+      if (this.#teleporterLatch.has(teleporter)) {
+        continue;
+      }
+
+      if (!inputManager || !inputManager.isPressed('up')) {
+        continue;
+      }
+
+      if (!teleporter.canActivate(teleporterContext)) {
+        continue;
+      }
+
+      if (teleporter.activate(teleporterContext)) {
+        this.#teleporterLatch.add(teleporter);
+        break;
       }
     }
 
@@ -390,28 +467,32 @@ class Stage extends StageBase {
     }
 
     for (let i = this.#enemies.length - 1; i >= 0; i--) {
-      if (!this.#enemies[i].isAlive) {
-        const drop = this.#enemies[i].resolveDrop();
+      const enemy = this.#enemies[i];
+      if (!enemy.isAlive) {
+        const drop = enemy.resolveDrop();
         if (drop) {
-          this.#spawnCollectibleAt(drop, this.#enemies[i].x, this.#enemies[i].y);
+          this.#spawnCollectibleAt(drop, enemy.x, enemy.y);
         }
-        this.removeEntity(this.#enemies[i]);
-        this.#enemies.splice(i, 1);
+        this.#stompLatch.delete(enemy);
+        this.removeEntity(enemy);
       }
     }
 
     for (let i = this.#collectibles.length - 1; i >= 0; i--) {
       if (!this.#collectibles[i].isAlive) {
         this.removeEntity(this.#collectibles[i]);
-        this.#collectibles.splice(i, 1);
       }
     }
 
     for (let i = this.#projectiles.length - 1; i >= 0; i--) {
       if (!this.#projectiles[i].isAlive) {
         this.removeEntity(this.#projectiles[i]);
-        this.#projectiles.splice(i, 1);
       }
+    }
+
+    if (this.#player.healthSystem?.isDead === true) {
+      this.respawnPlayer();
+      return;
     }
 
     const maxFallY = this.bounds.y + this.bounds.height + 5;
@@ -426,22 +507,43 @@ class Stage extends StageBase {
       size: { width: 0.5, height: 0.5 },
       'fill-color': '#BFBF40'
     };
-    const col = new Collectible(0, 0, 0.5, 0.5, config);
+    const col = this.#collectibleFactory(config);
     col.x = x;
     col.y = y;
-    col.stage = this;
-    this.#collectibles.push(col);
     this.addEntity(col);
   }
 
-  static _collectibleClass = Collectible;
-
-  get entities() { return [...super.entities, ...this.#tiles, ...this.#collectibles, ...this.#enemies, ...this.#projectiles, ...this.checkpoints]; }
+  get entities() { return super.entities; }
 
   addEntity(entity) {
     super.addEntity(entity);
-    if (entity instanceof Projectile) {
+
+    if (entity instanceof Tile) {
+      this.#tiles.push(entity);
+    } else if (entity instanceof Enemy) {
+      this.#enemies.push(entity);
+    } else if (entity instanceof Collectible) {
+      this.#collectibles.push(entity);
+    } else if (entity instanceof Projectile) {
       this.#projectiles.push(entity);
+    } else if (entity instanceof Checkpoint) {
+      this.#checkpoints.push(entity);
+    }
+  }
+
+  removeEntity(entity) {
+    super.removeEntity(entity);
+    this.#removeFrom(this.#tiles, entity);
+    this.#removeFrom(this.#enemies, entity);
+    this.#removeFrom(this.#collectibles, entity);
+    this.#removeFrom(this.#projectiles, entity);
+    this.#removeFrom(this.#checkpoints, entity);
+  }
+
+  #removeFrom(list, entity) {
+    const index = list.indexOf(entity);
+    if (index !== -1) {
+      list.splice(index, 1);
     }
   }
 

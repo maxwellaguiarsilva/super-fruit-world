@@ -1,0 +1,13 @@
+{
+  "description": "Pitaya Canyon BGM. Fast canyon drive with a sawtooth lead and sharp accents.",
+  "bpm": 144,
+  "wave": "sawtooth",
+  "notes": [
+    ["d4", 0.5], ["f4", 0.5], ["a4", 1], ["d5", 1], ["c5", 1],
+    ["a4", 0.5], ["f4", 0.5], ["d4", 2],
+    ["f4", 0.5], ["a4", 0.5], ["c5", 1], ["a4", 1], ["f4", 1],
+    ["e4", 0.5], ["g4", 0.5], ["a4", 2],
+    ["d4", 0.5], ["f4", 0.5], ["a4", 1], ["c5", 1], ["d5", 1],
+    ["f5", 1], ["d5", 1], ["a4", 1], ["f4", 1]
+  ]
+}

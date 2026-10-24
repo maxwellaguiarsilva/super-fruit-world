@@ -1,0 +1,15 @@
+{
+  "description": "Ammunition pickup. Adds the collected amount to the ammo counter in the HUD. Required by the shoot ability, which spends one unit per projectile.",
+  "type": "ammo",
+  "visual": {
+    "shape": "circle",
+    "size": 0.5,
+    "fill-color": "cyan",
+    "border-color": "dark-cyan",
+    "border": "thin"
+  },
+  "effect": {
+    "action": "add-ammo",
+    "value": 10
+  }
+}

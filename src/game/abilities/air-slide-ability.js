@@ -2,89 +2,110 @@ import { Ability } from './ability.js';
 
 class AirSlideAbility extends Ability {
   #midairDistance;
-  #groundedDistance;
   #slideSpeed;
   #damage;
   #groundCooldown;
   #cooldownRemaining;
   #isSliding;
-  #slideProgress;
+  #slideTimer;
+  #slideDirection;
+  #damagedEntities;
 
   constructor(config) {
     super(config);
     this.#midairDistance = config['midair-distance'] ?? 5.0;
-    this.#groundedDistance = config['grounded-distance'] ?? 2.0;
     this.#slideSpeed = config['slide-speed'] ?? 2.0;
     this.#damage = config.damage ?? 1;
     this.#groundCooldown = config['ground-cooldown'] ?? 0.5;
     this.#cooldownRemaining = 0;
     this.#isSliding = false;
-    this.#slideProgress = 0;
+    this.#slideTimer = 0;
+    this.#slideDirection = 1;
+    this.#damagedEntities = new Set();
   }
 
   get midairDistance() { return this.#midairDistance; }
-  get groundedDistance() { return this.#groundedDistance; }
   get slideSpeed() { return this.#slideSpeed; }
   get damage() { return this.#damage; }
   get groundCooldown() { return this.#groundCooldown; }
+  get isSliding() { return this.#isSliding; }
+  get cooldownRemaining() { return this.#cooldownRemaining; }
+  get slideTimer() { return this.#slideTimer; }
 
   activate(player, inputManager) {
+    if (player.level < this.requiredLevel || player.onGround) {
+      return false;
+    }
     if (this.#cooldownRemaining > 0 || this.#isSliding) {
-      return;
+      return false;
     }
 
     this.#isSliding = true;
-    this.#slideProgress = 0;
+    this.#slideDirection = player.direction ?? 1;
+    // The configured distance is expressed in player widths and the speed in
+    // widths per second, so the width cancels out of the slide duration.
+    this.#slideTimer = this.#midairDistance / this.#slideSpeed;
+    this.#damagedEntities.clear();
+    return true;
   }
 
   update(player, dt, inputManager) {
     super.update(player, dt, inputManager);
 
     if (player.level < this.requiredLevel) {
+      this.#isSliding = false;
+      this.#cooldownRemaining = 0;
       return;
     }
 
-    if (this.#cooldownRemaining > 0) {
+    if (player.onGround) {
+      this.#isSliding = false;
+      this.#slideTimer = 0;
+      this.#cooldownRemaining = 0;
+    } else if (this.#cooldownRemaining > 0) {
       this.#cooldownRemaining = Math.max(0, this.#cooldownRemaining - dt);
     }
 
-    if (inputManager && inputManager.isPressed('air-slide')) {
+    if (!player.onGround && inputManager && inputManager.isPressed('air-slide')) {
       this.activate(player, inputManager);
     }
 
-    if (this.#isSliding) {
-      const distance = player.onGround ? this.#groundedDistance : this.#midairDistance;
-      const dir = player.direction ?? 1;
+    if (!this.#isSliding) {
+      return;
+    }
 
-      const moveThisFrame = this.#slideSpeed * player.width * dt;
-      player.x += moveThisFrame * dir;
-      this.#slideProgress += moveThisFrame;
+    // The slide keeps its own velocity for its duration; the stage integration
+    // and collision pass remain the only path that changes position.
+    player.velocity = {
+      x: this.#slideDirection * this.#slideSpeed * player.width,
+      y: player.velocity.y
+    };
 
-      if (this.#slideProgress >= distance * player.width) {
-        this.#isSliding = false;
-        this.#cooldownRemaining = this.#groundCooldown;
+    this.#damageOverlapping(player);
+
+    this.#slideTimer = Math.max(0, this.#slideTimer - dt);
+    if (this.#slideTimer <= 0) {
+      this.#isSliding = false;
+      this.#damagedEntities.clear();
+      this.#cooldownRemaining = this.#groundCooldown;
+    }
+  }
+
+  #damageOverlapping(player) {
+    const enemies = player.stage?.overlappingEnemies?.(player) ?? [];
+    let dealtDamage = false;
+
+    for (const enemy of enemies) {
+      if (!enemy.isAlive || this.#damagedEntities.has(enemy)) {
+        continue;
       }
+      this.#damagedEntities.add(enemy);
+      enemy.takeDamage(this.#damage);
+      dealtDamage = true;
+    }
 
-      if (player.stage) {
-        let dealtDamage = false;
-        for (const entity of player.stage.entities) {
-          if (entity.isEnemy && entity.takeDamage) {
-            const overlap = (
-              player.x + player.hitbox.x < entity.x + entity.hitbox.x + entity.hitbox.width &&
-              player.x + player.hitbox.x + player.hitbox.width > entity.x + entity.hitbox.x &&
-              player.y + player.hitbox.y < entity.y + entity.hitbox.y + entity.hitbox.height &&
-              player.y + player.hitbox.y + player.hitbox.height > entity.y + entity.hitbox.y
-            );
-            if (overlap) {
-              entity.takeDamage(this.#damage);
-              dealtDamage = true;
-            }
-          }
-        }
-        if (dealtDamage) {
-          player.audioEngine?.playSFX('attack');
-        }
-      }
+    if (dealtDamage) {
+      player.audioEngine?.playSFX('attack');
     }
   }
 }

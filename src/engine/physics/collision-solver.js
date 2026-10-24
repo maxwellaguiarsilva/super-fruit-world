@@ -1,14 +1,15 @@
+import { boxesOverlap } from './aabb.js';
+
+const EPSILON = 0.0001;
+const SLOPE_STEP_TOLERANCE = 0.5;
+const SLOPE_STEP_MARGIN = 0.05;
+
 class CollisionSolver {
   constructor() {
   }
 
   checkAABB(a, b) {
-    return (
-      a.x < b.x + b.width &&
-      a.x + a.width > b.x &&
-      a.y < b.y + b.height &&
-      a.y + a.height > b.y
-    );
+    return boxesOverlap(a, b);
   }
 
   getOverlap(a, b) {
@@ -131,6 +132,134 @@ class CollisionSolver {
       velocity: { x: newVelX, y: newVelY },
       collided: true,
       onGround: onGround || movable.onGround
+    };
+  }
+
+  resolveSlopeCollision(movable, slope, dt) {
+    const surface = slope.slopeSurface;
+    const pos = movable.position;
+    const vel = movable.velocity;
+    const hb = movable.hitbox;
+    const frameDt = Number.isFinite(dt) ? dt : 0;
+
+    const unchanged = {
+      position: { x: pos.x, y: pos.y },
+      velocity: { x: vel.x, y: vel.y },
+      collided: false,
+      onGround: movable.onGround
+    };
+
+    if (!surface) {
+      return unchanged;
+    }
+
+    const tileBox = {
+      x: slope.x,
+      y: slope.y,
+      width: slope.width,
+      height: slope.height
+    };
+    const box = {
+      x: pos.x + hb.x,
+      y: pos.y + hb.y,
+      width: hb.width,
+      height: hb.height
+    };
+    const prevBox = {
+      x: box.x - vel.x * frameDt,
+      y: box.y - vel.y * frameDt,
+      width: hb.width,
+      height: hb.height
+    };
+
+    const overlapsX = (candidate) => (
+      candidate.x < tileBox.x + tileBox.width &&
+      candidate.x + candidate.width > tileBox.x
+    );
+    const overlapsY = (candidate) => (
+      candidate.y < tileBox.y + tileBox.height &&
+      candidate.y + candidate.height > tileBox.y
+    );
+
+    if (!overlapsX(box) && !overlapsX(prevBox)) {
+      return unchanged;
+    }
+
+    const supportX = (candidate) => {
+      const left = Math.max(candidate.x, tileBox.x);
+      const right = Math.min(candidate.x + candidate.width, tileBox.x + tileBox.width);
+
+      if (left < right) {
+        return surface.inverted ? left : right;
+      }
+
+      return candidate.x + candidate.width <= tileBox.x
+        ? tileBox.x
+        : tileBox.x + tileBox.width;
+    };
+
+    const boxBottom = box.y + box.height;
+    const prevBottom = prevBox.y + prevBox.height;
+    const tileBottom = tileBox.y + tileBox.height;
+
+    // The solid wedge fills to the tile bottom, so its underside is the flat bottom face.
+    if (vel.y < 0 && prevBox.y >= tileBottom - EPSILON && box.y < tileBottom) {
+      return {
+        position: { x: pos.x, y: tileBottom - hb.y },
+        velocity: { x: vel.x, y: 0 },
+        collided: true,
+        onGround: movable.onGround
+      };
+    }
+
+    const floorX = supportX(box);
+    const floorY = tileBox.y + surface.surfaceY(floorX - tileBox.x);
+    const prevFloorX = supportX(prevBox);
+    const prevFloorY = tileBox.y + surface.surfaceY(prevFloorX - tileBox.x);
+    const penetration = boxBottom - floorY;
+    const wasAbove = prevBottom <= prevFloorY + EPSILON;
+    const stepTolerance = Math.max(
+      SLOPE_STEP_TOLERANCE,
+      surface.rise * (hb.width / surface.width) + SLOPE_STEP_MARGIN
+    );
+
+    if (penetration <= EPSILON) {
+      const gap = -penetration;
+
+      if (movable.onGround && vel.y >= 0 && gap <= stepTolerance) {
+        return {
+          position: { x: pos.x, y: floorY - hb.height - hb.y },
+          velocity: { x: vel.x, y: 0 },
+          collided: true,
+          onGround: true
+        };
+      }
+
+      return unchanged;
+    }
+
+    if (wasAbove || (overlapsY(box) && penetration <= stepTolerance)) {
+      return {
+        position: { x: pos.x, y: floorY - hb.height - hb.y },
+        velocity: { x: vel.x, y: 0 },
+        collided: true,
+        onGround: true
+      };
+    }
+
+    if (!overlapsY(box) && !overlapsY(prevBox)) {
+      return unchanged;
+    }
+
+    const faceX = surface.inverted
+      ? tileBox.x - hb.width - hb.x
+      : tileBox.x + tileBox.width - hb.x;
+
+    return {
+      position: { x: faceX, y: pos.y },
+      velocity: { x: 0, y: vel.y },
+      collided: true,
+      onGround: movable.onGround
     };
   }
 

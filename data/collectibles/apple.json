@@ -1,5 +1,5 @@
 {
-  "description": "Ammunition for shooting. Each apple adds ammo up to a defined maximum. No effect when already at max capacity.",
+  "description": "Fruit pickup. Goes to inventory on pickup and accumulates in quantity. Distinct from the ammo collectible, which is the only item that feeds the shoot ability.",
   "type": "apple",
   "visual": {
     "shape": "circle",
@@ -9,8 +9,10 @@
     "border": "thin"
   },
   "effect": {
-    "action": "add-ammo",
-    "value": 10,
-    "max-capacity": 1000
+    "action": "add-to-inventory",
+    "auto-activate": false
+  },
+  "inventory": {
+    "accumulates": true
   }
 }

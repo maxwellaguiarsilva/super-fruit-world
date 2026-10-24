@@ -6,6 +6,12 @@
   "type": "horizontal-scrolling",
   "theme": "grassland",
   "bgm": "strawberry-fields",
+  "dialogue": {
+    "intro": [
+      { "speaker": "Strawberry", "text": "dialogue.strawberry-fields.intro-1" },
+      { "speaker": "Strawberry", "text": "dialogue.strawberry-fields.intro-2" }
+    ]
+  },
   "sections": [
     {
       "name": "start-plateau",
@@ -19,6 +25,7 @@
         { "type": "coin", "position": { "x": 7, "y": -1 } },
         { "type": "coin", "position": { "x": 9, "y": -1 } },
         { "type": "apple", "position": { "x": 12, "y": -1 } },
+        { "type": "ammo", "position": { "x": 10, "y": -1 } },
         { "type": "musical-note", "position": { "x": 16, "y": -1.5 }, "note-order": 1 }
       ]
     },
@@ -146,7 +153,7 @@
         { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 8, "height": 1 } },
         { "type": "slope", "variant": "slope-30", "inverted": false, "position": { "x": 8, "y": -3 }, "size": { "width": 5, "height": 3 } },
         { "type": "platform", "position": { "x": 13, "y": -3 }, "size": { "width": 5, "height": 1 } },
-        { "type": "slope", "variant": "slope-45", "inverted": true, "position": { "x": 18, "y": -6 }, "size": { "width": 5, "height": 3 } },
+        { "type": "slope", "variant": "slope-45", "inverted": false, "position": { "x": 18, "y": -6 }, "size": { "width": 5, "height": 3 } },
         { "type": "platform", "position": { "x": 23, "y": -6 }, "size": { "width": 8, "height": 1 } },
         { "type": "coin", "position": { "x": 2, "y": -1 } },
         { "type": "coin", "position": { "x": 10, "y": -2 } },
@@ -163,9 +170,9 @@
       "objects": [
         { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 30, "height": 1 } },
         { "type": "decorative", "position": { "x": 0, "y": -2 }, "size": { "width": 30, "height": 2 }, "visual": { "fill-color": "dark-green" } },
-        { "type": "triangle-shooter", "color": "red", "position": { "x": 5, "y": -1 }, "patrol-range": 3 },
+        { "type": "triangle-shooter", "color": "red", "position": { "x": 5, "y": -1 }, "patrol-range": 3, "detection-range": 6, "fire-rate": 1.0, "projectile-speed": 4 },
         { "type": "square-patrol", "color": "red", "position": { "x": 12, "y": -1 }, "patrol-range": 4 },
-        { "type": "triangle-shooter", "color": "green", "position": { "x": 20, "y": -1 }, "patrol-range": 3 },
+        { "type": "triangle-shooter", "color": "green", "position": { "x": 20, "y": -1 }, "patrol-range": 3, "detection-range": 6, "fire-rate": 1.0, "projectile-speed": 4 },
         { "type": "square-patrol", "color": "green", "position": { "x": 26, "y": -1 }, "patrol-range": 3 },
         { "type": "coin", "position": { "x": 3, "y": -1 } },
         { "type": "coin", "position": { "x": 8, "y": -1 } },
@@ -174,6 +181,8 @@
         { "type": "musical-note", "position": { "x": 28, "y": -1.5 }, "note-order": 8 },
         { "type": "apple", "position": { "x": 10, "y": -1 } },
         { "type": "apple", "position": { "x": 17, "y": -1 } },
+        { "type": "ammo", "position": { "x": 7, "y": -1 } },
+        { "type": "ammo", "position": { "x": 21, "y": -1 } },
         { "type": "heart", "position": { "x": 24, "y": -1 } }
       ]
     },
@@ -215,9 +224,9 @@
       "objects": [
         { "type": "platform", "position": { "x": 0, "y": 0 }, "size": { "width": 15, "height": 1 } },
         { "type": "decorative", "position": { "x": 0, "y": -2 }, "size": { "width": 15, "height": 2 }, "visual": { "fill-color": "dark-green" } },
-        { "type": "big-fruit", "fruit": "strawberry", "position": { "x": 5, "y": -1.5 } },
+        { "type": "big-fruit", "collectible": "strawberry", "position": { "x": 5, "y": -1.5 } },
         { "type": "exit-door", "position": { "x": 10, "y": -1 } },
-        { "type": "special-teleporter", "name": "to-world-map", "position": { "x": 13, "y": -1 }, "target-stage": null, "target-marker": "fields-exit-marker", "visual": { "fill-color": "blue", "border-color": "dark-blue" } }
+        { "type": "special-teleporter", "name": "to-world-map", "position": { "x": 13, "y": -1 }, "target-stage": "map", "visual": { "fill-color": "blue", "border-color": "dark-blue" } }
       ]
     }
   ]

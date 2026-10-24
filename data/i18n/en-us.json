@@ -17,6 +17,7 @@
     "pause": {
       "title": "Paused",
       "resume": "Resume",
+      "settings": "Settings",
       "restart-stage": "Restart Stage",
       "quit-to-map": "Quit to Map",
       "quit-to-menu": "Quit to Menu"
@@ -45,6 +46,32 @@
       "ability-prefix": "Ability: ",
       "score-prefix": "Score: ",
       "continue-hint": "Press START to continue"
+    },
+    "tutorial": {
+      "title": "Tutorial",
+      "line-1": "Reach the end of a stage to clear it.",
+      "line-2": "Move with the arrow keys or A and D. Jump with Space or the up arrow.",
+      "line-3": "Shoot with Z or J; hold shoot to raise the shield. Land on an enemy from above to stomp it.",
+      "line-4": "Hold Down plus Special to clear the screen, or Up plus Special for invincibility.",
+      "line-5": "Collect musical notes to fill the HUD tracker. Press Escape or P to pause."
+    },
+    "credits": {
+      "title": "Credits",
+      "line-1": "Super Fruit World",
+      "line-2": "A browser platformer built with plain ES modules and the HTML5 canvas.",
+      "line-3": "Design and development: the Super Fruit World project.",
+      "line-4": "No external runtime dependencies."
+    },
+    "controls": {
+      "title": "Controls",
+      "line-1": "Move: arrow keys or A and D",
+      "line-2": "Jump: Space or up arrow",
+      "line-3": "Shoot: Z or J | Shield: hold shoot",
+      "line-4": "Stomp: land on an enemy from above | Dash: Shift | Crouch: Down arrow",
+      "line-5": "Screen Clear: hold Down + Special | Invincibility: hold Up + Special",
+      "line-6": "Pause: Escape or P",
+      "line-7": "Inventory: C or right Shift",
+      "line-8": "Menus: arrows to navigate, Enter to confirm, Escape to go back"
     }
   },
 
@@ -54,7 +81,6 @@
     "coins": "Coins",
     "ammo": "Ammo",
     "score": "Score",
-    "stars": "Stars",
     "notes": "Notes",
     "inventory": "Inventory",
     "level-prefix": "Lv: ",
@@ -91,6 +117,8 @@
       "jump": "Jump",
       "crouch": "Crouch",
       "slide": "Slide",
+      "stomp": "Stomp",
+      "slide-attack": "Slide Attack",
       "dash": "Dash",
       "shoot": "Shoot",
       "shield": "Shield",
@@ -115,12 +143,9 @@
 
   "collectibles": {
     "coin": "Coin",
-    "extra-life": "Extra Life",
     "apple": "Apple",
     "heart": "Heart",
-    "star": "Star",
     "musical-note": "Musical Note",
-    "checkpoint": "Checkpoint",
     "moon": "Moon",
     "sun": "Sun",
     "earth": "Earth"
@@ -138,7 +163,6 @@
   },
 
   "messages": {
-    "checkpoint-activated": "Checkpoint Activated!",
     "extra-life-gained": "Extra Life!",
     "life-restored": "Life Restored!",
     "star-pickup": "Star Invincibility!",
@@ -169,7 +193,50 @@
     "confirm": "Confirm",
     "back": "Back",
     "pause-hint": "Pause: Resume Game",
-    "navigate-hint": "Arrows: Navigate | Confirm: Select | Back: Return"
+    "navigate-hint": "Arrows: Navigate | Confirm: Select | Back: Return",
+    "info-hint": "Confirm or Back: Return"
+  },
+
+  "dialogue": {
+    "advance-hint": "Confirm: Continue",
+    "strawberry-fields": {
+      "intro-1": "Welcome to Strawberry Fields! Reach the exit door at the far end of the stage.",
+      "intro-2": "Collect the big strawberry before you leave. Press confirm to dismiss this message."
+    },
+    "avocado-grove": {
+      "intro-1": "This is Avocado Grove. The terraces climb toward a single avocado at the heart of the grove.",
+      "intro-2": "Eight notes are spread along the route. Collect all of them to earn a continue.",
+      "intro-3": "The avocado unlocks the power of green. Ammunition then lets you shoot."
+    },
+    "banana-beach": {
+      "intro-1": "Banana Beach stretches along the tide pools toward the far shore.",
+      "intro-2": "Jump the boardwalk gaps and watch the patrols on the sand.",
+      "intro-3": "The banana at the end of the beach unlocks the power of yellow."
+    },
+    "blueberry-peaks": {
+      "intro-1": "Blueberry Peaks climbs through narrow ledges and deep pits.",
+      "intro-2": "Time each jump: the higher ledges leave little room for error.",
+      "intro-3": "Two checkpoints mark the climb. The blueberry waits at the summit."
+    },
+    "starfruit-caverns": {
+      "intro-1": "Starfruit Caverns drops through a crystal shaft into a still underground lake.",
+      "intro-2": "A key rests on the lake shore. Take it before you leave the caverns.",
+      "intro-3": "The starfruit in the vault unlocks the power of cyan."
+    },
+    "pitaya-canyon": {
+      "intro-1": "Pitaya Canyon is scorched ground guarded by spikes and shooters.",
+      "intro-2": "Keep moving through the open stretches and use cover where you can.",
+      "intro-3": "The pitaya at the canyon heart unlocks the power of magenta."
+    },
+    "fruit-basket-citadel": {
+      "intro-1": "The Fruit Basket Citadel is the last trial of the fruit world.",
+      "intro-2": "Slopes, water, ladders and shooters guard the vault inside.",
+      "intro-3": "Reach the fruit basket and unlock the final power of white."
+    },
+    "starfruit-caverns-branch": {
+      "intro-1": "The secret-grove key opens a quiet waterfall hidden behind the caverns.",
+      "intro-2": "Five notes and a bonus starfruit wait at the end of this short route."
+    }
   },
 
   "stage": {
