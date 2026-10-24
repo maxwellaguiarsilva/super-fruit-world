@@ -1,0 +1,17 @@
+{
+  "description": "Solid barrier. Blocks movement from all sides. Entities cannot pass through or stand on top.",
+  "type": "wall",
+  "visual": {
+    "fill-color": "dark-white",
+    "border-color": "white",
+    "border": "medium"
+  },
+  "collision": {
+    "solid": true,
+    "walkable": false
+  },
+  "physics": {
+    "friction": 1.0,
+    "bounciness": 0.0
+  }
+}

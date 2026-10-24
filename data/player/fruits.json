@@ -1,0 +1,12 @@
+{
+  "description": "Fruit definitions. Each fruit maps to a player color level. The engine uses this to determine which level the player evolves to when collecting a big fruit.",
+  "fruits": {
+    "strawberry":   { "color": "red" },
+    "avocado":      { "color": "green" },
+    "banana":       { "color": "yellow" },
+    "blueberry":    { "color": "blue" },
+    "starfruit":    { "color": "cyan" },
+    "pitaya":       { "color": "magenta" },
+    "fruit-basket": { "color": "white" }
+  }
+}

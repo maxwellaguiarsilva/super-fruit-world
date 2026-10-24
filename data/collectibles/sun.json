@@ -1,0 +1,22 @@
+{
+  "description": "Sun collectible. Goes to inventory on pickup and accumulates in quantity. When used, the player catches fire for 30 seconds and takes no damage from any source. Unlike invincibility, touching enemies does not kill them — the player is simply immune to damage.",
+  "type": "sun",
+  "visual": {
+    "shape": "sun",
+    "size": 0.6,
+    "fill-color": "yellow",
+    "border-color": "dark-yellow",
+    "border": "thin"
+  },
+  "effect": {
+    "action": "add-to-inventory",
+    "auto-activate": false,
+    "usage": {
+      "action": "fire-shield",
+      "duration": 30
+    }
+  },
+  "inventory": {
+    "accumulates": true
+  }
+}

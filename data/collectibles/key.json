@@ -1,0 +1,16 @@
+{
+  "description": "Inventory key. Stored in the player's inventory on pickup. Used to unlock a matching key-door elsewhere in the stage. A key-door references a key by its key-name. The key persists only within the current stage.",
+  "type": "key",
+  "visual": {
+    "shape": "key",
+    "size": 0.6,
+    "fill-color": "yellow",
+    "border-color": "dark-yellow",
+    "border": "thin"
+  },
+  "effect": {
+    "action": "add-to-inventory",
+    "auto-activate": false,
+    "key-name": null
+  }
+}

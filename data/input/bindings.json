@@ -1,0 +1,167 @@
+{
+  "description": "Input action bindings for keyboard and gamepad. Maps abstract game actions to physical inputs. Keyboard keys use standard event.code values. Gamepad buttons use standard Gamepad API button indices.",
+  "actions": {
+    "move-left": {
+      "label-key": "input.move-left",
+      "keyboard": {
+        "primary": "ArrowLeft",
+        "secondary": "KeyA"
+      },
+      "gamepad": {
+        "primary": "dpad-left",
+        "secondary": "left-stick-left"
+      }
+    },
+    "move-right": {
+      "label-key": "input.move-right",
+      "keyboard": {
+        "primary": "ArrowRight",
+        "secondary": "KeyD"
+      },
+      "gamepad": {
+        "primary": "dpad-right",
+        "secondary": "left-stick-right"
+      }
+    },
+    "move-up": {
+      "label-key": "input.move-up",
+      "keyboard": {
+        "primary": "ArrowUp",
+        "secondary": "KeyW"
+      },
+      "gamepad": {
+        "primary": "dpad-up",
+        "secondary": "left-stick-up"
+      }
+    },
+    "move-down": {
+      "label-key": "input.move-down",
+      "keyboard": {
+        "primary": "ArrowDown",
+        "secondary": "KeyS"
+      },
+      "gamepad": {
+        "primary": "dpad-down",
+        "secondary": "left-stick-down"
+      }
+    },
+    "jump": {
+      "label-key": "input.jump",
+      "keyboard": {
+        "primary": "Space",
+        "secondary": "ArrowUp"
+      },
+      "gamepad": {
+        "primary": "button-0"
+      }
+    },
+    "crouch": {
+      "label-key": "input.crouch",
+      "keyboard": {
+        "primary": "ArrowDown"
+      },
+      "gamepad": {
+        "primary": "dpad-down"
+      }
+    },
+    "dash": {
+      "label-key": "input.dash",
+      "keyboard": {
+        "primary": "ShiftLeft",
+        "secondary": "ShiftRight"
+      },
+      "gamepad": {
+        "primary": "button-2"
+      }
+    },
+    "shoot": {
+      "label-key": "input.shoot",
+      "keyboard": {
+        "primary": "KeyZ",
+        "secondary": "KeyJ"
+      },
+      "gamepad": {
+        "primary": "button-1"
+      }
+    },
+    "special": {
+      "label-key": "input.special",
+      "keyboard": {
+        "primary": "KeyX",
+        "secondary": "KeyK"
+      },
+      "gamepad": {
+        "primary": "button-3"
+      }
+    },
+    "pause": {
+      "label-key": "input.pause",
+      "keyboard": {
+        "primary": "Escape",
+        "secondary": "KeyP"
+      },
+      "gamepad": {
+        "primary": "button-9"
+      }
+    },
+    "select": {
+      "label-key": "input.select",
+      "keyboard": {
+        "primary": "KeyC",
+        "secondary": "ShiftRight"
+      },
+      "gamepad": {
+        "primary": "button-8"
+      }
+    },
+    "confirm": {
+      "label-key": "input.confirm",
+      "keyboard": {
+        "primary": "Enter",
+        "secondary": "Space"
+      },
+      "gamepad": {
+        "primary": "button-0"
+      }
+    },
+    "back": {
+      "label-key": "input.back",
+      "keyboard": {
+        "primary": "Escape",
+        "secondary": "Backspace"
+      },
+      "gamepad": {
+        "primary": "button-1"
+      }
+    }
+  },
+  "gamepad": {
+    "dead-zone": 0.15,
+    "axis-threshold": 0.5,
+    "button-count": 17,
+    "button-map": {
+      "button-0": { "index": 0, "label": "A (Cross)" },
+      "button-1": { "index": 1, "label": "B (Circle)" },
+      "button-2": { "index": 2, "label": "X (Square)" },
+      "button-3": { "index": 3, "label": "Y (Triangle)" },
+      "button-4": { "index": 4, "label": "L1 (Left Bumper)" },
+      "button-5": { "index": 5, "label": "R1 (Right Bumper)" },
+      "button-6": { "index": 6, "label": "L2 (Left Trigger)" },
+      "button-7": { "index": 7, "label": "R2 (Right Trigger)" },
+      "button-8": { "index": 8, "label": "Select (View)" },
+      "button-9": { "index": 9, "label": "Start (Menu)" },
+      "button-10": { "index": 10, "label": "L3 (Left Stick Press)" },
+      "button-11": { "index": 11, "label": "R3 (Right Stick Press)" },
+      "button-12": { "index": 12, "label": "D-Pad Up" },
+      "button-13": { "index": 13, "label": "D-Pad Down" },
+      "button-14": { "index": 14, "label": "D-Pad Left" },
+      "button-15": { "index": 15, "label": "D-Pad Right" }
+    },
+    "axis-map": {
+      "left-stick-x": { "index": 0 },
+      "left-stick-y": { "index": 1 },
+      "right-stick-x": { "index": 2 },
+      "right-stick-y": { "index": 3 }
+    }
+  }
+}

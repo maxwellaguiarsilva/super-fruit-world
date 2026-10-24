@@ -1,0 +1,16 @@
+{
+  "description": "Visual-only tile. Rendered behind all entities with no collision. Used for background elements, scenery, and atmosphere.",
+  "type": "decorative",
+  "visual": {
+    "fill-color": "dark-cyan",
+    "border-color": "cyan",
+    "border": "thin"
+  },
+  "collision": {
+    "solid": false,
+    "walkable": false
+  },
+  "rendering": {
+    "layer": "background"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "description": "Ability configurations.",
+  "abilities": {
+    "dash": { "type": "dash", "required-level": 1, "speed-multiplier": 2.0 },
+    "shoot": { "type": "shoot", "required-level": 2, "projectile-speed": 1.0, "fire-rate": 2.0, "shield-damage-reduction": 0.9 },
+    "flight": { "type": "flight", "required-level": 3, "dash-charge-required": 1.0, "flight-duration": 2.0, "flight-speed": 1.0, "slow-fall-speed": 1.0 },
+    "double-jump": { "type": "double-jump", "required-level": 4, "max-jumps": 2 },
+    "air-slide": { "type": "air-slide", "required-level": 5, "midair-distance": 5.0, "grounded-distance": 2.0, "slide-speed": 2.0, "damage": 1, "ground-cooldown": 0.5 },
+    "screen-clear": { "type": "screen-clear", "required-level": 6, "damage": 4, "hold-time": 1.0, "flash-duration": 1.0 },
+    "invincibility": { "type": "invincibility", "required-level": 7, "hold-time": 1.0, "duration": 60 }
+  }
+}

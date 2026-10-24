@@ -1,0 +1,15 @@
+{
+  "description": "Level-up collectible. Larger than the player, shiny, and glowing. Appears at the end of each stage as a reward. Evolves the player to the color level mapped to the fruit (via data/player/fruits.json). If the player already has that level, grants an extra life instead.",
+  "type": "big-fruit",
+  "visual": {
+    "shape": "fruit",
+    "size": 2.0,
+    "border": "thick",
+    "uses-fruit-color": true,
+    "effect": "glow"
+  },
+  "effect": {
+    "action": "level-up",
+    "falls-back-to": "extra-life"
+  }
+}

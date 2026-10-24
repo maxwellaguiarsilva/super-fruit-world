@@ -1,0 +1,16 @@
+{
+  "description": "Extra life collectible. Visually resembles a smaller player ball with a shine aura.",
+  "type": "mini-ball",
+  "visual": {
+    "shape": "circle",
+    "size": 0.5,
+    "fill-color": "white",
+    "border-color": "dark-white",
+    "border": "thin",
+    "aura": "shine"
+  },
+  "effect": {
+    "action": "extra-life",
+    "value": 1
+  }
+}

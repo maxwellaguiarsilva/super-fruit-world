@@ -1,0 +1,24 @@
+{
+  "description": "Angled collision surface. The specific angle is defined by the named slope type in the stage layout (slope-30, slope-45, slope-60) with an inverted boolean. The engine converts the named type to an angle using trigonometry at runtime.",
+  "type": "slope",
+  "visual": {
+    "fill-color": "white",
+    "border-color": "dark-white",
+    "border": "medium"
+  },
+  "collision": {
+    "solid": true,
+    "walkable": true,
+    "slope-angle": null
+  },
+  "physics": {
+    "friction": 0.75,
+    "bounciness": 0.0,
+    "slope-types": {
+      "slope-30": 30,
+      "slope-45": 45,
+      "slope-60": 60
+    }
+  },
+  "inverted": false
+}

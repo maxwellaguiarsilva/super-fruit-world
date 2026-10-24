@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Color Palette Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-indigo-400">Terminal Color Palette Generator</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-slate-800 p-6 rounded-xl shadow-lg border border-slate-700">
+                <h2 class="text-xl font-semibold mb-4">Configuration</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">General Denominator</label>
+                        <input type="number" id="denominator" value="4" min="1" max="10" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm">Dark Base Index</label>
+                            <input type="number" id="dark-base" value="0" min="0" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm">Dark Ceiling Index</label>
+                            <input type="number" id="dark-ceiling" value="2" min="0" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm">Light Base Index</label>
+                            <input type="number" id="light-base" value="1" min="0" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm">Light Ceiling Index</label>
+                            <input type="number" id="light-ceiling" value="3" min="0" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-white">
+                        </div>
+                    </div>
+
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" id="use-extreme" checked class="w-5 h-5 accent-indigo-500">
+                        <span>Use extreme Black/White (#000, #FFF)</span>
+                    </label>
+
+                    <button id="generate" class="w-full bg-indigo-600 hover:bg-indigo-500 py-3 rounded-lg font-bold transition">Generate Palette</button>
+                    <button id="copy-json" class="w-full bg-emerald-700 hover:bg-emerald-600 py-3 rounded-lg font-bold transition">Copy JSON</button>
+                </div>
+            </div>
+
+            <div id="preview" class="grid grid-cols-1 gap-2 font-mono text-xs">
+                <!-- Palette will render here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const getHex = (index, denom) => {
+            const step = Math.round((index / denom) * 255);
+            return step.toString(16).padStart(2, '0').toUpperCase();
+        };
+
+        const generatePalette = () => {
+            const denom = parseInt(document.getElementById('denominator').value);
+            const db = parseInt(document.getElementById('dark-base').value);
+            const dc = parseInt(document.getElementById('dark-ceiling').value);
+            const lb = parseInt(document.getElementById('light-base').value);
+            const lc = parseInt(document.getElementById('light-ceiling').value);
+            const useExtreme = document.getElementById('use-extreme').checked;
+
+            const baseDarkVal = getHex(db, denom);
+            const ceilDarkVal = getHex(dc, denom);
+            const baseLightVal = getHex(lb, denom);
+            const ceilLightVal = getHex(lc, denom);
+
+            const black = useExtreme ? "#000000" : `#${baseDarkVal}${baseDarkVal}${baseDarkVal}`;
+            const white = useExtreme ? "#FFFFFF" : `#${ceilLightVal}${ceilLightVal}${ceilLightVal}`;
+
+            // Helper to assemble RGB
+            const rgb = (r, g, b) => `#${r}${g}${b}`;
+            const zero = "00";
+
+            const palette = {
+                "black": black,
+                "red": rgb(ceilDarkVal, zero, zero),
+                "green": rgb(zero, ceilDarkVal, zero),
+                "yellow": rgb(ceilDarkVal, ceilDarkVal, zero),
+                "blue": rgb(zero, zero, ceilDarkVal),
+                "purple": rgb(ceilDarkVal, zero, ceilDarkVal),
+                "cyan": rgb(zero, ceilDarkVal, ceilDarkVal),
+                "gray": rgb(ceilDarkVal, ceilDarkVal, ceilDarkVal),
+                
+                "red-light": rgb(ceilLightVal, baseLightVal, baseLightVal),
+                "green-light": rgb(baseLightVal, ceilLightVal, baseLightVal),
+                "yellow-light": rgb(ceilLightVal, ceilLightVal, baseLightVal),
+                "blue-light": rgb(baseLightVal, baseLightVal, ceilLightVal),
+                "purple-light": rgb(ceilLightVal, baseLightVal, ceilLightVal),
+                "cyan-light": rgb(baseLightVal, ceilLightVal, ceilLightVal),
+                "white": white
+            };
+
+            renderPreview(palette);
+            return palette;
+        };
+
+        const renderPreview = (palette) => {
+            const container = document.getElementById('preview');
+            container.innerHTML = '';
+            for (const [key, val] of Object.entries(palette)) {
+                // Fixed: Ensure the background-color style is applied correctly for every key
+                container.innerHTML += `
+                    <div class="flex items-center gap-2 bg-slate-800 p-2 rounded">
+                        <div class="w-8 h-8 rounded border border-slate-600" style="background-color: ${val}"></div>
+                        <span class="font-mono">${key}: ${val}</span>
+                    </div>
+                `;
+            }
+        };
+
+        document.getElementById('generate').addEventListener('click', generatePalette);
+        
+        document.getElementById('copy-json').addEventListener('click', () => {
+            const palette = generatePalette();
+            const json = JSON.stringify(palette, null, 4);
+            
+            // Create a temporary textarea to hold the text
+            const textarea = document.createElement('textarea');
+            textarea.value = json;
+            textarea.style.position = 'fixed'; // Prevent scrolling to bottom of page in MS Edge.
+            textarea.style.opacity = '0'; // Hide it
+            document.body.appendChild(textarea);
+            
+            textarea.select();
+            
+            try {
+                // Execute the copy command
+                document.execCommand('copy');
+                
+                // Show visual feedback instead of alert
+                const btn = document.getElementById('copy-json');
+                const originalText = btn.innerText;
+                btn.innerText = 'Copied!';
+                btn.classList.add('bg-emerald-500');
+                btn.classList.remove('bg-emerald-700');
+                
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.classList.remove('bg-emerald-500');
+                    btn.classList.add('bg-emerald-700');
+                }, 2000);
+                
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                // Fallback or error message could go here
+            } finally {
+                // Clean up
+                document.body.removeChild(textarea);
+            }
+        });
+
+        // Initialize
+        window.onload = generatePalette;
+    </script>
+</body>
+</html>

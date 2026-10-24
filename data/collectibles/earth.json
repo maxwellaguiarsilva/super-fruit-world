@@ -1,0 +1,23 @@
+{
+  "description": "Earth collectible. Goes to inventory on pickup and accumulates in quantity. When used, triggers an earthquake that deals 3 damage to all ground enemies on screen.",
+  "type": "earth",
+  "visual": {
+    "shape": "circle",
+    "size": 0.6,
+    "fill-color": "blue",
+    "border-color": "dark-blue",
+    "border": "thin"
+  },
+  "effect": {
+    "action": "add-to-inventory",
+    "auto-activate": false,
+    "usage": {
+      "action": "earthquake",
+      "damage": 3,
+      "target": "ground-enemies"
+    }
+  },
+  "inventory": {
+    "accumulates": true
+  }
+}

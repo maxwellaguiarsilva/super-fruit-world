@@ -1,0 +1,226 @@
+{
+  "description": "World map for Super Fruit World. Organizes stages into continents, areas, and individual stage nodes. Uses the section system for spatial layout and teleporter markers for navigation. Branching paths are supported from day 1.",
+  "name": "fruit-world",
+  "display-name-key": "map.fruit-world",
+  "type": "world",
+  "bgm": "world-map",
+  "sections": [
+    {
+      "name": "continent-1",
+      "parent-section": "root",
+      "position": { "x": 0, "y": 0 },
+      "objects": [
+        {
+          "type": "area-label",
+          "name": "green-meadows",
+          "display-name-key": "area.green-meadows",
+          "position": { "x": 0, "y": 0 }
+        },
+        {
+          "type": "stage-node",
+          "stage-id": "strawberry-fields",
+          "display-name-key": "stage.strawberry-fields",
+          "position": { "x": 2, "y": 0 },
+          "state": "available",
+          "unlock-condition": null
+        },
+        {
+          "type": "stage-node",
+          "stage-id": "avocado-grove",
+          "display-name-key": "stage.avocado-grove",
+          "position": { "x": 6, "y": 0 },
+          "state": "locked",
+          "unlock-condition": { "type": "stage-complete", "stage": "strawberry-fields" }
+        },
+        {
+          "type": "stage-node",
+          "stage-id": "banana-beach",
+          "display-name-key": "stage.banana-beach",
+          "position": { "x": 10, "y": 0 },
+          "state": "locked",
+          "unlock-condition": { "type": "stage-complete", "stage": "avocado-grove" }
+        },
+        {
+          "type": "path",
+          "from": "strawberry-fields",
+          "to": "avocado-grove",
+          "visual": { "fill-color": "dark-white" }
+        },
+        {
+          "type": "path",
+          "from": "avocado-grove",
+          "to": "banana-beach",
+          "visual": { "fill-color": "dark-white" }
+        },
+        {
+          "type": "teleporter-marker",
+          "name": "fields-exit-marker",
+          "position": { "x": 2, "y": 2 }
+        }
+      ]
+    },
+    {
+      "name": "continent-2",
+      "parent-section": "root",
+      "position": { "x": 20, "y": 0 },
+      "objects": [
+        {
+          "type": "area-label",
+          "name": "azure-highlands",
+          "display-name-key": "area.azure-highlands",
+          "position": { "x": 0, "y": 0 }
+        },
+        {
+          "type": "stage-node",
+          "stage-id": "blueberry-peaks",
+          "display-name-key": "stage.blueberry-peaks",
+          "position": { "x": 2, "y": 0 },
+          "state": "locked",
+          "unlock-condition": { "type": "stage-complete", "stage": "banana-beach" }
+        },
+        {
+          "type": "stage-node",
+          "stage-id": "starfruit-caverns",
+          "display-name-key": "stage.starfruit-caverns",
+          "position": { "x": 6, "y": 0 },
+          "state": "locked",
+          "unlock-condition": { "type": "stage-complete", "stage": "blueberry-peaks" }
+        },
+        {
+          "type": "path",
+          "from": "blueberry-peaks",
+          "to": "starfruit-caverns",
+          "visual": { "fill-color": "dark-white" }
+        }
+      ]
+    },
+    {
+      "name": "continent-3",
+      "parent-section": "root",
+      "position": { "x": 0, "y": 10 },
+      "objects": [
+        {
+          "type": "area-label",
+          "name": "volcanic-frontier",
+          "display-name-key": "area.volcanic-frontier",
+          "position": { "x": 0, "y": 0 }
+        },
+        {
+          "type": "stage-node",
+          "stage-id": "pitaya-canyon",
+          "display-name-key": "stage.pitaya-canyon",
+          "position": { "x": 2, "y": 0 },
+          "state": "locked",
+          "unlock-condition": { "type": "stage-complete", "stage": "starfruit-caverns" }
+        }
+      ]
+    },
+    {
+      "name": "continent-4",
+      "parent-section": "root",
+      "position": { "x": 20, "y": 10 },
+      "objects": [
+        {
+          "type": "area-label",
+          "name": "final-horizon",
+          "display-name-key": "area.final-horizon",
+          "position": { "x": 0, "y": 0 }
+        },
+        {
+          "type": "stage-node",
+          "stage-id": "fruit-basket-citadel",
+          "display-name-key": "stage.fruit-basket-citadel",
+          "position": { "x": 2, "y": 0 },
+          "state": "locked",
+          "unlock-condition": { "type": "stage-complete", "stage": "pitaya-canyon" }
+        }
+      ]
+    },
+    {
+      "name": "branching-secret",
+      "parent-section": "root",
+      "position": { "x": 12, "y": 15 },
+      "objects": [
+        {
+          "type": "area-label",
+          "name": "secret-grove",
+          "display-name-key": "area.secret-grove",
+          "position": { "x": 0, "y": 0 }
+        },
+        {
+          "type": "stage-node",
+          "stage-id": "starfruit-caverns-branch",
+          "display-name-key": "stage.secret-waterfall",
+          "position": { "x": 0, "y": 2 },
+          "state": "locked",
+          "unlock-condition": { "type": "key-required", "key-name": "secret-grove-key" }
+        },
+        {
+          "type": "path",
+          "from": "starfruit-caverns",
+          "to": "starfruit-caverns-branch",
+          "visual": { "fill-color": "dark-yellow", "style": "dashed" }
+        }
+      ]
+    },
+    {
+      "name": "inter-continent-paths",
+      "parent-section": "root",
+      "position": { "x": 0, "y": 0 },
+      "objects": [
+        {
+          "type": "map-teleporter",
+          "name": "path-green-to-azure",
+          "position": { "x": 10, "y": 0 },
+          "target-marker": "continent-2-arrival",
+          "display-name-key": "teleporter.to-azure-highlands",
+          "visual": { "fill-color": "cyan", "border-color": "dark-cyan" }
+        },
+        {
+          "type": "teleporter-marker",
+          "name": "continent-2-arrival",
+          "position": { "x": 20, "y": 1 }
+        },
+        {
+          "type": "map-teleporter",
+          "name": "path-azure-to-volcanic",
+          "position": { "x": 26, "y": 0 },
+          "target-marker": "continent-3-arrival",
+          "display-name-key": "teleporter.to-volcanic-frontier",
+          "visual": { "fill-color": "cyan", "border-color": "dark-cyan" }
+        },
+        {
+          "type": "teleporter-marker",
+          "name": "continent-3-arrival",
+          "position": { "x": 0, "y": 11 }
+        },
+        {
+          "type": "map-teleporter",
+          "name": "path-volcanic-to-final",
+          "position": { "x": 6, "y": 10 },
+          "target-marker": "continent-4-arrival",
+          "display-name-key": "teleporter.to-final-horizon",
+          "visual": { "fill-color": "cyan", "border-color": "dark-cyan" }
+        },
+        {
+          "type": "teleporter-marker",
+          "name": "continent-4-arrival",
+          "position": { "x": 20, "y": 11 }
+        },
+        {
+          "type": "map-teleporter",
+          "name": "path-azure-to-secret",
+          "position": { "x": 26, "y": 1 },
+          "target-marker": "secret-grove-arrival",
+          "display-name-key": "teleporter.to-secret-grove",
+          "visual": { "fill-color": "dark-yellow", "border-color": "yellow" }
+        },
+        {
+          "type": "teleporter-marker",
+          "name": "secret-grove-arrival",
+          "position": { "x": 12, "y": 16 }
+        }
+      ]
+    }
+  ]
+}

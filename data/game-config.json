@@ -1,0 +1,57 @@
+{
+  "description": "Global game settings. Single source of truth for all configurable defaults.",
+  "visual-unit": {
+    "scale-mode": "canvas-height-percent",
+    "value": 10
+  },
+  "canvas": {
+    "viewport-percent": 90,
+    "background-color": "black"
+  },
+  "inventory": {
+    "description": "Inventory system configuration. The inventory is opened by pressing the select button on the joystick. The 'default selected' item can be used directly via the select+shoot shortcut (hold select and press shoot).",
+    "open-button": "select",
+    "use-shortcut": "select+shoot",
+    "default-selected": null,
+    "max-slots": 8
+  },
+  "tile-types": [
+    "platform", "wall", "slope", "spike", "water", "ladder", "pit", "decorative"
+  ],
+  "initial-stage": "data/stages/strawberry-fields.json",
+  "save-namespace": "super-fruit-world",
+  "physics": {
+    "gravity": 15.0,
+    "max-fall-speed": 20.0,
+    "friction": 0.75,
+    "walk-speed": 5.0,
+    "walk-acceleration": 15.0,
+    "jump-velocity": 10.0
+  },
+  "player": {
+    "size": 1.0,
+    "starting-level": 0,
+    "starting-color": "black"
+  },
+  "health": {
+    "max-life": 10,
+    "starting-lives": 5,
+    "starting-continues": 1,
+    "iframe-timer": 1.0
+  },
+  "damage": {
+    "enemy-shape-damage": {
+      "3": 1.0,
+      "4": 1.5,
+      "5": 2.0,
+      "6": 2.5,
+      "7": 3.0
+    }
+  },
+  "projectile": {
+    "size": 0.25,
+    "max-travel": 20,
+    "enemy-color": "red",
+    "player-color": "green"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "description": "World map BGM. Simple single-channel melody.",
+  "bpm": 100,
+  "wave": "sine",
+  "notes": [
+    ["c4", 2], ["d4", 2], ["e4", 2], ["c4", 2],
+    ["d4", 2], ["e4", 1], ["f4", 1], ["e4", 2]
+  ]
+}

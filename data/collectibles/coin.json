@@ -1,0 +1,20 @@
+{
+  "description": "Standard currency. Accumulated coins periodically grant an extra life, then the counter resets. Group placement supported in stage JSON.",
+  "type": "coin",
+  "visual": {
+    "shape": "circle",
+    "size": 0.5,
+    "fill-color": "yellow",
+    "border-color": "dark-yellow",
+    "border": "thin"
+  },
+  "effect": {
+    "action": "add-coins",
+    "value": 1,
+    "extra-life-threshold": 100
+  },
+  "placement": {
+    "min-per-stage": 120,
+    "supports-group": true
+  }
+}

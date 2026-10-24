@@ -1,0 +1,13 @@
+{
+  "description": "Technical audio synthesis configuration. Defines wave types, tuning parameters for note-frequency calculation (equal temperament), and synthesis defaults used by SFX and BGM definition files in data/audio/.",
+  "wave-types": ["sine", "square", "sawtooth", "triangle"],
+  "temperament": "equal",
+  "tuning": {
+    "reference-note": "a4",
+    "reference-frequency": 440,
+    "note-range": { "lowest": "c1", "highest": "c6" }
+  },
+  "musical-note-scale": ["c4", "d4", "e4", "f4", "g4", "a4", "b4", "c5"],
+  "polyphony-limit": 24,
+  "default-envelope": { "attack": 0.01, "decay": 0.10, "sustain": 0.5, "release": 0.05 }
+}

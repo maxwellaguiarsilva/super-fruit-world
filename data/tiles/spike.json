@@ -1,0 +1,35 @@
+{
+  "description": "Dangerous surface. Deals damage on contact with the player. Solid collision applies — entities cannot pass through. Typified variants: spike, danger, lava share the same behavior with different visual styling and damage values.",
+  "type": "spike",
+  "visual": {
+    "fill-color": "red",
+    "border-color": "dark-red",
+    "border": "thin"
+  },
+  "collision": {
+    "solid": true,
+    "walkable": false
+  },
+  "damage": {
+    "on-contact": true,
+    "value": 1.0,
+    "cooldown": 0.5
+  },
+  "variants": {
+    "spike": {
+      "fill-color": "red",
+      "border-color": "dark-red",
+      "damage": 1.0
+    },
+    "danger": {
+      "fill-color": "yellow",
+      "border-color": "dark-yellow",
+      "damage": 2.0
+    },
+    "lava": {
+      "fill-color": "red",
+      "border-color": "yellow",
+      "damage": 3.0
+    }
+  }
+}

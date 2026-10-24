@@ -1,0 +1,16 @@
+{
+  "description": "Ammunition for shooting. Each apple adds ammo up to a defined maximum. No effect when already at max capacity.",
+  "type": "apple",
+  "visual": {
+    "shape": "circle",
+    "size": 0.5,
+    "fill-color": "red",
+    "border-color": "dark-red",
+    "border": "thin"
+  },
+  "effect": {
+    "action": "add-ammo",
+    "value": 10,
+    "max-capacity": 1000
+  }
+}

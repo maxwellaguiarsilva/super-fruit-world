@@ -1,0 +1,21 @@
+{
+  "description": "Water surface or body. Modifies physics — reduces gravity, slows movement, and allows swimming. No direct damage. Surface collision at the top; full-body physics apply when submerged.",
+  "type": "water",
+  "visual": {
+    "fill-color": "cyan",
+    "border-color": "dark-cyan",
+    "border": "thin",
+    "effect": "translucent"
+  },
+  "collision": {
+    "solid": false,
+    "walkable": false,
+    "surface-only": true
+  },
+  "physics": {
+    "gravity-multiplier": 0.3,
+    "speed-multiplier": 0.5,
+    "friction": 0.6,
+    "bounciness": 0.0
+  }
+}

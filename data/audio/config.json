@@ -1,0 +1,10 @@
+{
+  "description": "Top-level audio settings for the game engine. Consumers reference audio resources by name — the engine resolves source type (.ogg file, .json synthesis definition) from the data/audio/ directory.",
+  "master-volume": 0.6,
+  "bgm-volume": 0.6,
+  "sfx-volume": 1.0,
+  "sound-enabled": true,
+  "bgm-enabled": true,
+  "sfx-enabled": true,
+  "bgm-crossfade-duration": 1.0
+}

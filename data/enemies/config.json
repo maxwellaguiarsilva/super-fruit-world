@@ -1,0 +1,11 @@
+{
+  "size": 1,
+  "boss-size": 3,
+  "shape-map": {
+    "triangle": 3,
+    "square": 4,
+    "pentagon": 5,
+    "hexagon": 6,
+    "heptagon": 7
+  }
+}

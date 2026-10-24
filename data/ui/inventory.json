@@ -1,0 +1,70 @@
+{
+  "description": "Inventory backpack overlay screen. Displays collected items with quantities. Player navigates with directional input. Quick-use available for default-selected item via select+shoot shortcut. Colors reference data/colors.json by name. Borders reference data/borders.json by name.",
+  "inventory": {
+    "enabled": true,
+    "font-family": "'Comic Sans MS', 'Comic Sans', monospace",
+    "max-slots": 8,
+    "columns": 4,
+    "rows": 2,
+    "overlay": {
+      "background-color": "black",
+      "background-opacity": 0.85,
+      "border": "thick",
+      "border-color": "white",
+      "corner-radius": 0.3,
+      "padding": 0.5,
+      "width": 9.0,
+      "height": 5.5
+    },
+    "title": {
+      "label-key": "inventory.title",
+      "font-size": 0.5,
+      "color": "white",
+      "anchor": "top-center",
+      "offset": { "x": 0, "y": 0.5 }
+    },
+    "slot": {
+      "size": { "width": 1.6, "height": 1.6 },
+      "gap": { "x": 0.35, "y": 0.4 },
+      "grid-offset": { "x": 0, "y": 1.8 },
+      "border": "thin",
+      "border-color": "dark-white",
+      "corner-radius": 0.15,
+      "empty-fill-color": "dark-white",
+      "empty-opacity": 0.3,
+      "filled-fill-color": "dark-blue",
+      "filled-opacity": 0.6,
+      "selected-border-color": "yellow",
+      "selected-border": "medium",
+      "default-marker-color": "cyan",
+      "default-marker-size": 0.18
+    },
+    "item": {
+      "icon-radius": 0.35,
+      "icon-color": "white",
+      "name-font-size": 0.2,
+      "name-color": "white",
+      "name-offset": { "x": 0, "y": 0.55 },
+      "count-font-size": 0.28,
+      "count-color": "yellow",
+      "count-offset": { "x": 0.5, "y": -0.5 },
+      "default-marker-offset": { "x": -0.55, "y": -0.55 }
+    },
+    "empty-slot": {
+      "label-key": "inventory.empty",
+      "text-color": "dark-white",
+      "font-size": 0.15
+    },
+    "footer": {
+      "hints": [
+        { "label-key": "inventory.navigate-hint", "font-size": 0.2, "color": "dark-white" },
+        { "label-key": "inventory.use-hint", "font-size": 0.2, "color": "white" },
+        { "label-key": "inventory.default-hint", "font-size": 0.2, "color": "cyan" },
+        { "label-key": "inventory.close-hint", "font-size": 0.2, "color": "dark-white" }
+      ],
+      "gap": 0.25,
+      "anchor": "bottom-center",
+      "offset": { "x": 0, "y": -0.4 }
+    }
+  }
+}

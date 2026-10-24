@@ -1,0 +1,9 @@
+{
+  "description": "Stage clear jingle. Single-channel victory melody.",
+  "bpm": 160,
+  "wave": "sine",
+  "notes": [
+    ["c4", 1], ["e4", 1], ["g4", 1], ["c5", 2],
+    ["g4", 1], ["c5", 4]
+  ]
+}
