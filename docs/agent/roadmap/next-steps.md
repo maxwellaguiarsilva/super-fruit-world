@@ -37,14 +37,14 @@ The original S01–S33 sequence is delivered. Steps that were delivered in a nar
 | S27 | Render unit and the configured update rate drive the loop. | `src/app/app.js`; `test/game-loop.test.js`. |
 | S28 | Data validation command with errors and warnings. | `bun run validate`; current result 57 files, 0 errors, 0 warnings. |
 | S29 | Bun toolchain with no runtime dependencies and no bundle. | `package.json`, `index.html`. |
-| S30 | Unit suite. | 666 tests across 63 files. |
+| S30 | Unit suite. | 739 tests across 65 files. |
 | S31 | Boot and transition smoke test, sharing its browser launcher with stage verification. | `bun run smoke`; five assertions pass. `bun run verify:stages`; 8/8 stages pass. |
 | S32 | Music CLI documented and declared as a script. | [../tooling/music-format-cli.md](../tooling/music-format-cli.md). |
 | S33 | Documentation taxonomy, index and reading order. | [../README.md](../README.md). |
 
 ## Delivered plan
 
-The N01–N12 plan was executed in the delivery wave. A row marked partial names the remainder that moved to the plan below; the affected opportunity keeps its original ID.
+The N01–N13 plan was executed in the delivery wave. A row marked partial names the remainder that moved to the plan below; the affected opportunity keeps its original ID.
 
 | Step | Outcome | Evidence |
 | --- | --- | --- |
@@ -60,13 +60,15 @@ The N01–N12 plan was executed in the delivery wave. A row marked partial names
 | N10 | The loop uses a fixed timestep at the configured rate. | `test/game-loop.test.js`. |
 | N11 | Partial. Layer direction is checked, persistence write points are tested, every extracted seam has a suite and `verify:stages` enters every stage through the map. Browser teleporter traversal, full-chain play and a direct composition-root test remain as OP-19/OP-20/OP-24. | `scripts/check-layers.js`, `test/check-layers.test.js`, `test/progress-writer.test.js`, `scripts/verify-stages.js`. |
 | N12 | The music CLI alias exists and every advertised ability is implemented. | `package.json`; `test/movement-abilities.test.js`, `test/combat-abilities.test.js`. |
+| N13 | Playability validation is split into a static geometry check and a semantic visual export. The static command reports 5 errors across three Strawberry Fields pickups, now carried as OP-28; the exporter writes 29 images across 8 stages. Both stay outside `bun run verify`. | `scripts/validate-playability.js`, `scripts/export-stage-map.js`, `test/validate-playability.test.js`, `test/export-stage-map.test.js`. |
 
 ## Remaining plan
 
-The open inventory has three entries. Each plan section maps to one entry; nothing else is planned.
+The open inventory has four entries. Each plan section maps to one entry; nothing else is planned.
 
 | Priority | Meaning |
 | --- | --- |
+| P1 | Shipped content is wrong for the player. |
 | P2 | A recorded browser or play verification path is missing. |
 | P3 | A direct unit-test path is missing. |
 
@@ -104,6 +106,19 @@ The open inventory has three entries. Each plan section maps to one entry; nothi
   - A regression in boot order or in the key-unlock merge fails a unit test.
   - The test needs no network, no real DOM and no browser.
 - Risk: `App.start` starts the loop; the test must stop it or stub `requestAnimationFrame`.
+
+### R4 — Fix the three Strawberry Fields collectible placements (five findings) (P1; OP-28)
+
+- Objective: Strawberry Fields has no collectible embedded in geometry or unreachable from the spawn.
+- Work:
+  - Move or remove the coin at world (98.5, -12) and the apple at (98.5, -8), which overlap the solid platform box (97, -15, 3, 10).
+  - Move or remove the musical note at world (159, -21), which overlaps the solid wedge of `slope-45` box (155, -22, 5, 3).
+  - If the placements are intentional, document them as secrets instead of changing the geometry.
+  - Re-run `bun run validate:playability --stage strawberry-fields` and confirm zero errors.
+- Acceptance:
+  - The stage reports no errors, and every remaining collectible is reachable from the spawn.
+  - The exit-door receives no reachability finding, but the fill is an over-approximation of movement, so this is not a play-through proof; `test/stage-catalog.test.js` still passes.
+- Risk: moving a pickup can change pacing or note order; re-export the stage map and review the affected sections.
 
 ## Not planned
 

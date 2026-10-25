@@ -1,6 +1,6 @@
 # Tooling
 
-Subject: the development commands declared in `package.json` and the constraints they operate under. The BGM formatter is documented in [music-format-cli.md](music-format-cli.md).
+Subject: the development commands declared in `package.json` and the constraints they operate under. The non-trivial commands have sibling documents: [playability-validation.md](playability-validation.md), [stage-map-export.md](stage-map-export.md) and [music-format-cli.md](music-format-cli.md).
 
 ## Commands
 
@@ -9,6 +9,8 @@ Subject: the development commands declared in `package.json` and the constraints
 | `bun run serve` | `scripts/serve.js` | Serves the repository root as static files. |
 | `bun run data:index` | `scripts/generate-data-index.js` | Regenerates `data/index.json`. |
 | `bun run validate` | `scripts/validate-data.js` | Checks the data tree for structural and referential errors. |
+| `bun run validate:playability` | `scripts/validate-playability.js` | Checks stage geometry for embedded, deadly and unreachable placements. |
+| `bun run export:stage-maps` | `scripts/export-stage-map.js` | Writes semantic stage-map images and manifests for visual review. |
 | `bun run check:layers` | `scripts/check-layers.js` | Checks import direction between `engine`, `game`, `app` and `main`. |
 | `bun test` | Bun test runner | Runs every `test/*.test.js` file. |
 | `bun run smoke` | `scripts/smoke.js` | Boots the game in headless Chromium and asserts the first transition. |
@@ -68,6 +70,31 @@ Failure meaning:
 - A text or color error means a screen would fall back to the raw key or to a null color.
 - A warning means content is declared but unreachable; it does not block boot.
 
+## `validate:playability`
+
+- Runs `scripts/validate-playability.js` through the shared analyzer in `scripts/stage-analysis/model.js` and `scripts/stage-analysis/checks.js`.
+- Reads `data/stages/*.json`, `data/tiles/*.json`, `data/collectibles/*.json`, `data/enemies/config.json` and `data/game-config.json` without writing them.
+- Reports errors for a collectible embedded in solid geometry (including a slope wedge), in a spike or pit, below or outside the tile geometry, or unreachable from the spawn; a spawn that is missing or inside solid or deadly geometry; an unusable checkpoint activation cell; a teleporter or marker inside solid geometry; and an enemy overlapping solid geometry.
+- Reports `reachability-skipped` as a warning when the 0.25-unit grid would exceed 2,000,000 cells or no free cell matches the spawn.
+- Options: `--stage <id>` or `--stage=<id>`, repeatable; `--help`. There are no positional ids.
+- Output: one `error:` or `warning:` line per finding, then `Playability validation passed: <n> stages, 0 errors, <w> warning(s).` or `Playability validation failed: <n> stages, <e> error(s), <w> warning(s).`
+- Exit `0` only when there are no errors; exit `1` on any error, an unknown stage id or unreadable data.
+- Current result: 8 stages, 5 errors, 0 warnings, exit `1`. All five findings are in Strawberry Fields and span three optional pickups: a coin and an apple inside a solid platform box (and unreachable from the spawn), plus a musical note inside the solid wedge of a `slope-45`. The exit-door is checked as a collectible and receives no reachability finding, but the fill is an over-approximation of movement, so this is not a play-through proof; `test/stage-catalog.test.js` asserts exactly one exit-door per stage.
+- Covered by `test/validate-playability.test.js` (31 tests, including argument parsing and every finding code, `spawn-missing` and `reachability-skipped` among them). Not part of `bun run verify`.
+- Full check list, coordinate model and reachability rules are in [playability-validation.md](playability-validation.md).
+
+## `export:stage-maps`
+
+- Runs `scripts/export-stage-map.js` to write semantic stage-map images and manifests for a vision-capable LLM review.
+- Defaults: `--out out/stage-maps`, `--scale 24`, `--max-size 1400`; `--stage <id>` is repeatable; `--help` prints usage. `out/` is gitignored.
+- Output: `out/stage-maps/index.json`, then per stage `manifest.json`, `overview.png`, `overview.svg` and `chunk-NN.png`/`chunk-NN.svg`.
+- Images encode platform, wall, slope wedge, spike, pit, water, ladder, decorative tiles, spawn, exit, checkpoints, collectibles, enemies, teleporters, markers, section separators, world coordinates, a legend and static finding badges.
+- The exporter is advisory: findings never fail it and it is not part of `bun run verify`. A failed rasterization, manifest write or browser launch exits `1`.
+- Requires `playwright-core` and a Chromium build; the launch helper is `scripts/smoke/browser.js` and honors `CHROMIUM_EXECUTABLE_PATH`. If the browser is missing, run `bunx playwright@1.64.1 install chromium`.
+- Current result: `Stage map export: 8 stages, 29 images, 0 failed.`
+- Covered by `test/export-stage-map.test.js` (42 tests) for the pure chunk layout, SVG semantics, label placement, manifests, argument parsing and the output-directory guard; rasterization is exercised by running the command.
+- Image semantics, manifests and the review workflow are in [stage-map-export.md](stage-map-export.md).
+
 ## `check:layers`
 
 - Walks every `.js` file under `src/` and classifies it as `engine`, `game`, `app` or `main`.
@@ -81,9 +108,9 @@ Failure meaning:
 ## `test`
 
 - Discovers `test/**/*.test.js`; `test/support/stage-fixture.js` is a helper, not a test file.
-- Uses Bun's built-in assertions and mocks. No snapshot files, no browser and no network. Several tests read files from `data/` and one writes a temporary directory outside the repository.
-- Current run: 666 passing tests across 63 files, 2521 assertions, 0 failures.
-- The suite covers the engine primitives (including the loop with exception containment, scene manager, renderer, camera, input, physics, UI base, audio and audio settings), the application seams (dependency contract, data path, progress writer, scene router), the game systems, abilities, presentation, stage collision timing and the data catalog and tools.
+- Uses Bun's built-in assertions and mocks. No snapshot files, no browser and no network. Several tests read files from `data/`, and two tests write temporary directories outside the repository.
+- Current run: 739 passing tests across 65 files, 2902 assertions, 0 failures.
+- The suite covers the engine primitives (including the loop with exception containment, scene manager, renderer, camera, input, physics, UI base, audio and audio settings), the application seams (dependency contract, data path, progress writer, scene router), the game systems, abilities, presentation, stage collision timing and the data catalog and tools, including the playability validator and the stage-map exporter helpers.
 - `test/verify-stages.test.js` pins stage discovery, key-condition collection, the progress seed and intro resolution through the pure helpers in `scripts/verify-stages/catalog.js`.
 - Audio-settings persistence is covered by the unit suite and was also browser-verified: a slider change wrote `bgm-volume: 0.8` to the `settings` record and a reload restored 80%. See [../testing.md](../testing.md#verification-status).
 - Exit `0` when every test passes; non-zero when any test fails.
@@ -163,7 +190,7 @@ bun run test
 bun run smoke
 ```
 
-It is the default gate. `verify:stages` is intentionally not part of it because it launches a browser context for every stage; run it separately when stage content or map data changes.
+It is the default gate. `verify:stages` is intentionally not part of it because it launches a browser context for every stage; run it separately when stage content or map data changes. `validate:playability` is also separate because it is a geometric content check with known findings on the shipped tree, and `export:stage-maps` is a browser-based advisory export. Neither new command gates a change.
 
 ## `format-4-beat-music`
 
@@ -182,4 +209,5 @@ The explicit file form also works: `bun src/engine/audio/format-4-beat-music.ts 
 - `scripts/serve.js` only reads and serves files; it does not transform, concatenate or transpile.
 - There is no `dist/` artifact and no bundling command. `dist` and `out` are gitignored in case a local tool produces them.
 - `src/engine/audio/format-4-beat-music.ts` is a Bun-only developer tool outside the runtime graph; the browser never loads it.
+- `scripts/export-stage-map.js` uses the dev-only `playwright-core` and writes to `out/`; it is outside the runtime graph and the browser never loads it.
 - Any new runtime file must be reachable through static paths and explicit module specifiers; anything requiring a transform contradicts the constraint.

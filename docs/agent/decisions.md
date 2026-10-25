@@ -200,14 +200,23 @@ Subject: choices that are implemented in the current tree and that constrain fut
 | Consequence | A non-empty table returns one entry on every kill, so the weights control relative rarity rather than a chance to drop. `drop-rate` and `drop-type` are no longer normalized or read. Blueberry Peaks and later stages declare tables; Strawberry Fields, Avocado Grove, Banana Beach and the branch remain drop-free. |
 | Evidence | `src/game/entities/enemy.js`, `src/game/entities/enemy-types.js`, `src/game/stages/stage.js`, `src/app/content/enemy-config.js`, `scripts/validate-data.js`, `test/enemy-drops.test.js`, `test/validate-data.test.js`. |
 
+## DEC-23 — Playability validation is split into static geometry checks and a semantic visual export
+
+| Field | Content |
+| --- | --- |
+| Context | Stage geometry and collectible placement had no automated check beyond the stage catalog test and manual play. A placement could sit inside a wall or a slope wedge, in a pit, below the geometry or outside the reachable region without any command reporting it, and visual review had no stable artifact to inspect. |
+| Decision | Split the subject into two tools. `bun run validate:playability` performs deterministic geometry checks over the normalized stage layout; every collectible finding is an error. `bun run export:stage-maps` writes semantic overview and chunk images plus manifests for a vision-capable review. The static check is deliberately high-confidence and does not simulate jumps, dashes or flight; its reachability grid over-approximates movement. The exporter is advisory and never fails on findings. |
+| Consequence | A placement defect has a stable code and a non-zero exit, while visual review has coordinate-bearing images to inspect. Both commands stay outside `bun run verify`, so a known content defect does not block the default gate. On the current tree the static check reports 5 findings, all in Strawberry Fields and spanning three optional pickups. The exit-door is checked as a collectible and receives no reachability finding, but the fill is an over-approximation of movement, so this is not a play-through proof; `test/stage-catalog.test.js` asserts exactly one exit-door per stage. |
+| Evidence | `scripts/validate-playability.js`, `scripts/stage-analysis/model.js`, `scripts/stage-analysis/checks.js`, `scripts/export-stage-map.js`, `scripts/stage-analysis/chunks.js`, `scripts/stage-analysis/render.js`, `test/validate-playability.test.js`, `test/export-stage-map.test.js`, `data/stages/strawberry-fields.json`. |
+
 ## Toolchain — Bun, static serving and a browser smoke test
 
 | Field | Content |
 | --- | --- |
 | Context | The project must run from plain ES modules without a bundler, while still offering reproducible checks. |
-| Decision | Bun is the toolchain. Scripts are `serve`, `data:index`, `validate`, `check:layers`, `test`, `smoke`, `verify`, `verify:stages` and `format-4-beat-music`. There are no runtime dependencies; `playwright-core` 1.64.1 is the only development dependency and supports the smoke test and stage verification. |
-| Consequence | `index.html` loads `src/main.js` directly, imports keep explicit `.js` extensions, and `scripts/serve.js` performs no transformation. `data/index.json` is generated and gitignored. `bun install` is needed once for the smoke test; a Chromium build or `CHROMIUM_EXECUTABLE_PATH` is required. The suite runs without a browser; only the smoke test needs one. |
-| Evidence | `package.json`, `index.html`, `scripts/serve.js`, `scripts/generate-data-index.js`, `scripts/validate-data.js`, `scripts/check-layers.js`, `scripts/smoke.js`, `scripts/verify-stages.js`, `.gitignore`. |
+| Decision | Bun is the toolchain. Scripts are `serve`, `data:index`, `validate`, `validate:playability`, `export:stage-maps`, `check:layers`, `test`, `smoke`, `verify`, `verify:stages` and `format-4-beat-music`. There are no runtime dependencies; `playwright-core` 1.64.1 is the only development dependency and supports the smoke test, stage verification and the stage-map exporter. |
+| Consequence | `index.html` loads `src/main.js` directly, imports keep explicit `.js` extensions, and `scripts/serve.js` performs no transformation. `data/index.json` is generated and gitignored. `bun install` is needed once for the browser commands; a Chromium build or `CHROMIUM_EXECUTABLE_PATH` is required. The unit suite runs without a browser; the smoke test, stage verification and stage-map export need one. |
+| Evidence | `package.json`, `index.html`, `scripts/serve.js`, `scripts/generate-data-index.js`, `scripts/validate-data.js`, `scripts/validate-playability.js`, `scripts/export-stage-map.js`, `scripts/check-layers.js`, `scripts/smoke.js`, `scripts/verify-stages.js`, `.gitignore`. |
 
 ## Standing constraints
 

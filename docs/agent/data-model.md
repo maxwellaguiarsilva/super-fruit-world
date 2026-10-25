@@ -377,6 +377,8 @@ Current result: 57 data files, 0 errors, 0 warnings. Every map node now has stag
 
 The validator does not check enemy behavior names, object types, effect actions, required stage fields beyond those listed, or the map's `unlock-condition` variants.
 
+Playability is a separate geometric check of stage placements, documented in [tooling/playability-validation.md](tooling/playability-validation.md). Visual review is a separate semantic export, documented in [tooling/stage-map-export.md](tooling/stage-map-export.md); neither command is part of `bun run verify`.
+
 ## Data without a consumer
 
 | Data | Status |

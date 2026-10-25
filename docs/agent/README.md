@@ -13,12 +13,14 @@ Documentation set for agents working on `super-fruit-world`. Every statement in 
 - Fixed-step simulation at `loop.update-rate` (60), with a deterministic `tick(timestamp)` seam; update and render exceptions are contained and reported once without stopping the loop.
 - Input resolves each stick direction against its own axis, enforces the analog threshold and honors combo hold time.
 - Automatic persistence through `localStorage`: completed and unlocked stages, the last stage, score, player level, inventory and keys, plus a separate versioned audio-settings record. A reload resumes at the map; failed reads and writes are reported once per operation and key without throwing into gameplay.
-- `bun test`: 666 passing tests across 63 files, 2521 assertions.
+- `bun test`: 739 passing tests across 65 files, 2902 assertions.
 - `bun run validate`: 57 data files, 0 errors, 0 warnings.
 - `bun run check:layers`: 73 source files, 0 violations.
 - `bun run smoke`: passes; the page boots, the canvas renders, Enter reaches the stage, and no console error or uncaught exception is recorded.
 - `bun run verify:stages`: 8 stages, 8 passed, 0 failed; every stage enters through the map with a HUD and its first intro line.
-- Runtime is plain ES modules served statically. No bundler, no runtime dependency; `playwright-core` is the only development dependency and is used by the smoke test and the stage verification command.
+- `bun run validate:playability`: 8 stages, 5 errors, 0 warnings, exit `1`; the five findings are across three collectible placements in Strawberry Fields. The exit-door is checked as a collectible and receives no reachability finding, but the fill is an over-approximation of movement, so this is not a play-through proof; `test/stage-catalog.test.js` asserts exactly one exit-door per stage.
+- `bun run export:stage-maps`: 8 stages, 29 images, 0 failed; the exporter is advisory and the images are a schematic for visual review.
+- Runtime is plain ES modules served statically. No bundler, no runtime dependency; `playwright-core` is the only development dependency and is used by the smoke test, the stage verification command and the stage-map exporter.
 
 ## Document taxonomy
 
@@ -51,8 +53,10 @@ A new subject takes exactly one new file in exactly one of those destinations, i
 | [data-model.md](data-model.md) | `data/` tree by subject, generated index, key conventions, section and object model, the eight stages, key collectible shape, tile/enemy/collectible/audio/UI configuration shapes, slope fields, validation rules, data without a consumer. |
 | [gameplay.md](gameplay.md) | Controls, movement, ability table with inputs, inventory items and effects, keys, HUD, health and lives, coins, fruits and levels, ammo, checkpoints, slopes, teleporters, stage completion, persistence, the eight stages and the world map. |
 | [decisions.md](decisions.md) | Recorded architecture and product decisions with context, decision, consequence and evidence. |
-| [testing.md](testing.md) | Test suite layout, coverage by subject, smoke assertions, stage verification, layer check, validator behavior, browser verification status and gaps. |
-| [tooling/README.md](tooling/README.md) | `serve`, `data:index`, `validate`, `check:layers`, `test`, `smoke`, `verify`, `verify:stages` and `format-4-beat-music`: what each does, exit codes, failure meaning, no-bundler constraint. |
+| [testing.md](testing.md) | Test suite layout, coverage by subject, smoke assertions, stage verification, playability validation, stage map export, layer check, validator behavior, browser verification status and gaps. |
+| [tooling/README.md](tooling/README.md) | `serve`, `data:index`, `validate`, `validate:playability`, `export:stage-maps`, `check:layers`, `test`, `smoke`, `verify`, `verify:stages` and `format-4-beat-music`: what each does, exit codes, failure meaning, no-bundler constraint. |
+| [tooling/playability-validation.md](tooling/playability-validation.md) | Static stage geometry validation: inputs, coordinate and hitbox model, check codes, reachability grid, output, current Strawberry Fields findings and limits. |
+| [tooling/stage-map-export.md](tooling/stage-map-export.md) | Semantic stage-map export: invocation, output tree, image semantics, view layout, manifests, browser requirement and visual-review workflow. |
 | [tooling/music-format-cli.md](tooling/music-format-cli.md) | The Bun BGM reformatting CLI: invocation, input shape, behavior, exit codes, output location. |
 | [roadmap/opportunities.md](roadmap/opportunities.md) | Current improvement inventory, including the resolved ledger and the open opportunities with evidence. |
 | [roadmap/next-steps.md](roadmap/next-steps.md) | Completed step ledger, delivered N-plan outcomes and the remaining ordered plan, with acceptance criteria. |
@@ -67,7 +71,7 @@ A new subject takes exactly one new file in exactly one of those destinations, i
 6. [gameplay.md](gameplay.md): the player-visible result of the previous four documents.
 7. [testing.md](testing.md): what is verified, how, and what is not.
 8. [decisions.md](decisions.md): why the current structure was chosen.
-9. [tooling/README.md](tooling/README.md) and [tooling/music-format-cli.md](tooling/music-format-cli.md): how to run and check the project.
+9. [tooling/README.md](tooling/README.md), [tooling/playability-validation.md](tooling/playability-validation.md), [tooling/stage-map-export.md](tooling/stage-map-export.md) and [tooling/music-format-cli.md](tooling/music-format-cli.md): how to run and check the project.
 10. [roadmap/opportunities.md](roadmap/opportunities.md) and [roadmap/next-steps.md](roadmap/next-steps.md): what is still open and in which order to address it.
 
 ## Conventions

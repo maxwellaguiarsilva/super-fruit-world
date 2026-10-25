@@ -7,10 +7,12 @@
     "serve": "bun scripts/serve.js",
     "data:index": "bun scripts/generate-data-index.js",
     "validate": "bun scripts/validate-data.js",
+    "validate:playability": "bun scripts/validate-playability.js",
     "check:layers": "bun scripts/check-layers.js",
     "smoke": "bun scripts/smoke.js",
     "verify": "bun run validate && bun run check:layers && bun run test && bun run smoke",
     "verify:stages": "bun scripts/verify-stages.js",
+    "export:stage-maps": "bun scripts/export-stage-map.js",
     "test": "bun test",
     "format-4-beat-music": "bun src/engine/audio/format-4-beat-music.ts"
   },

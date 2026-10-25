@@ -1,27 +1,29 @@
 # Testing
 
-Subject: how the project is verified, what each test file pins, what the smoke test asserts, what the layer check and the validator cover, and which behavior remains unverified. Commands and exit codes are documented in [tooling/README.md](tooling/README.md).
+Subject: how the project is verified, what each test file pins, what the smoke test asserts, what the layer check, the validator, the playability check and the stage-map export cover, and which behavior remains unverified. Commands and exit codes are documented in [tooling/README.md](tooling/README.md).
 
 ## How to run
 
 | Check | Command | Expected current result |
 | --- | --- | --- |
-| Unit suite | `bun test` | 666 passing, 0 failing, 63 files, 2521 assertions. |
+| Unit suite | `bun test` | 739 passing, 0 failing, 65 files, 2902 assertions. |
 | Data validation | `bun run validate` | 57 data files, 0 errors, 0 warnings. |
 | Layer direction | `bun run check:layers` | 73 source files, 0 violations. |
 | Boot and transition smoke | `bun run smoke` | Passes. |
 | Stage boot verification | `bun run verify:stages` | 8 stages, 8 passed, 0 failed. |
+| Playability validation | `bun run validate:playability` | 8 stages, 5 errors, 0 warnings, exit 1; all five findings are in Strawberry Fields. |
+| Stage map export | `bun run export:stage-maps` | `Stage map export: 8 stages, 29 images, 0 failed.` |
 | Default gate | `bun run verify` | `validate`, `check:layers`, `test` and `smoke` in that order. |
 
-`bun run verify` is the default gate. It deliberately excludes `verify:stages` because that command launches a browser context per stage and is slower; run it when stage content changes or before a release.
+`bun run verify` is the default gate. It deliberately excludes `verify:stages` because that command launches a browser context per stage and is slower; run it when stage content changes or before a release. It also excludes `validate:playability` and `export:stage-maps`: the playability command is a geometric content check with known findings on the shipped tree, and the exporter is a browser-based advisory export that never fails on findings.
 
-The unit-suite, validator and layer-check results are from the last full run. The smoke and stage-verification results are the recorded runs. The manual browser observations in [Verification status](#verification-status) come from separate recorded runs and are not reproduced by the automated suite.
+The unit-suite, validator and layer-check results are from the last full run. The smoke, stage-verification, playability and stage-map export results are recorded runs of those commands. The manual browser observations in [Verification status](#verification-status) come from separate recorded runs and are not reproduced by the automated suite.
 
 ## Suite layout
 
 - Test files live directly under `test/` and are named `<subject>.test.js`.
 - `test/support/stage-fixture.js` builds a `Stage` with stubbed physics, collision, factories and damage so stage behavior can be exercised without a browser.
-- Tests import source modules by relative path with explicit `.js` extensions. Several tests read real files from `data/`; the validator test writes a temporary directory under the OS temp directory.
+- Tests import source modules by relative path with explicit `.js` extensions. Several tests read real files from `data/`; two tests write temporary directories under the OS temp directory.
 - No snapshots, no network and no real browser. The input tests stub the `window` and `navigator` globals; the renderer tests stub the canvas context; the loop tests stub `requestAnimationFrame`.
 
 ## Coverage by subject
@@ -117,6 +119,8 @@ The unit-suite, validator and layer-check results are from the last full run. Th
 | `i18n-contract.test.js` | The default accessor and physical locale share one tree; every level and configured ability resolves through `player.abilities.*`; every fruit resolves; `stomp` and `slide-attack` use their display names; the removed keys are absent. |
 | `input-bindings.test.js` | `button-count` matches the declared buttons, every index below the count is covered once, names match indices, action references are declared, and a button beyond the count activates no action. |
 | `verify-stages.test.js` | Stage discovery filters non-JSON entries and strips extensions; key-required map conditions are collected once; the progress seed carries the namespace, schema version, full unlock list, key items and preferred stage; missing namespace/stage id are rejected; the first intro line and its first word resolve from the text tree. |
+| `validate-playability.test.js` | Layout normalization from the shipped data, runtime collectible hitboxes, player size from game config, tile classification and overrides, every finding code, non-inverted and inverted slope wedges, the 0.25-unit reachability grid, the shipped tree and argument parsing. |
+| `export-stage-map.test.js` | Stage bounds, chunk layout, edge clamping, 2-unit overlap, row-major order, content-band cropping, SVG semantics, label placement and suppression, manifest builders, argument parsing and the output-directory guard. |
 | `music-formatter-cli.test.js` | `package.json` declares the script the formatter prints, and the printed invocation equals the declared script. |
 
 ## Smoke test assertions
@@ -152,6 +156,41 @@ Failures are collected per stage and the run continues. Each stage has a 60 s ha
 
 Coverage limit: this command proves that a stage is referenced by the map, can be unlocked, enters from the preferred node, starts its HUD and starts its intro dialogue. It does not traverse geometry, complete a stage, trigger game over, use the inventory or teleporter, or assert saved progress.
 
+## Playability validation
+
+`bun run validate:playability` runs `scripts/validate-playability.js` against every stage file under `data/stages/`. It is a static geometric check: it loads the stage, tile, collectible, enemy and game configuration, resolves world positions, and tests boxes against the solid and deadly parts of the geometry. It does not simulate a jump, a dash, a double jump or flight.
+
+Checks, all errors unless noted:
+
+| Code | Subject |
+| --- | --- |
+| `collectible-embedded-in-solid` | Pickup overlaps a solid tile, including the solid wedge of a slope. |
+| `collectible-in-deadly-tile` | Pickup overlaps a spike or pit. |
+| `collectible-below-geometry` | Pickup is entirely below the tile bounds. |
+| `collectible-outside-geometry` | Pickup is entirely outside the tile bounds horizontally. |
+| `collectible-unreachable-region` | The reachability grid cannot place the player on the pickup. |
+| `spawn-in-solid`, `spawn-in-deadly`, `spawn-missing` | The spawn is invalid or absent. |
+| `checkpoint-unusable` | The checkpoint activation cell overlaps solid or deadly geometry. |
+| `teleporter-in-solid`, `teleporter-marker-in-solid` | A teleporter or marker cell is inside solid geometry. |
+| `enemy-in-solid` | An enemy box overlaps solid geometry. |
+| `reachability-skipped` (warning) | The grid would exceed 2,000,000 cells, or no free cell matches the spawn. |
+
+Reachability uses a 0.25-unit grid and the configured player box (`game-config.player.size`; shipped 1×1). An 8-neighbor flood fill starts at the spawn; solid non-slope tiles block, including solid deadly spikes; non-solid deadly pits do not block; slopes, liquids and ladders do not block. Diagonal moves cannot cut corners. A pickup counts as reachable when any reachable cell places the player top-left in `[c.x - playerSize, c.x + c.width] × [c.y - playerSize, c.y + c.height]` and the player box overlaps it. The fill is an over-approximation of movement, not a proof of reachability.
+
+Current result: 8 stages, 5 errors, 0 warnings, exit `1`. All five findings are in Strawberry Fields: a coin at world (98.5, -12) and an apple at (98.5, -8) overlap the solid platform box (97, -15, 3, 10) and are unreachable from the spawn at (3, 0); a musical note at (159, -21) overlaps the solid wedge of slope `slope-45` box (155, -22, 5, 3). The exit-door is checked as a collectible and receives no reachability finding, but the fill is an over-approximation of movement, so this is not a play-through proof; `test/stage-catalog.test.js` asserts exactly one exit-door per stage. The other seven stages have no findings.
+
+Coverage limit: no jump envelope, enemy AI, teleporter traversal or note-order validation. Exit-door presence is asserted by `test/stage-catalog.test.js`. `test/validate-playability.test.js` covers the model, argument parsing, every finding code including `spawn-missing` and `reachability-skipped`, the slope wedge rule, the 0.25-unit grid and the shipped tree in 31 tests. The command is not part of `bun run verify`; the full check list is in [tooling/playability-validation.md](tooling/playability-validation.md).
+
+## Stage map export
+
+`bun run export:stage-maps` runs `scripts/export-stage-map.js` and writes semantic images plus manifests under `out/stage-maps/` for a vision-capable LLM review. It is advisory: static findings are drawn as badges and recorded in the manifest, but they never fail the export.
+
+The exporter writes one overview and a set of fixed-scale chunks per stage. Chunk X ranges overlap by 2 world units, and each chunk crops its Y range to the content of its core X range with a 2-unit margin and a 10-unit minimum. Images encode the schematic geometry, spawn, exit, checkpoints, collectibles, enemies, teleporters, markers, section separators, world coordinates and a legend. Each stage also carries a `manifest.json` with bounds, player size, scale, sections, static findings and image geometry for every view.
+
+Current result: `Stage map export: 8 stages, 29 images, 0 failed.` A failed rasterization, manifest write or browser launch exits `1`. The command needs `playwright-core` and a Chromium build; `scripts/smoke/browser.js` is the shared launcher and honors `CHROMIUM_EXECUTABLE_PATH`.
+
+Coverage limit: the 42 tests in `test/export-stage-map.test.js` cover the pure chunk layout, SVG semantics, label placement, manifests, argument parsing and the output-directory guard; rasterization is exercised only by running the command. The exporter is not part of `bun run verify`; the image semantics and review workflow are in [tooling/stage-map-export.md](tooling/stage-map-export.md).
+
 ## Layer check
 
 `bun run check:layers` runs `scripts/check-layers.js`, which walks every `.js` file under `src/` and classifies it as `engine`, `game`, `app` or `main`.
@@ -164,7 +203,7 @@ Coverage limit: this command proves that a stage is referenced by the map, can b
 | `main` | `app` |
 | Any | Nothing may import `main`. |
 
-The scanner resolves relative specifiers and inspects static imports, side-effect imports, re-exports and dynamic imports. It ignores package imports and files outside the layer tree. A violation prints `file:line`, the specifier, the direction and the rule; the command exits `1`. A pass prints `Layer check passed: <n> source files.` with exit `0`. Current result: 70 files, 0 violations. `test/check-layers.test.js` covers the classifier, the scanner and the real tree.
+The scanner resolves relative specifiers and inspects static imports, side-effect imports, re-exports and dynamic imports. It ignores package imports and files outside the layer tree. A violation prints `file:line`, the specifier, the direction and the rule; the command exits `1`. A pass prints `Layer check passed: <n> source files.` with exit `0`. Current result: 73 files, 0 violations. `test/check-layers.test.js` covers the classifier, the scanner and the real tree.
 
 ## Validator coverage
 

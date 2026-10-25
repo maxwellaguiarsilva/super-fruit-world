@@ -40,6 +40,38 @@ bun run validate
 
 Checks that every JSON file under `data/` parses, that `data/index.json` matches the files on disk, that tile types, slope data and BGM tracks resolve, that stage files referenced by the initial stage and the map exist, that text keys and color names resolve, and that `game-config` contains the keys read at boot. It prints one line per problem and exits non-zero on any error. The current tree has 57 data files and reports 0 errors and 0 warnings.
 
+## Validate stage playability
+
+```sh
+bun run validate:playability
+```
+
+Checks every stage under `data/stages/` for a collectible embedded in solid geometry or a slope wedge, inside a spike or pit, below or outside the tile geometry, or unreachable from the spawn. It also reports a missing spawn, a spawn inside solid or deadly geometry, an unusable checkpoint, a teleporter or marker inside solid geometry, and an enemy overlapping solid geometry. Reachability uses a 0.25-unit flood fill that over-approximates movement: solid non-slope tiles block, including solid deadly spikes; non-solid deadly pits do not block; slopes, liquids and ladders do not block. The fill is not a play-through proof.
+
+The current tree reports 8 stages, 5 errors and 0 warnings with exit `1`. The five findings are across three Strawberry Fields pickups: a coin at world (98.5, -12) and an apple at (98.5, -8) overlap the solid platform box (97, -15, 3, 10), and a musical note at (159, -21) overlaps the solid wedge of `slope-45` box (155, -22, 5, 3). The exit-door is checked as a collectible and receives no reachability finding, but the fill is an over-approximation of movement, so this is not a play-through proof; `test/stage-catalog.test.js` asserts exactly one exit-door per stage.
+
+## Export stage maps
+
+```sh
+bun run export:stage-maps
+```
+
+Writes a schematic overview and fixed-scale chunks plus manifests under `out/stage-maps/`. Defaults are `--out out/stage-maps`, `--scale 24` and `--max-size 1400`; `--stage <id>` is repeatable. Output tree:
+
+```text
+out/stage-maps/
+├── index.json
+└── <stage-id>/
+    ├── manifest.json
+    ├── overview.png
+    ├── overview.svg
+    ├── chunk-00.png
+    ├── chunk-00.svg
+    └── ...
+```
+
+Requires `playwright-core` and a Chromium build through the shared `scripts/smoke/browser.js` launcher; `CHROMIUM_EXECUTABLE_PATH` selects another binary. The exporter is advisory: static findings are drawn as badges and recorded in the manifest but never fail the export. Current result: `Stage map export: 8 stages, 29 images, 0 failed.` It is not part of `bun run verify`.
+
 ## Check the layer rule
 
 ```sh
@@ -64,7 +96,7 @@ The browser and the server are always shut down, including when an assertion fai
 bun test
 ```
 
-The suite in `test/` covers DOM-free modules imported by relative path with explicit `.js` extensions. It uses no snapshots, no network and no browser. Some tests read files from `data/`, and the data-validation test writes a temporary directory outside the repository. Current run: 666 passing tests across 63 files, 2521 assertions.
+The suite in `test/` covers DOM-free modules imported by relative path with explicit `.js` extensions. It uses no snapshots, no network and no browser. Some tests read files from `data/`, and two tests write temporary directories outside the repository. Current run: 739 passing tests across 65 files, 2902 assertions.
 
 ## Run all checks
 
@@ -72,7 +104,7 @@ The suite in `test/` covers DOM-free modules imported by relative path with expl
 bun run verify
 ```
 
-Runs `validate`, `check:layers`, `test` and `smoke` in that order. It does not include `verify:stages`, which needs a browser context per stage.
+Runs `validate`, `check:layers`, `test` and `smoke` in that order. It does not include `verify:stages`, which needs a browser context per stage, `validate:playability`, which is a geometric content check with known findings on the shipped tree, or `export:stage-maps`, which is a browser-based advisory export.
 
 ## Verify every stage
 
@@ -95,6 +127,6 @@ Seeds progress so every stage node and key is unlocked, enters each stage throug
 | `index.html` | Entry document, loads `src/main.js` as a module. |
 | `src/` | Application, game and engine modules. |
 | `data/` | JSON configuration and content. |
-| `scripts/` | Development scripts: static server, data index generator, data validator, layer check, smoke test, stage verification and the shared browser harness. |
+| `scripts/` | Development scripts: static server, data index generator, data validator, playability validator, stage-map exporter, layer check, smoke test, stage verification, the shared browser harness and the shared `scripts/stage-analysis/` modules. |
 | `test/` | Bun test suite. |
 | `docs/agent/` | Agent-facing documentation: architecture by layer, data model, gameplay, decisions, testing, tooling and roadmap. Start at `docs/agent/README.md`. |
